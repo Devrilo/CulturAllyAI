@@ -1,20 +1,20 @@
-Frontend - Astro z React dla komponentów interaktywnych:
-- Astro 5 pozwala na tworzenie szybkich, wydajnych stron i aplikacji z minimaln¹ iloœci¹ JavaScript
-- React 19 zapewni interaktywnoœæ tam, gdzie jest potrzebna
+Frontend - Astro z React dla komponentÃ³w interaktywnych:
+- Astro 5 pozwala na tworzenie szybkich, wydajnych stron i aplikacji z minimalnÄ… iloÅ›ciÄ… JavaScript
+- React 19 zapewni interaktywnoÅ›Ä‡ tam, gdzie jest potrzebna
 - TypeScript 5 dla statycznego typowania kodu i lepszego wsparcia IDE
 - Tailwind 4 pozwala na wygodne stylowanie aplikacji
-- Shadcn/ui zapewnia bibliotekê dostêpnych komponentów React, na których oprzemy UI
+- Shadcn/ui zapewnia bibliotekÄ™ dostÄ™pnych komponentÃ³w React, na ktÃ³rych oprzemy UI
 
-Backend - Supabase jako kompleksowe rozwi¹zanie backendowe:
-- Zapewnia bazê danych PostgreSQL
-- Zapewnia SDK w wielu jêzykach, które pos³u¿¹ jako Backend-as-a-Service
-- Jest rozwi¹zaniem open source, które mo¿na hostowaæ lokalnie lub na w³asnym serwerze
-- Posiada wbudowan¹ autentykacjê u¿ytkowników
+Backend - Supabase jako kompleksowe rozwiÄ…zanie backendowe:
+- Zapewnia bazÄ™ danych PostgreSQL
+- Zapewnia SDK w wielu jÄ™zykach, ktÃ³re posÅ‚uÅ¼Ä… jako Backend-as-a-Service
+- Jest rozwiÄ…zaniem open source, ktÃ³re moÅ¼na hostowaÄ‡ lokalnie lub na wÅ‚asnym serwerze
+- Posiada wbudowanÄ… autentykacjÄ™ uÅ¼ytkownikÃ³w
 
-AI - Komunikacja z modelami przez us³ugê Openrouter.ai:
-- Dostêp do szerokiej gamy modeli (OpenAI, Anthropic, Google i wiele innych), które pozwol¹ nam znaleŸæ rozwi¹zanie zapewniaj¹ce wysok¹ efektywnoœæ i niskie koszta
-- Pozwala na ustawianie limitów finansowych na klucze API
+AI - Komunikacja z modelami przez usÅ‚ugÄ™ Openrouter.ai:
+- DostÄ™p do szerokiej gamy modeli (OpenAI, Anthropic, Google i wiele innych), ktÃ³re pozwolÄ… nam znaleÅºÄ‡ rozwiÄ…zanie zapewniajÄ…ce wysokÄ… efektywnoÅ›Ä‡ i niskie koszty
+- Pozwala na ustawianie limitÃ³w finansowych na klucze API
 
 CI/CD i Hosting:
-- Github Actions do tworzenia pipeline’ów CI/CD
-- DigitalOcean do hostowania aplikacji za poœrednictwem obrazu docker
+- Github Actions do tworzenia pipeline'Ã³w CI/CD
+- DigitalOcean do hostowania aplikacji za poÅ›rednictwem obrazu docker

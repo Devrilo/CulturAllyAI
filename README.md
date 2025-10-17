@@ -1,94 +1,84 @@
-# 10x Astro Starter
+# CulturAllyAI
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+## 1. Project Name
 
-## Tech Stack
+CulturAllyAI
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+## 2. Project Description
 
-## Prerequisites
+CulturAllyAI is a simple web application designed to generate concise, engaging, and factual descriptions of cultural events using LLMs based solely on user-provided input. It enables organizers, cultural institutions, and volunteers to quickly obtain well-structured event descriptions without the need for extensive manual editing.
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+## Table of Contents
+- [Project Name](#1-project-name)
+- [Project Description](#2-project-description)
+- [Tech Stack](#3-tech-stack)
+- [Getting Started Locally](#4-getting-started-locally)
+- [Available Scripts](#5-available-scripts)
+- [Project Scope](#6-project-scope)
+- [Project Status](#7-project-status)
+- [License](#8-license)
 
-## Getting Started
+## 3. Tech Stack
 
-1. Clone the repository:
+- **Frontend:** Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui
+- **Backend:** Supabase (PostgreSQL, authentication, and backend services)
+- **AI Integration:** Openrouter.ai for connecting to various AI models
+- **CI/CD & Hosting:** GitHub Actions, DigitalOcean
+
+## 4. Getting Started Locally
+
+### Prerequisites
+
+- **Node.js:** Version specified in [.nvmrc](./.nvmrc) - currently **22.14.0**
+- **Package Manager:** npm
+
+### Installation
+
+Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
-
-2. Install dependencies:
-
-```bash
+git clone https://github.com/Devrilo/CulturAllyAI.git
+cd CulturAllyAI
 npm install
 ```
 
-3. Run the development server:
+### Running the Project
+
+To start the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Build for production:
+Then open your browser and navigate to `http://localhost:3000`.
 
-```bash
-npm run build
-```
+## 5. Available Scripts
 
-## Available Scripts
+- **npm run dev:** Starts the Astro development server (`astro dev`).
+- **npm run build:** Builds the production version of the site (`astro build`).
+- **npm run preview:** Previews the production build locally (`astro preview`).
+- **npm run astro:** Runs Astro CLI commands.
+- **npm run lint:** Runs code linting via ESLint.
+- **npm run lint:fix:** Fixes linting issues.
+- **npm run format:** Formats code using Prettier.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+## 6. Project Scope
 
-## Project Structure
+The MVP includes:
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+- A user-friendly event description creation form capturing city, date, category, age category, title, and key information.
+- AI-generated event descriptions (up to 500 characters) based on user input.
+- User account functionalities including registration (email + passowrd), login, and account management.
+- Event management features such as saving, editing, and deleting event descriptions.
+- A rating system for evaluating generated descriptions (thumbs up/down).
+- Clipboard functionality for quick copying of event descriptions.
 
-## AI Development Support
+Future enhancements may include additional mobile support, advanced social features, and extended integrations.
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+## 7. Project Status
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+This project is currently in the MVP stage, focused on delivering a robust foundation for cultural event description generation.
 
-### Cursor IDE
+## 8. License
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
-
-## License
-
-MIT
+This project is open source under the MIT License.

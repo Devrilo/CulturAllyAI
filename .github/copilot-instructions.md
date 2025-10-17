@@ -1,6 +1,6 @@
-# AI Rules for {{project-name}}
+# AI Rules for CulturAllyAI
 
-{{project-description}}
+CulturAllyAI is a web application that enables automatic generation of cultural event's description based on user input. The aim is to make it easier to create engaging and informative content for cultural events.
 
 ## Tech Stack
 
@@ -42,6 +42,14 @@ When modifying the directory structure, always update this section.
 - Use guard clauses to handle preconditions and invalid states early.
 - Implement proper error logging and user-friendly error messages.
 - Consider using custom error types or error factories for consistent error handling.
+
+### Guidelines for DOCUMENTATION
+
+#### DOC_UPDATES
+
+- Update relevant documentation in /docs when modifying features
+- Keep README.md in sync with new capabilities
+- Maintain changelog entries in CHANGELOG.md
 
 ## Frontend
 
