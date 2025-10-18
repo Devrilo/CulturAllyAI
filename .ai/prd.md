@@ -65,10 +65,11 @@ Szybkie stworzenie spójnego, zwięzłego i atrakcyjnego opisu wydarzenia na pod
 - Kopiowanie wygenerowanego opisu do schowka za pomocą jednego przycisku
 
 ### 3.4 System kont użytkowników
-- Rejestracja oparta na emailu i haśle (bez potwierdzania email)
-- Logowanie do systemu
+- Rejestracja oparta na emailu i haśle (bez potwierdzania email w MVP)
+- Logowanie/wylogowanie z systemu
 - Zarządzanie kontem (zmiana hasła, usunięcie konta)
 - Profil użytkownika z dostępem do zapisanych wydarzeń
+- **Implementacja:** Supabase Auth (obsługa client-side przez Supabase SDK)
 
 ### 3.5 Interfejs użytkownika
 - Jednostronicowy układ: formularz po lewej/górze, podgląd opisu po prawej/poniżej

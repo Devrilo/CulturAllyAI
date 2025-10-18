@@ -11,134 +11,7 @@
 
 ## 2. Endpoints
 
-### 2.1 Authentication & Account Management
-
-#### Register User
-
-- **Method:** `POST`
-- **Path:** `/api/auth/register`
-- **Description:** Register a new user account
-- **Authentication:** Not required
-- **Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "securepassword123"
-}
-```
-- **Success Response (201 Created):**
-```json
-{
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "created_at": "2025-10-17T10:30:00Z"
-  },
-  "session": {
-    "access_token": "jwt_token",
-    "refresh_token": "refresh_token",
-    "expires_in": 3600
-  }
-}
-```
-- **Error Responses:**
-  - `400 Bad Request`: Invalid email format or password too weak
-  - `409 Conflict`: Email already registered
-
-#### Login User
-
-- **Method:** `POST`
-- **Path:** `/api/auth/login`
-- **Description:** Authenticate user and create session
-- **Authentication:** Not required
-- **Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "securepassword123"
-}
-```
-- **Success Response (200 OK):**
-```json
-{
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com"
-  },
-  "session": {
-    "access_token": "jwt_token",
-    "refresh_token": "refresh_token",
-    "expires_in": 3600
-  }
-}
-```
-- **Error Responses:**
-  - `401 Unauthorized`: Invalid credentials
-  - `400 Bad Request`: Missing email or password
-
-#### Logout User
-
-- **Method:** `POST`
-- **Path:** `/api/auth/logout`
-- **Description:** End user session
-- **Authentication:** Required (Bearer token)
-- **Request Body:** None
-- **Success Response (200 OK):**
-```json
-{
-  "message": "Successfully logged out"
-}
-```
-- **Error Responses:**
-  - `401 Unauthorized`: Invalid or expired token
-
-#### Change Password
-
-- **Method:** `PATCH`
-- **Path:** `/api/auth/password`
-- **Description:** Update user password
-- **Authentication:** Required (Bearer token)
-- **Request Body:**
-```json
-{
-  "current_password": "oldpassword",
-  "new_password": "newsecurepassword123"
-}
-```
-- **Success Response (200 OK):**
-```json
-{
-  "message": "Password updated successfully"
-}
-```
-- **Error Responses:**
-  - `400 Bad Request`: New password too weak
-  - `401 Unauthorized`: Current password incorrect
-  - `401 Unauthorized`: Invalid or expired token
-
-#### Delete Account
-
-- **Method:** `DELETE`
-- **Path:** `/api/auth/account`
-- **Description:** Permanently delete user account
-- **Authentication:** Required (Bearer token)
-- **Request Body:**
-```json
-{
-  "password": "currentpassword"
-}
-```
-- **Success Response (200 OK):**
-```json
-{
-  "message": "Account deleted successfully"
-}
-```
-- **Error Responses:**
-  - `401 Unauthorized`: Invalid password
-  - `401 Unauthorized`: Invalid or expired token
-
-### 2.2 Events
+### 2.1 Events
 
 #### Generate Event Description
 
@@ -315,7 +188,7 @@
   - `401 Unauthorized`: Invalid or expired token
   - `404 Not Found`: Event not found or doesn't belong to user
 
-### 2.3 Categories & Enums
+### 2.2 Categories & Enums
 
 #### Get Event Categories
 
@@ -362,18 +235,74 @@
 
 ## 3. Authentication and Authorization
 
-### 3.1 Authentication Mechanism
+### 3.1 Authentication Model
 
-**Technology:** Supabase Auth with JWT tokens
+**Technology:** Supabase Auth (Client-Side Authentication)
 
-**Implementation Details:**
-- Email and password authentication
-- JWT-based session management
-- Access tokens with 1-hour expiration
-- Refresh tokens for extended sessions
-- Automatic token refresh on client side
+**Important:** This application uses Supabase Auth exclusively for authentication. All authentication operations (registration, login, logout, password management, account deletion) are handled **client-side** using the Supabase JavaScript SDK (`@supabase/supabase-js`).
 
-### 3.2 Authorization Rules
+**Backend API Role:**
+- The backend API endpoints **do not** implement authentication endpoints
+- Backend only **verifies** JWT tokens issued by Supabase Auth
+- Token verification is done via `supabase.auth.getUser()` in API routes
+
+**Client-Side Authentication Flow:**
+
+**Registration:**
+```typescript
+const { data, error } = await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'securepassword123'
+})
+```
+
+**Login:**
+```typescript
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'securepassword123'
+})
+```
+
+**Logout:**
+```typescript
+const { error } = await supabase.auth.signOut()
+```
+
+**Password Change:**
+```typescript
+const { error } = await supabase.auth.updateUser({
+  password: 'newsecurepassword123'
+})
+```
+
+**Account Deletion:**
+```typescript
+// Requires custom implementation calling Supabase Management API
+// or backend endpoint that uses service role key
+```
+
+**Session Management:**
+- JWT tokens automatically managed by Supabase SDK
+- Access tokens expire after 1 hour (configurable in Supabase)
+- Refresh tokens used for automatic session renewal
+- Tokens stored in localStorage/sessionStorage by SDK
+- SDK automatically adds `Authorization: Bearer <token>` header
+
+### 3.2 Backend Token Verification
+
+Backend API routes verify tokens using:
+
+```typescript
+const supabase = context.locals.supabase;
+const { data: { user }, error } = await supabase.auth.getUser();
+
+if (error || !user) {
+  // Return 401 Unauthorized
+}
+```
+
+### 3.3 Authorization Rules
 
 #### Guest Users (Unauthenticated)
 - **Can:** Generate event descriptions (POST /api/events)
@@ -387,9 +316,9 @@
   - Edit event descriptions (PATCH /api/events/:id with `edited_description`)
   - View saved events (GET /api/events?saved=true)
   - Delete saved events (DELETE /api/events/:id)
-  - Manage account (change password, delete account)
+  - Manage account via Supabase Auth client SDK (change password, delete account)
 
-### 3.3 Row Level Security (RLS)
+### 3.4 Row Level Security (RLS)
 
 Database-level security policies ensure:
 - Users can only access their own events (WHERE user_id = auth.uid())
@@ -397,7 +326,7 @@ Database-level security policies ensure:
 - UPDATE and DELETE operations restricted to event owner
 - Activity logs are write-only from application perspective
 
-### 3.4 Request Authentication
+### 3.5 Request Authentication Format
 
 **Header Format:**
 ```
@@ -405,10 +334,11 @@ Authorization: Bearer <jwt_access_token>
 ```
 
 **Token Validation:**
-- Verify JWT signature using Supabase public key
-- Check token expiration
-- Extract user_id from token claims
-- Use user_id for RLS policies
+- Tokens are issued and signed by Supabase Auth
+- Backend verifies JWT signature using Supabase client
+- Verification happens via `supabase.auth.getUser()` method
+- User ID extracted from verified token for RLS policies
+- Invalid or expired tokens result in 401 Unauthorized response
 
 ## 4. Validation and Business Logic
 
@@ -427,13 +357,6 @@ Authorization: Bearer <jwt_access_token>
 | edited_description | Optional, max 500 characters |
 | saved | Boolean, default false |
 | feedback | Optional, must be "thumbs_up" or "thumbs_down" |
-
-#### Auth Resource
-
-| Field | Validation Rules |
-|-------|-----------------|
-| email | Required, valid email format, unique |
-| password | Required, minimum 8 characters |
 
 ### 4.2 Business Logic Implementation
 
@@ -481,15 +404,12 @@ Authorization: Bearer <jwt_access_token>
 6. Return success message
 
 #### Account Deletion Flow
-1. Verify user authentication
-2. Confirm password for security
-3. Set `user_id = NULL` in all user's events (CASCADE via ON DELETE SET NULL)
-4. Set `saved = false` in all user's events
-4. Keep events for analytics (preserved with `created_by_authenticated_user = true`)
-5. Log action in `user_activity_logs` (action_type: 'account_deleted')
-6. Delete user from `auth.users`
-7. Invalidate all user sessions
-8. Return success message
+1. User calls Supabase Auth client SDK to delete account
+2. Supabase triggers CASCADE delete on `auth.users`
+3. Database ON DELETE CASCADE sets `user_id = NULL` in user's events
+4. Events remain in database for analytics (preserved with `created_by_authenticated_user = true`)
+5. User sessions automatically invalidated by Supabase
+6. Optional: Log action in `user_activity_logs` via database trigger
 
 ### 4.3 Error Handling
 
