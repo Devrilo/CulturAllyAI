@@ -165,6 +165,7 @@ export type Database = {
         | "event_saved"
         | "event_edited"
         | "event_deleted"
+        | "event_rated"
       event_category:
         | "koncerty"
         | "imprezy"

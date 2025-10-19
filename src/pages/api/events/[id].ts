@@ -218,6 +218,106 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   }
 };
 
+/**
+ * DELETE /api/events/:id
+ * Performs soft delete on an event by setting saved = false
+ * Only accessible by the event owner and for events created by authenticated users
+ *
+ * @param params - Contains event ID from URL path
+ * @param locals - Contains Supabase client instance
+ * @returns 200 with MessageResponseDTO or error response
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // Step 1: Validate path parameter (UUID)
+    const idResult = eventIdSchema.safeParse(params?.id);
+
+    if (!idResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Validation Error",
+          message: "Parametr ID jest nieprawidłowy",
+          details: [
+            {
+              field: "id",
+              message: idResult.error.errors[0]?.message ?? "Identyfikator wydarzenia jest nieprawidłowy",
+            },
+          ],
+        } satisfies ErrorResponseDTO),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const eventId = idResult.data;
+
+    // Step 2: Authenticate user (required)
+    const supabase = locals.supabase;
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+          message: "Wymagana jest autoryzacja",
+        } satisfies ErrorResponseDTO),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Soft delete event via service (sets saved = false)
+    const result = await softDeleteEvent(supabase, {
+      eventId,
+      userId: user.id,
+    });
+
+    // Step 4: Return success response
+    return new Response(
+      JSON.stringify({
+        message: result.message,
+        id: result.eventId,
+      } satisfies MessageResponseDTO),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    // Handle service errors (403, 404, 500)
+    if (error instanceof EventServiceError) {
+      const mapped = mapEventServiceError(error);
+
+      return new Response(JSON.stringify(mapped.body satisfies ErrorResponseDTO), {
+        status: mapped.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle unexpected errors (500)
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in DELETE /api/events/:id:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal Server Error",
+        message: "Wystąpił nieoczekiwany błąd serwera",
+      } satisfies ErrorResponseDTO),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
+
 function mapEventServiceError(error: EventServiceError): { status: number; body: ErrorResponseDTO } {
   switch (error.code) {
     case "EVENT_NOT_FOUND":
@@ -229,6 +329,7 @@ function mapEventServiceError(error: EventServiceError): { status: number; body:
         },
       };
     case "GUEST_EVENT_UPDATE_FORBIDDEN":
+    case "GUEST_EVENT_MODIFICATION":
       return {
         status: 403,
         body: {
@@ -246,6 +347,7 @@ function mapEventServiceError(error: EventServiceError): { status: number; body:
       };
     case "EVENT_FETCH_FAILED":
     case "UPDATE_FAILED":
+    case "EVENT_SOFT_DELETE_FAILED":
       return {
         status: 500,
         body: {

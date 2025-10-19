@@ -1,0 +1,47 @@
+-- ============================================================================
+-- Migration: Add event_rated to event_action_type enum
+-- Created: 2025-10-19 12:00:00 UTC
+-- Author: Database Migration Script
+-- 
+-- Purpose:
+--   This migration adds the 'event_rated' value to the event_action_type enum.
+--   This allows for separate logging of user feedback/rating actions, which were
+--   previously logged as 'event_edited' along with description edits.
+--
+-- Changes:
+--   - Adds 'event_rated' to event_action_type enum
+--
+-- Impact:
+--   - Enables more granular analytics on user engagement
+--   - Allows separate tracking of rating actions vs description edits
+--   - Backward compatible - existing data remains unchanged
+--
+-- Notes:
+--   - ALTER TYPE ADD VALUE cannot be executed inside a transaction block in some
+--     PostgreSQL versions, but Supabase migrations handle this correctly
+--   - New enum value is appended to the end of the enum definition
+--   - Existing logs with 'event_edited' remain as-is (historical data preserved)
+-- ============================================================================
+
+-- Add 'event_rated' to event_action_type enum
+-- This value will be used when users rate (provide feedback on) AI-generated event descriptions
+ALTER TYPE event_action_type ADD VALUE 'event_rated';
+
+-- ============================================================================
+-- Verification Query (for manual testing after migration)
+-- ============================================================================
+-- 
+-- To verify the migration was successful, run:
+-- 
+-- SELECT enumlabel 
+-- FROM pg_enum 
+-- WHERE enumtypid = 'event_action_type'::regtype 
+-- ORDER BY enumsortorder;
+-- 
+-- Expected output should include:
+-- - event_created
+-- - event_saved
+-- - event_edited
+-- - event_deleted
+-- - event_rated
+-- ============================================================================

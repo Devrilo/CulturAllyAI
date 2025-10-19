@@ -28,7 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **API Endpoint: PATCH /api/events/:id** - Aktualizacja pól `saved`, `feedback`, `edited_description`
   - Wymaga autoryzacji użytkownika i weryfikuje własność rekordu
   - Walidacja danych wejściowych w oparciu o `updateEventSchema`
-  - Rejestrowanie akcji w `event_management_logs` (`event_saved`, `event_edited`)
+  - Rejestrowanie akcji w `event_management_logs` (`event_saved`, `event_edited`, `event_rated`)
+  - Osobne logowanie zmiany `feedback` jako `event_rated` dla lepszej analizy ocen użytkowników
   - Spójne komunikaty błędów i statusy HTTP (400, 401, 403, 404, 500)
 - **API Endpoint: GET /api/events** - Pobieranie listy wydarzeń użytkownika
   - Wymaga autoryzacji (tylko zalogowani użytkownicy)
@@ -50,6 +51,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wydarzenia gości (`user_id = null`) niewidoczne dla zalogowanych użytkowników
   - Wydajne zapytanie: SELECT po primary key + indexed user_id
   - Spójne komunikaty błędów (400, 401, 404, 500)
+- **API Endpoint: DELETE /api/events/:id** - Soft delete wydarzenia poprzez ustawienie `saved = false`
+  - Wymaga autoryzacji użytkownika (token Bearer)
+  - Walidacja UUID dla parametru `id` (Zod schema)
+  - Weryfikacja własności wydarzenia (tylko właściciel może usunąć)
+  - Blokada usuwania wydarzeń utworzonych jako gość (`created_by_authenticated_user = false`)
+  - Soft delete zamiast hard delete - zachowanie danych do audytu
+  - Rejestrowanie akcji w `event_management_logs` z typem `event_deleted`
+  - Row Level Security (RLS) + explicit user_id filter (defense-in-depth)
+  - Zwraca komunikat potwierdzający wraz z ID usuniętego wydarzenia
+  - Spójne komunikaty błędów (400, 401, 403, 404, 500)
 
 - **Services Layer**
   - `events.service.ts` - Business logic for event creation
@@ -68,8 +79,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Database Schema**
   - Initial schema migration with `events`, `user_activity_logs`, and `event_management_logs` tables
   - Guest users support migration
+  - Migration adding `event_rated` to `event_action_type` enum for separate rating analytics
   - Row Level Security (RLS) policies for authenticated and anonymous users
   - Enums: `event_category`, `age_category`, `feedback`, `user_action_type`, `event_action_type`
+  - Event action types: `event_created`, `event_saved`, `event_edited`, `event_deleted`, `event_rated`
 
 - **Type Safety**
   - Complete DTO types in `src/types.ts`

@@ -72,6 +72,22 @@ export interface GetEventByIdResult {
 }
 
 /**
+ * Command for soft deleting an event (sets saved = false)
+ */
+export interface SoftDeleteEventCommand {
+  eventId: string;
+  userId: string;
+}
+
+/**
+ * Result of soft delete operation
+ */
+export interface SoftDeleteEventResult {
+  eventId: string;
+  message: string;
+}
+
+/**
  * Service error thrown when event operations fail
  */
 export class EventServiceError extends Error {
@@ -252,10 +268,15 @@ export async function updateEvent(supabase: SupabaseClient, command: UpdateEvent
       });
     }
 
-    if (
-      Object.prototype.hasOwnProperty.call(updates, "feedback") ||
-      Object.prototype.hasOwnProperty.call(updates, "edited_description")
-    ) {
+    if (Object.prototype.hasOwnProperty.call(updates, "feedback")) {
+      logEntries.push({
+        action_type: "event_rated",
+        event_id: command.eventId,
+        user_id: command.userId,
+      });
+    }
+
+    if (Object.prototype.hasOwnProperty.call(updates, "edited_description")) {
       logEntries.push({
         action_type: "event_edited",
         event_id: command.eventId,
@@ -449,5 +470,91 @@ export async function getEventById(
     // eslint-disable-next-line no-console
     console.error("Unexpected error in getEventById:", error);
     throw new EventServiceError("Wystąpił nieoczekiwany błąd podczas pobierania wydarzenia", 500, "UNEXPECTED_ERROR");
+  }
+}
+
+/**
+ * Performs soft delete on an event by setting saved = false
+ * Only allows soft deletion of events owned by authenticated users
+ * Logs the action in event_management_logs
+ *
+ * @param supabase - Supabase client instance
+ * @param command - Command with event ID and user ID
+ * @returns Result with event ID and confirmation message
+ * @throws EventServiceError if soft delete fails or event doesn't exist
+ */
+export async function softDeleteEvent(
+  supabase: SupabaseClient,
+  command: SoftDeleteEventCommand
+): Promise<SoftDeleteEventResult> {
+  try {
+    const { eventId, userId } = command;
+
+    // Step 1: Perform soft delete (set saved = false) with double security: RLS + explicit user_id filter
+    const { data: deletedEvent, error: updateError } = await supabase
+      .from("events")
+      .update({ saved: false })
+      .eq("id", eventId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    // Handle update errors
+    if (updateError) {
+      // PGRST116 = no rows returned (event not found or not owned by user)
+      if (updateError.code === "PGRST116") {
+        throw new EventServiceError("Wydarzenie nie zostało znalezione", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Other database errors
+      // eslint-disable-next-line no-console
+      console.error("Failed to soft delete event:", updateError);
+      throw new EventServiceError("Nie udało się usunąć wydarzenia", 500, "EVENT_SOFT_DELETE_FAILED");
+    }
+
+    // Validate event exists (defensive check)
+    if (!deletedEvent) {
+      throw new EventServiceError("Wydarzenie nie zostało znalezione", 404, "EVENT_NOT_FOUND");
+    }
+
+    // Step 2: Validate that event was created by authenticated user (403 if guest event)
+    if (!deletedEvent.created_by_authenticated_user) {
+      throw new EventServiceError(
+        "Usuwanie wydarzeń utworzonych przez gości jest zabronione",
+        403,
+        "GUEST_EVENT_MODIFICATION"
+      );
+    }
+
+    // Step 3: Log deletion in event_management_logs
+    const logData = {
+      action_type: "event_deleted" as const,
+      event_id: eventId,
+      user_id: userId,
+    };
+
+    const { error: logError } = await supabase.from("event_management_logs").insert(logData);
+
+    if (logError) {
+      // Log error but don't fail the operation
+      // eslint-disable-next-line no-console
+      console.error("Failed to log event soft deletion:", logError);
+    }
+
+    // Step 4: Return success result
+    return {
+      eventId,
+      message: "Event removed from saved list",
+    };
+  } catch (error) {
+    // Re-throw EventServiceError as-is
+    if (error instanceof EventServiceError) {
+      throw error;
+    }
+
+    // Handle unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in softDeleteEvent:", error);
+    throw new EventServiceError("Wystąpił nieoczekiwany błąd podczas usuwania wydarzenia", 500, "UNEXPECTED_ERROR");
   }
 }

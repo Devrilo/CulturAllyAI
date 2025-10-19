@@ -42,7 +42,8 @@ CREATE TYPE event_action_type AS ENUM (
   'event_created',
   'event_saved',
   'event_edited',
-  'event_deleted'
+  'event_deleted',
+  'event_rated'
 );
 
 -- Typy ocen generacji

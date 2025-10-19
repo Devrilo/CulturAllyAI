@@ -382,8 +382,9 @@ Authorization: Bearer <jwt_access_token>
 3. Validate feedback value (thumbs_up or thumbs_down)
 4. Check if event already has feedback (prevent duplicate ratings)
 5. Update `feedback` field
-6. Use feedback data for AI model improvement metrics
-7. Return updated event
+6. Log action in `event_management_logs` (action_type: 'event_rated')
+7. Use feedback data for AI model improvement metrics
+8. Return updated event
 
 #### Event Edit Flow
 1. Verify user is authenticated (403 if guest user)
@@ -561,6 +562,7 @@ X-RateLimit-Reset: 1697542800
 - event_saved
 - event_edited
 - event_deleted (soft delete)
+- event_rated
 
 ### 7.2 Metrics to Track
 

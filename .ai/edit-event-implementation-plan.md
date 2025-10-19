@@ -41,7 +41,10 @@
    - Walidacje biznesowe: wydarzenie gościa, brak zmian, ograniczenie CHECK (np. `saved=true` tylko dla authenticated).
    - Przygotowanie obiektu aktualizacji (tylko pola z realną zmianą, trim + null dla pustych opisów).
    - Wykonanie `.update().eq("id", eventId).select().single()`.
-   - Logowanie w `event_management_logs`: `event_saved` gdy `saved` przeszło na `true`/`false` (można rozważyć wpis przy zmianie wartości), `event_edited` gdy zmiana opisu lub feedbacku.
+   - Logowanie w `event_management_logs`: 
+     - `event_saved` gdy zmienia się wartość `saved`
+     - `event_rated` gdy zmienia się wartość `feedback`
+     - `event_edited` gdy zmienia się wartość `edited_description`
 6. Serwis zwraca zaktualizowany rekord; handler mapuje na 200.
 7. Błędy serwisu propagowane jako `EventServiceError` z kodem/status – handler mapuje na HTTP.
 

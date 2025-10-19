@@ -661,7 +661,11 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 
 3. **Pole updated_at** - Jest automatycznie aktualizowane przez trigger bazodanowy przy każdej modyfikacji rekordu.
 
-4. **Logowanie akcji** - Każda udana aktualizacja jest zapisywana w tabeli `event_management_logs` dla celów audytowych.
+4. **Logowanie akcji** - Każda udana aktualizacja jest zapisywana w tabeli `event_management_logs` dla celów audytowych:
+   - Zmiana `saved` → loguje akcję `event_saved`
+   - Zmiana `feedback` → loguje akcję `event_rated`
+   - Zmiana `edited_description` → loguje akcję `event_edited`
+   - Każda zmiana jest logowana osobno, więc aktualizacja wszystkich trzech pól utworzy trzy wpisy w logach
 
 5. **Przywracanie stanu testowego** - Po wykonaniu testów pozytywnych (3A, 4A, 5A) możesz chcieć przywrócić oryginalne wartości w bazie danych, aby móc powtórzyć testy.
 

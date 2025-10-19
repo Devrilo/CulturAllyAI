@@ -45,6 +45,27 @@ cd CulturAllyAI
 npm install
 ```
 
+### Database Setup
+
+This project uses Supabase for the database. To set up the local development database:
+
+1. Install Supabase CLI (if not already installed):
+```bash
+npm install -g supabase
+```
+
+2. Start the local Supabase instance:
+```bash
+supabase start
+```
+
+3. Apply migrations (automatically applied on start, but you can manually run):
+```bash
+supabase db reset
+```
+
+**Note:** The latest migration (`20251019120000_add_event_rated_action_type.sql`) adds the `event_rated` action type to enable separate tracking of user rating actions in analytics.
+
 ### Running the Project
 
 To start the development server:
@@ -252,7 +273,8 @@ Content-Type: application/json
 - Unchanged fields are ignored (not updated in database)
 - Updates are logged in `event_management_logs` table:
   - Changing `saved` → logs `event_saved` action
-  - Changing `feedback` or `edited_description` → logs `event_edited` action
+  - Changing `feedback` → logs `event_rated` action
+  - Changing `edited_description` → logs `event_edited` action
 
 #### `GET /api/events`
 
@@ -382,6 +404,50 @@ Authorization: Bearer <access_token>
 - Double security: RLS policy + explicit user_id filter in query
 - 404 response for both non-existent events and events belonging to other users (prevents ID enumeration)
 
+#### `DELETE /api/events/:id`
+
+Performs soft delete on an event by setting the `saved` field to `false`.
+
+**Authentication:** Required (Bearer token)
+
+**URL Parameters:**
+
+- `id` (UUID) - Event identifier
+
+**Example Request:**
+
+```bash
+DELETE /api/events/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer <access_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Event removed from saved list",
+  "id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Error Responses:**
+
+- `400 Bad Request` - Invalid UUID format
+- `401 Unauthorized` - Missing or invalid authentication token
+- `403 Forbidden` - Attempting to delete event created by guest user
+- `404 Not Found` - Event not found or doesn't belong to the authenticated user
+- `500 Internal Server Error` - Server error
+
+**Notes:**
+
+- Performs **soft delete** - sets `saved = false` instead of removing the record
+- Only the event owner can delete their events (RLS enforced)
+- Events created by guest users (`created_by_authenticated_user = false`) cannot be deleted
+- Deletion is logged in `event_management_logs` table with action type `event_deleted`
+- The event remains in the database for analytics and audit purposes
+- Double security: RLS policy + explicit user_id filter in query
+- Returns 404 for both non-existent events and events belonging to other users (prevents ID enumeration)
+
 ## 8. Project Scope
 
 The MVP includes:
@@ -406,6 +472,7 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ API endpoint for event updates (PATCH /api/events/:id)
 - ✅ API endpoint for retrieving user events (GET /api/events)
 - ✅ API endpoint for retrieving single event (GET /api/events/:id)
+- ✅ API endpoint for soft delete (DELETE /api/events/:id)
 - ✅ AI mock service for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
 - 🚧 Frontend UI (in progress)
