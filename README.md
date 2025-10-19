@@ -169,6 +169,219 @@ Creates a new event with AI-generated description.
 - `category`: One of: koncerty, imprezy, teatr_i_taniec, sztuka_i_wystawy, literatura, kino, festiwale, inne
 - `age_category`: One of: wszystkie, najmlodsi, dzieci, nastolatkowie, mlodzi_dorosli, dorosli, osoby_starsze
 
+#### `PATCH /api/events/:id`
+
+Updates selected fields of an existing event (saved status, feedback, or edited description).
+
+**Authentication:** Required (Bearer token)
+
+**URL Parameters:**
+
+- `id` (UUID) - Event identifier
+
+**Request Body (at least one field required):**
+
+```json
+{
+  "saved": true,
+  "feedback": "thumbs_up",
+  "edited_description": "Zmodyfikowany opis wydarzenia..."
+}
+```
+
+**Field Details:**
+
+- `saved` (boolean, optional) - Mark event as saved (`true`) or unsaved (`false`)
+- `feedback` (enum, optional) - User feedback: `thumbs_up`, `thumbs_down`, or `null` to clear
+- `edited_description` (string, optional) - User's edited description (max 500 characters, `null` to clear)
+
+**Example Request:**
+
+```bash
+PATCH /api/events/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "saved": true,
+  "feedback": "thumbs_up"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_id": "user-uuid",
+  "created_by_authenticated_user": true,
+  "title": "Koncert Chopina",
+  "city": "Warszawa",
+  "event_date": "2025-12-25",
+  "category": "koncerty",
+  "age_category": "dorosli",
+  "key_information": "Wieczór z największymi hitami Chopina...",
+  "generated_description": "Koncert Chopina to wydarzenie, które...",
+  "edited_description": null,
+  "saved": true,
+  "feedback": "thumbs_up",
+  "model_version": "mock-v1.0.0",
+  "created_at": "2025-10-17T12:00:00Z",
+  "updated_at": "2025-10-17T12:30:00Z"
+}
+```
+
+**Error Responses:**
+
+- `400 Bad Request` - Invalid input data, no fields to update, or validation errors
+- `401 Unauthorized` - Missing or invalid authentication token
+- `403 Forbidden` - Attempting to update event created by guest user
+- `404 Not Found` - Event not found or doesn't belong to the authenticated user
+- `500 Internal Server Error` - Server error
+
+**Field Constraints:**
+
+- `edited_description`: Max 500 characters (empty string converted to `null`)
+- `feedback`: One of: `thumbs_up`, `thumbs_down`, or `null`
+
+**Notes:**
+
+- Only the event owner can update their events (verified via RLS and user_id check)
+- Events created by guest users cannot be updated
+- At least one field must be provided in the request body
+- Unchanged fields are ignored (not updated in database)
+- Updates are logged in `event_management_logs` table:
+  - Changing `saved` → logs `event_saved` action
+  - Changing `feedback` or `edited_description` → logs `event_edited` action
+
+#### `GET /api/events`
+
+Retrieves a paginated list of events for the authenticated user.
+
+**Authentication:** Required (Bearer token)
+
+**Query Parameters (all optional):**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `saved` | boolean | - | Filter by saved status (`true` or `false`) |
+| `category` | string | - | Filter by event category (enum) |
+| `age_category` | string | - | Filter by age category (enum) |
+| `page` | integer | 1 | Page number (min: 1) |
+| `limit` | integer | 20 | Items per page (min: 1, max: 100) |
+| `sort` | string | `created_at` | Sort field: `created_at`, `event_date`, or `title` |
+| `order` | string | `desc` | Sort order: `asc` or `desc` |
+
+**Example Request:**
+
+```bash
+GET /api/events?saved=true&category=koncerty&page=1&limit=10&sort=event_date&order=asc
+Authorization: Bearer <access_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "user_id": "user-uuid",
+      "created_by_authenticated_user": true,
+      "title": "Koncert Chopina",
+      "city": "Warszawa",
+      "event_date": "2025-12-25",
+      "category": "koncerty",
+      "age_category": "dorosli",
+      "key_information": "Wieczór z największymi hitami Chopina...",
+      "generated_description": "Koncert Chopina to wydarzenie, które...",
+      "edited_description": null,
+      "saved": true,
+      "feedback": null,
+      "created_at": "2025-10-17T12:00:00Z",
+      "updated_at": "2025-10-17T12:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "total_pages": 3,
+    "has_next": true,
+    "has_prev": false
+  }
+}
+```
+
+**Error Responses:**
+
+- `400 Bad Request` - Invalid query parameters
+- `401 Unauthorized` - Missing or invalid authentication token
+- `500 Internal Server Error` - Server error
+
+**Notes:**
+
+- Returns only events belonging to the authenticated user (RLS enforced)
+- Empty results return `200 OK` with an empty `data` array (not `404`)
+- The `model_version` field is excluded from the response for optimization
+- Query parameters are automatically transformed (e.g., string "true" → boolean true)
+- Invalid enum values return `400` with validation details
+
+#### `GET /api/events/:id`
+
+Retrieves a single event by ID for the authenticated user.
+
+**Authentication:** Required (Bearer token)
+
+**URL Parameters:**
+
+- `id` (UUID) - Event identifier
+
+**Example Request:**
+
+```bash
+GET /api/events/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer <access_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_id": "user-uuid",
+  "created_by_authenticated_user": true,
+  "title": "Koncert Chopina",
+  "city": "Warszawa",
+  "event_date": "2025-12-25",
+  "category": "koncerty",
+  "age_category": "dorosli",
+  "key_information": "Wieczór z największymi hitami Chopina...",
+  "generated_description": "Koncert Chopina to wydarzenie, które...",
+  "edited_description": null,
+  "saved": false,
+  "feedback": null,
+  "model_version": "mock-v1.0.0",
+  "created_at": "2025-10-17T12:00:00Z",
+  "updated_at": "2025-10-17T12:00:00Z"
+}
+```
+
+**Error Responses:**
+
+- `400 Bad Request` - Invalid UUID format
+- `401 Unauthorized` - Missing or invalid authentication token
+- `404 Not Found` - Event not found or doesn't belong to the authenticated user
+- `500 Internal Server Error` - Server error
+
+**Notes:**
+
+- Returns only events belonging to the authenticated user (RLS enforced)
+- Events created by guest users (user_id = null) are not accessible
+- Returns full event object including `model_version` field (unlike GET /api/events)
+- Double security: RLS policy + explicit user_id filter in query
+- 404 response for both non-existent events and events belonging to other users (prevents ID enumeration)
+
 ## 8. Project Scope
 
 The MVP includes:
@@ -191,6 +404,8 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ Database schema and migrations
 - ✅ API endpoint for event creation (POST /api/events)
 - ✅ API endpoint for event updates (PATCH /api/events/:id)
+- ✅ API endpoint for retrieving user events (GET /api/events)
+- ✅ API endpoint for retrieving single event (GET /api/events/:id)
 - ✅ AI mock service for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
 - 🚧 Frontend UI (in progress)

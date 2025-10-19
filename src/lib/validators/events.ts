@@ -86,3 +86,77 @@ export const updateEventSchema = z
  * Type inferred from updateEventSchema
  */
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
+
+/**
+ * Validation schema for GET /api/events query parameters
+ * Handles filtering, sorting, and pagination with proper type transformations
+ */
+export const getUserEventsQuerySchema = z.object({
+  saved: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return undefined;
+      if (val === "true") return true;
+      if (val === "false") return false;
+      return undefined;
+    }),
+  category: z
+    .enum(Constants.public.Enums.event_category as unknown as [string, ...string[]], {
+      errorMap: () => ({ message: "Nieprawidłowa kategoria wydarzenia" }),
+    })
+    .optional(),
+  age_category: z
+    .enum(Constants.public.Enums.age_category as unknown as [string, ...string[]], {
+      errorMap: () => ({ message: "Nieprawidłowa kategoria wiekowa" }),
+    })
+    .optional(),
+  page: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return 1;
+      const parsed = parseInt(val, 10);
+      return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+    }),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return 20;
+      const parsed = parseInt(val, 10);
+      if (isNaN(parsed) || parsed < 1) return 20;
+      if (parsed > 100) return 100;
+      return parsed;
+    }),
+  sort: z
+    .enum(["created_at", "event_date", "title"], {
+      errorMap: () => ({ message: "Nieprawidłowe pole sortowania" }),
+    })
+    .optional()
+    .default("created_at"),
+  order: z
+    .enum(["asc", "desc"], {
+      errorMap: () => ({ message: "Nieprawidłowy kierunek sortowania" }),
+    })
+    .optional()
+    .default("desc"),
+});
+
+/**
+ * Type inferred from getUserEventsQuerySchema after transformations
+ */
+export type GetUserEventsQueryInput = z.infer<typeof getUserEventsQuerySchema>;
+
+/**
+ * Validation schema for GET /api/events/:id path parameters
+ * Validates UUID format for event ID
+ */
+export const getEventByIdParamsSchema = z.object({
+  id: z.string().uuid({ message: "Nieprawidłowy format UUID" }),
+});
+
+/**
+ * Type inferred from getEventByIdParamsSchema
+ */
+export type GetEventByIdParamsInput = z.infer<typeof getEventByIdParamsSchema>;

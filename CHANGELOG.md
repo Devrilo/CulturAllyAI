@@ -30,6 +30,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Walidacja danych wejściowych w oparciu o `updateEventSchema`
   - Rejestrowanie akcji w `event_management_logs` (`event_saved`, `event_edited`)
   - Spójne komunikaty błędów i statusy HTTP (400, 401, 403, 404, 500)
+- **API Endpoint: GET /api/events** - Pobieranie listy wydarzeń użytkownika
+  - Wymaga autoryzacji (tylko zalogowani użytkownicy)
+  - Filtrowanie po `saved`, `category`, `age_category`
+  - Sortowanie po `created_at`, `event_date`, `title` (asc/desc)
+  - Paginacja z metadanymi (page, limit, total, total_pages, has_next, has_prev)
+  - Domyślne wartości: page=1, limit=20, sort=created_at, order=desc
+  - Limit maksymalny: 100 wydarzeń na stronę
+  - Automatyczna transformacja query parameters (string → boolean/number)
+  - Row Level Security (RLS) - użytkownik widzi tylko swoje wydarzenia
+  - Optymalizacja: równoległe wykonanie count i data query (Promise.all)
+  - Pole `model_version` usunięte z odpowiedzi (EventListItemDTO)
+- **API Endpoint: GET /api/events/:id** - Pobieranie pojedynczego wydarzenia po ID
+  - Wymaga autoryzacji (token Bearer)
+  - Walidacja UUID dla parametru `id` (Zod schema)
+  - Row Level Security (RLS) + explicit user_id filter (defense-in-depth)
+  - Zwraca pełny obiekt `EventResponseDTO` ze wszystkimi polami (w tym `model_version`)
+  - Błąd 404 zarówno dla nieistniejących wydarzeń, jak i wydarzeń innych użytkowników
+  - Wydarzenia gości (`user_id = null`) niewidoczne dla zalogowanych użytkowników
+  - Wydajne zapytanie: SELECT po primary key + indexed user_id
+  - Spójne komunikaty błędów (400, 401, 404, 500)
 
 - **Services Layer**
   - `events.service.ts` - Business logic for event creation

@@ -1,12 +1,105 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { updateEventSchema } from "../../../lib/validators/events";
-import { updateEvent, EventServiceError } from "../../../lib/services/events.service";
+import { updateEvent, getEventById, EventServiceError } from "../../../lib/services/events.service";
 import type { ErrorResponseDTO, EventResponseDTO, UpdateEventDTO, ValidationErrorDTO } from "../../../types";
 
 export const prerender = false;
 
 const eventIdSchema = z.string().uuid({ message: "Identyfikator wydarzenia musi być prawidłowym UUID" });
+
+/**
+ * GET /api/events/:id
+ * Retrieves a single event by ID for the authenticated user
+ *
+ * @param params - Contains event ID from URL path
+ * @param locals - Contains Supabase client instance
+ * @returns 200 with EventResponseDTO or error response
+ */
+export const GET: APIRoute = async ({ params, locals }) => {
+  try {
+    // Step 1: Validate path parameter (UUID)
+    const idResult = eventIdSchema.safeParse(params?.id);
+
+    if (!idResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Validation Error",
+          message: "Parametr ID jest nieprawidłowy",
+          details: [
+            {
+              field: "id",
+              message: idResult.error.errors[0]?.message ?? "Identyfikator wydarzenia jest nieprawidłowy",
+            },
+          ],
+        } satisfies ErrorResponseDTO),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const eventId = idResult.data;
+
+    // Step 2: Authenticate user (required)
+    const supabase = locals.supabase;
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+          message: "Wymagana jest autoryzacja",
+        } satisfies ErrorResponseDTO),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Get event via service
+    const { event } = await getEventById(supabase, {
+      eventId,
+      userId: user.id,
+    });
+
+    // Step 4: Return success response
+    return new Response(JSON.stringify(event satisfies EventResponseDTO), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    // Handle service errors (404, 500)
+    if (error instanceof EventServiceError) {
+      const mapped = mapEventServiceError(error);
+
+      return new Response(JSON.stringify(mapped.body satisfies ErrorResponseDTO), {
+        status: mapped.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle unexpected errors (500)
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in GET /api/events/:id:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal Server Error",
+        message: "Wystąpił nieoczekiwany błąd serwera",
+      } satisfies ErrorResponseDTO),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   const idResult = eventIdSchema.safeParse(params?.id);

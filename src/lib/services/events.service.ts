@@ -1,6 +1,13 @@
 import type { TablesInsert, TablesUpdate } from "../../db/database.types";
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { CreateEventDTO, EventResponseDTO, UpdateEventDTO } from "../../types";
+import type {
+  CreateEventDTO,
+  EventResponseDTO,
+  UpdateEventDTO,
+  EventListItemDTO,
+  EventsQueryDTO,
+  PaginationDTO,
+} from "../../types";
 import { generateEventDescription } from "./ai/generate-event-description";
 
 /**
@@ -31,6 +38,36 @@ export interface UpdateEventCommand {
  * Result of event update
  */
 export interface UpdateEventResult {
+  event: EventResponseDTO;
+}
+
+/**
+ * Command for getting user events with filtering, sorting, and pagination
+ */
+export interface GetUserEventsCommand extends EventsQueryDTO {
+  userId: string;
+}
+
+/**
+ * Result of getting user events
+ */
+export interface GetUserEventsResult {
+  data: EventListItemDTO[];
+  pagination: PaginationDTO;
+}
+
+/**
+ * Command for getting a single event by ID
+ */
+export interface GetEventByIdCommand {
+  eventId: string;
+  userId: string;
+}
+
+/**
+ * Result of getting event by ID
+ */
+export interface GetEventByIdResult {
   event: EventResponseDTO;
 }
 
@@ -244,5 +281,173 @@ export async function updateEvent(supabase: SupabaseClient, command: UpdateEvent
     // eslint-disable-next-line no-console
     console.error("Unexpected error in updateEvent:", error);
     throw new EventServiceError("Wystąpił nieoczekiwany błąd podczas aktualizacji wydarzenia", 500, "UNEXPECTED_ERROR");
+  }
+}
+
+/**
+ * Retrieves a paginated list of events for the authenticated user
+ * Supports filtering by saved status, category, and age_category
+ * Supports sorting by created_at, event_date, or title
+ *
+ * @param supabase - Supabase client instance
+ * @param command - Query command with filters, pagination, and sorting
+ * @returns Paginated list of events with metadata
+ * @throws EventServiceError if query fails
+ */
+export async function getUserEvents(
+  supabase: SupabaseClient,
+  command: GetUserEventsCommand
+): Promise<GetUserEventsResult> {
+  try {
+    const {
+      userId,
+      saved,
+      category,
+      age_category,
+      page = 1,
+      limit = 20,
+      sort = "created_at",
+      order = "desc",
+    } = command;
+
+    // Build base query with user_id filter (double security with RLS)
+    let countQuery = supabase.from("events").select("*", { count: "exact", head: true }).eq("user_id", userId);
+
+    let dataQuery = supabase.from("events").select("*").eq("user_id", userId);
+
+    // Apply optional filters
+    if (saved !== undefined) {
+      countQuery = countQuery.eq("saved", saved);
+      dataQuery = dataQuery.eq("saved", saved);
+    }
+
+    if (category !== undefined) {
+      countQuery = countQuery.eq("category", category);
+      dataQuery = dataQuery.eq("category", category);
+    }
+
+    if (age_category !== undefined) {
+      countQuery = countQuery.eq("age_category", age_category);
+      dataQuery = dataQuery.eq("age_category", age_category);
+    }
+
+    // Apply sorting
+    dataQuery = dataQuery.order(sort, { ascending: order === "asc" });
+
+    // Apply pagination
+    const offset = (page - 1) * limit;
+    dataQuery = dataQuery.range(offset, offset + limit - 1);
+
+    // Execute count and data queries in parallel for performance
+    const [countResult, dataResult] = await Promise.all([countQuery, dataQuery]);
+
+    // Handle count query errors
+    if (countResult.error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to count user events:", countResult.error);
+      throw new EventServiceError("Nie udało się pobrać liczby wydarzeń", 500, "COUNT_FAILED");
+    }
+
+    // Handle data query errors
+    if (dataResult.error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to fetch user events:", dataResult.error);
+      throw new EventServiceError("Nie udało się pobrać wydarzeń", 500, "QUERY_FAILED");
+    }
+
+    const total = countResult.count || 0;
+    const events = dataResult.data || [];
+
+    // Map to EventListItemDTO (omit model_version)
+    const eventListItems: EventListItemDTO[] = events.map((event) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { model_version, ...eventWithoutModelVersion } = event;
+      return eventWithoutModelVersion;
+    });
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+
+    const pagination: PaginationDTO = {
+      page,
+      limit,
+      total,
+      total_pages: totalPages,
+      has_next: hasNext,
+      has_prev: hasPrev,
+    };
+
+    return {
+      data: eventListItems,
+      pagination,
+    };
+  } catch (error) {
+    // Re-throw EventServiceError as-is
+    if (error instanceof EventServiceError) {
+      throw error;
+    }
+
+    // Handle unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in getUserEvents:", error);
+    throw new EventServiceError("Wystąpił nieoczekiwany błąd podczas pobierania wydarzeń", 500, "UNEXPECTED_ERROR");
+  }
+}
+
+/**
+ * Retrieves a single event by ID for the authenticated user
+ * Uses RLS and explicit user_id filter for security
+ *
+ * @param supabase - Supabase client instance
+ * @param command - Command with event ID and user ID
+ * @returns Event object
+ * @throws EventServiceError if event not found or fetch fails
+ */
+export async function getEventById(
+  supabase: SupabaseClient,
+  command: GetEventByIdCommand
+): Promise<GetEventByIdResult> {
+  try {
+    const { eventId, userId } = command;
+
+    // Query event with double security: RLS + explicit user_id filter
+    const { data: event, error: fetchError } = await supabase
+      .from("events")
+      .select("*")
+      .eq("id", eventId)
+      .eq("user_id", userId)
+      .single();
+
+    // Handle fetch errors
+    if (fetchError) {
+      // PGRST116 = no rows returned
+      if (fetchError.code === "PGRST116") {
+        throw new EventServiceError("Wydarzenie nie zostało znalezione", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Other database errors
+      // eslint-disable-next-line no-console
+      console.error("Failed to fetch event by ID:", fetchError);
+      throw new EventServiceError("Nie udało się pobrać wydarzenia", 500, "EVENT_FETCH_FAILED");
+    }
+
+    // Validate event exists (defensive check)
+    if (!event) {
+      throw new EventServiceError("Wydarzenie nie zostało znalezione", 404, "EVENT_NOT_FOUND");
+    }
+
+    return { event };
+  } catch (error) {
+    // Re-throw EventServiceError as-is
+    if (error instanceof EventServiceError) {
+      throw error;
+    }
+
+    // Handle unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in getEventById:", error);
+    throw new EventServiceError("Wystąpił nieoczekiwany błąd podczas pobierania wydarzenia", 500, "UNEXPECTED_ERROR");
   }
 }
