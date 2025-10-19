@@ -69,7 +69,6 @@
 2. W `src/lib/services/events.service.ts` dodać `UpdateEventCommand`, `UpdateEventResult`, `updateEvent` wraz z logiką walidacji biznesowej i logowaniem akcji.
 3. Utworzyć plik `src/pages/api/events/[id].ts` (jeśli brak) z handlerem `PATCH` bazującym na istniejących wzorcach (obsługa JSON, walidacja, auth, mapowanie błędów).
 4. Zaimplementować mapowanie wyjątków serwisowych w handlerze na `ErrorResponseDTO` i statusy 400/403/404/500.
-5. Przygotować testy Vitest dla schematu walidacji oraz serwisu (ścieżki sukcesu i błędów); rozważyć test integracyjny handlera z Supabase mockiem.
-6. Zaktualizować dokumentację (`CHANGELOG.md`, ewentualne `/docs`) zgodnie z zasadami DOC_UPDATES.
-7. Wykonać testy manualne (Postman/Thunder Client) dla ścieżek: sukces, brak body, gość, zły token, brak eventu.
-8. Przeprowadzić code review, przygotować commit i pipeline (lint/test) przed wdrożeniem.
+5. Zaktualizować dokumentację (`CHANGELOG.md`, ewentualne `/docs`) zgodnie z zasadami DOC_UPDATES.
+6. Wykonać testy manualne (Postman/Thunder Client) dla ścieżek: sukces, brak body, gość, zły token, brak eventu.
+7. Przeprowadzić code review.

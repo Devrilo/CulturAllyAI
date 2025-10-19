@@ -56,11 +56,10 @@ Na etapie developmentu skorzystamy z mocków zamiast wywoływania serwisu AI.
 - Cache promptów: brak (dane unikalne); ewentualnie obudować usługę AI warstwą circuit breaker by ograniczyć kolejne próby po 503.
 
 ## 8. Kroki implementacji
-1. Dodać schemat walidacji Zod w `src/lib/validators/events.ts` wraz z testami jednostkowymi (np. Vitest) obejmującymi limity znaków i walidację daty.
+1. Dodać schemat walidacji Zod w `src/lib/validators/events.ts`.
 2. Utworzyć/rozszerzyć `src/lib/services/ai/generate-event-description.ts` o funkcję generującą opis z OpenRouter (kontrola timeoutu, przycinanie, obsługa 5xx/timeout → rzuca dedykowany błąd).
 3. Utworzyć `src/lib/services/events.service.ts` z funkcją `createEvent(command: CreateEventCommand)` integrującą walidację, AI i zapis do Supabase + log w `event_management_logs`.
 4. Zaimplementować endpoint w `src/pages/api/events/index.ts`: pobrać użytkownika z `locals.supabase`, wywołać walidację i serwis, zwrócić status 201; dodać mapowanie błędów na kody statusu (400/401/500/503).
-5. Uzupełnić testy integracyjne (np. Playwright API lub Vitest z msw) symulujące przypadki: gość, użytkownik, walidacja 400, błąd AI 503, błąd Supabase 500.
-6. Zweryfikować konfigurację RLS dla gości (jeśli brak polityki INSERT bez `user_id`, dodać ją w migracji) oraz dodać wpis `event_created` do logów.
-7. Dodać dokumentację w `docs`/`README` (sekcja API) i zaktualizować changelog; zweryfikować pipeline CI (lint + testy) przed wdrożeniem.
-8. Przeprowadzić testy ręczne w środowisku dev: generacja jako gość i zalogowany, obserwacja logów, czasu odpowiedzi i nagłówków rate limit.
+5. Zweryfikować konfigurację RLS dla gości (jeśli brak polityki INSERT bez `user_id`, dodać ją w migracji) oraz dodać wpis `event_created` do logów.
+6. Dodać dokumentację w `docs`/`README` (sekcja API) i zaktualizować changelog; zweryfikować pipeline CI (lint + build) przed wdrożeniem.
+7. Przeprowadzić testy ręczne w środowisku dev: generacja jako gość i zalogowany, obserwacja logów, czasu odpowiedzi i nagłówków rate limit.
