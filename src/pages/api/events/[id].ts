@@ -1,8 +1,14 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { updateEventSchema } from "../../../lib/validators/events";
-import { updateEvent, getEventById, EventServiceError } from "../../../lib/services/events.service";
-import type { ErrorResponseDTO, EventResponseDTO, UpdateEventDTO, ValidationErrorDTO } from "../../../types";
+import { updateEvent, getEventById, softDeleteEvent, EventServiceError } from "../../../lib/services/events.service";
+import type {
+  ErrorResponseDTO,
+  EventResponseDTO,
+  UpdateEventDTO,
+  ValidationErrorDTO,
+  MessageResponseDTO,
+} from "../../../types";
 
 export const prerender = false;
 
