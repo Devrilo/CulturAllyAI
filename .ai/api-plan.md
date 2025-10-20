@@ -194,8 +194,9 @@
 
 - **Method:** `GET`
 - **Path:** `/api/categories/events`
-- **Description:** Get list of available event categories
-- **Authentication:** Not required
+- **Description:** Get list of available event categories with Polish labels
+- **Authentication:** Not required (public endpoint)
+- **Cache:** `Cache-Control: public, max-age=3600` (1 hour)
 - **Success Response (200 OK):**
 ```json
 {
@@ -211,27 +212,32 @@
   ]
 }
 ```
+- **Error Responses:**
+  - `500 Internal Server Error`: Unexpected error (should not occur for static data)
 
 #### Get Age Categories
 
 - **Method:** `GET`
 - **Path:** `/api/categories/age`
-- **Description:** Get list of available age categories
-- **Authentication:** Not required
+- **Description:** Get list of available age categories with Polish labels
+- **Authentication:** Not required (public endpoint)
+- **Cache:** `Cache-Control: public, max-age=3600` (1 hour)
 - **Success Response (200 OK):**
 ```json
 {
   "categories": [
     { "value": "wszystkie", "label": "Wszystkie" },
-    { "value": "najmlodsi", "label": "Najmłodsi" },
-    { "value": "dzieci", "label": "Dzieci" },
-    { "value": "nastolatkowie", "label": "Nastolatkowie" },
-    { "value": "mlodzi_dorosli", "label": "Młodzi dorośli" },
-    { "value": "dorosli", "label": "Dorośli" },
-    { "value": "osoby_starsze", "label": "Osoby starsze" }
+    { "value": "najmlodsi", "label": "Najmłodsi (0-3 lata)" },
+    { "value": "dzieci", "label": "Dzieci (4-12 lat)" },
+    { "value": "nastolatkowie", "label": "Nastolatkowie (13-17 lat)" },
+    { "value": "mlodzi_dorosli", "label": "Młodzi dorośli (18-35 lat)" },
+    { "value": "dorosli", "label": "Dorośli (36-64 lata)" },
+    { "value": "osoby_starsze", "label": "Osoby starsze (65+ lat)" }
   ]
 }
 ```
+- **Error Responses:**
+  - `500 Internal Server Error`: Unexpected error (should not occur for static data)
 
 ## 3. Authentication and Authorization
 

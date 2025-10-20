@@ -61,8 +61,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Row Level Security (RLS) + explicit user_id filter (defense-in-depth)
   - Zwraca komunikat potwierdzający wraz z ID usuniętego wydarzenia
   - Spójne komunikaty błędów (400, 401, 403, 404, 500)
+- **API Endpoint: GET /api/categories/age** - Pobieranie listy kategorii wiekowych
+  - Endpoint publiczny (nie wymaga autoryzacji)
+  - Zwraca statyczne dane (7 kategorii wiekowych) z polskimi etykietami
+  - Brak dostępu do bazy danych - bardzo szybki (<10ms)
+  - Cache'owanie odpowiedzi: `Cache-Control: public, max-age=3600` (1 godzina)
+  - Rozmiar odpowiedzi: ~250-350 bajtów JSON
+  - Wartości enum zgodne z typem `age_category` w bazie danych
+  - Wykorzystanie: formularze wyboru kategorii wiekowej (dropdown/select)
+  - Spójne komunikaty błędów (500)
+- **API Endpoint: GET /api/categories/events** - Pobieranie listy kategorii wydarzeń
+  - Endpoint publiczny (nie wymaga autoryzacji)
+  - Zwraca statyczne dane (8 kategorii wydarzeń kulturalnych) z polskimi etykietami
+  - Brak dostępu do bazy danych - bardzo szybki (<10ms)
+  - Cache'owanie odpowiedzi: `Cache-Control: public, max-age=3600` (1 godzina)
+  - Rozmiar odpowiedzi: ~300-400 bajtów JSON
+  - Wartości enum zgodne z typem `event_category` w bazie danych
+  - Wykorzystanie: formularze wyboru kategorii wydarzenia (dropdown/select)
+  - Spójne komunikaty błędów (500)
 
 - **Services Layer**
+  - `categories.service.ts` - Static data service for categories (events, age)
   - `events.service.ts` - Business logic for event creation
   - `ai/generate-event-description.ts` - AI mock service with 500ms delay simulation
   - Custom error classes: `EventServiceError`, `AIGenerationError`

@@ -448,6 +448,101 @@ Authorization: Bearer <access_token>
 - Double security: RLS policy + explicit user_id filter in query
 - Returns 404 for both non-existent events and events belonging to other users (prevents ID enumeration)
 
+### Categories
+
+#### `GET /api/categories/age`
+
+Returns a list of available age categories with Polish labels.
+
+**Authentication:** Not required (public endpoint)
+
+**Example Request:**
+
+```bash
+GET /api/categories/age
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "categories": [
+    { "value": "wszystkie", "label": "Wszystkie" },
+    { "value": "najmlodsi", "label": "Najmłodsi (0-3 lata)" },
+    { "value": "dzieci", "label": "Dzieci (4-12 lat)" },
+    { "value": "nastolatkowie", "label": "Nastolatkowie (13-17 lat)" },
+    { "value": "mlodzi_dorosli", "label": "Młodzi dorośli (18-35 lat)" },
+    { "value": "dorosli", "label": "Dorośli (36-64 lata)" },
+    { "value": "osoby_starsze", "label": "Osoby starsze (65+ lat)" }
+  ]
+}
+```
+
+**Error Responses:**
+
+- `500 Internal Server Error` - Unexpected server error (rare for static data)
+
+**Response Headers:**
+
+- `Cache-Control: public, max-age=3600` - Cacheable for 1 hour
+- `Content-Type: application/json`
+
+**Notes:**
+
+- Public endpoint - no authentication required
+- Returns static data (no database access) - very fast response (<10ms)
+- Response can be cached by CDN and browsers for 1 hour
+- 7 age categories matching the `age_category` enum in database
+- Use case: Populate dropdown/select inputs in event creation forms
+- Response size: ~250-350 bytes JSON
+
+#### `GET /api/categories/events`
+
+Returns a list of available event categories with Polish labels.
+
+**Authentication:** Not required (public endpoint)
+
+**Example Request:**
+
+```bash
+GET /api/categories/events
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "categories": [
+    { "value": "koncerty", "label": "Koncerty" },
+    { "value": "imprezy", "label": "Imprezy" },
+    { "value": "teatr_i_taniec", "label": "Teatr i taniec" },
+    { "value": "sztuka_i_wystawy", "label": "Sztuka i wystawy" },
+    { "value": "literatura", "label": "Literatura" },
+    { "value": "kino", "label": "Kino" },
+    { "value": "festiwale", "label": "Festiwale" },
+    { "value": "inne", "label": "Inne" }
+  ]
+}
+```
+
+**Error Responses:**
+
+- `500 Internal Server Error` - Unexpected server error (rare for static data)
+
+**Response Headers:**
+
+- `Cache-Control: public, max-age=3600` - Cacheable for 1 hour
+- `Content-Type: application/json`
+
+**Notes:**
+
+- Public endpoint - no authentication required
+- Returns static data (no database access) - very fast response (<10ms)
+- Response can be cached by CDN and browsers for 1 hour
+- 8 event categories matching the `event_category` enum in database
+- Use case: Populate dropdown/select inputs in event creation forms
+- Response size: ~300-400 bytes JSON
+
 ## 8. Project Scope
 
 The MVP includes:
@@ -473,6 +568,8 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ API endpoint for retrieving user events (GET /api/events)
 - ✅ API endpoint for retrieving single event (GET /api/events/:id)
 - ✅ API endpoint for soft delete (DELETE /api/events/:id)
+- ✅ API endpoint for age categories (GET /api/categories/age)
+- ✅ API endpoint for event categories (GET /api/categories/events)
 - ✅ AI mock service for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
 - 🚧 Frontend UI (in progress)
