@@ -1,8 +1,8 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import GeneratorPage from "../components/generator/GeneratorPage";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="Generator Opisów Wydarzeń | CulturAllyAI">
+  <GeneratorPage client:load />
 </Layout>

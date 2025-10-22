@@ -196,3 +196,106 @@ export type UserActionType = Enums<"user_action_type">;
  * Event action type enum
  */
 export type EventActionType = Enums<"event_action_type">;
+
+// ============================================================================
+// GENERATOR VIEW TYPES (Frontend-only)
+// ============================================================================
+
+/**
+ * Form values for event creation in Generator view
+ */
+export interface EventFormValues {
+  title: string;
+  event_date: string;
+  city: string;
+  category: EventCategory;
+  age_category: AgeCategory;
+  key_information: string;
+}
+
+/**
+ * Form validation errors mapped by field name
+ */
+export type EventFormErrors = Partial<Record<keyof EventFormValues, string>> & {
+  form?: string;
+};
+
+/**
+ * View model for generated event with UI-friendly labels
+ */
+export interface GeneratedEventViewModel {
+  id: string;
+  title: string;
+  city: string;
+  event_date: string;
+  categoryLabel: string;
+  ageCategoryLabel: string;
+  key_information: string;
+  description: string;
+  saved: boolean;
+  feedback: Feedback | null;
+  createdByAuthenticated: boolean;
+  updatedAt: string;
+}
+
+/**
+ * Authentication state for Generator view
+ */
+export interface AuthState {
+  isAuthenticated: boolean;
+  userId: string | null;
+  status: "loading" | "ready" | "error";
+}
+
+/**
+ * Generator operation status tracking
+ */
+export interface GeneratorStatus {
+  isGenerating: boolean;
+  isSaving: boolean;
+  isCopying: boolean;
+  errorCode?: string;
+  lastSuccessAt?: number;
+  timeoutElapsed: boolean;
+}
+
+/**
+ * Action availability based on state and auth
+ */
+export interface ActionAvailability {
+  canGenerate: boolean;
+  canSave: boolean;
+  canCopy: boolean;
+  canRate: boolean;
+}
+
+/**
+ * Rating state tracking
+ */
+export interface RatingState {
+  current: Feedback | null;
+  locked: boolean;
+}
+
+/**
+ * Complete Generator view state
+ */
+export interface GeneratorViewState {
+  form: EventFormValues;
+  errors: EventFormErrors;
+  generated: GeneratedEventViewModel | null;
+  status: GeneratorStatus;
+  auth: AuthState;
+  availability: ActionAvailability;
+  rating: RatingState;
+}
+
+/**
+ * Alias for event categories query data
+ */
+export type CategoriesQueryData = EventCategoryDTO[];
+
+/**
+ * Alias for age categories query data
+ */
+export type AgeCategoriesQueryData = AgeCategoryDTO[];
