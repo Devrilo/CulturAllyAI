@@ -15,21 +15,16 @@ GeneratorPage (main container)
     │   ├── Input fields (title, city, date)
     │   ├── Select fields (category, age_category)
     │   ├── Textarea (key_information)
-    │   └── CharacterCounter (per field)
+    │   └── CharacterCounter (inline, absolute position)
     └── DescriptionPanel (right column)
-        ├── DescriptionPreview
-        │   ├── Skeleton (loading state)
-        │   └── Generated text + metadata
-        ├── ActionButtons
-        │   ├── Generate (Sparkles icon)
-        │   ├── Save (Bookmark icon, auth-only)
-        │   └── Copy (Copy icon)
-        └── RatingButtons (conditional: when generated)
-            ├── ThumbsUp
-            └── ThumbsDown
+        ├── Header (title + copy button)
+        ├── DescriptionPreview (generated text only)
+        └── Action Row (justify-between layout)
+            ├── ActionButtons (Generate + Save)
+            └── RatingButtons (ThumbsUp + ThumbsDown)
 ```
 
-**Note:** Header has been moved to the global Layout.astro and is now shared across all pages.
+**Note:** Global header is in `src/layouts/Layout.astro` and shared across all pages. It includes navigation (Moje wydarzenia, Profil for authenticated users) and theme toggle.
 
 ## Components
 
@@ -44,9 +39,9 @@ GeneratorPage (main container)
 
 ### Preview & Actions
 
-- **DescriptionPreview.tsx** - Display generated description
-- **ActionButtons.tsx** - Generate/Save/Copy actions
-- **RatingButtons.tsx** - Thumbs up/down rating
+- **DescriptionPreview.tsx** - Display generated description (text only, no metadata)
+- **ActionButtons.tsx** - Generate and Save buttons (Copy moved to header)
+- **RatingButtons.tsx** - Thumbs up/down rating (right-aligned in action row)
 
 ### Utility
 
@@ -72,26 +67,35 @@ GeneratorPage (main container)
 
 ### Dark Mode
 
-- System preference detection
-- localStorage persistence
-- Toggle button in header
+- System preference detection with `window.matchMedia`
+- localStorage persistence (`theme` key: 'light', 'dark', or 'system')
+- Toggle button in global header (sun/moon icon)
 - Seamless theme switching without page reload
-- Prevents flash of unstyled content (FOUC)
+- Prevents flash of unstyled content (FOUC) with inline script in Layout.astro
+- CSS custom properties for theme colors
+
+### Navigation
+
+- **Authenticated users:**
+  - "Moje wydarzenia" (link to /events with FileText icon)
+  - "Profil" (link to /profile with User icon)
+  - "Wyloguj" (sign out button)
+- **Guest users:**
+  - "Zaloguj się" (link to /login)
+  - "Zarejestruj się" (link to /register)
 
 ### Validation
 
 - Real-time Zod validation with 300ms debounce
 - Inline error messages per field
-- Character counters (red >90%, destructive >100%)
+- Character counters with absolute positioning (red >90%, destructive >100%)
+- Polish error messages for better UX
 
-### Auth
+### Layout & UX
 
-- Public access for generation
-- Auth-only: save, rate
-- Guest prompt banner after generation
-
-### UX
-
+- **Copy button** - In header next to "Wygenerowany opis" title
+- **Action row** - Generate and Save on left, rating buttons on right (justify-between)
+- **Clean preview** - Only generated description text (no metadata display)
 - Skeleton loading states
 - Toast notifications (sonner)
 - Timeout notice >10s

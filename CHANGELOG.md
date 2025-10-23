@@ -83,8 +83,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Services Layer**
   - `categories.service.ts` - Static data service for categories (events, age)
   - `events.service.ts` - Business logic for event creation
-  - `ai/generate-event-description.ts` - AI mock service with 500ms delay simulation
+  - `ai/generate-event-description.ts` - AI service facade with singleton pattern
+  - `ai/openrouter.service.ts` - OpenRouter API integration for AI description generation
+  - `ai/openrouter.types.ts` - TypeScript types for OpenRouter API
   - Custom error classes: `EventServiceError`, `AIGenerationError`
+
+- **Frontend - Generator View** (Complete MVP implementation)
+  - Main page (`src/pages/index.astro`) - Event description generator interface
+  - React Query integration for API state management (1-hour cache for categories)
+  - Complete component hierarchy with separation of concerns
+  - **Components:**
+    - `GeneratorPage.tsx` - Main container with state orchestration and React Query provider
+    - `Header.tsx` - Navigation header with auth-aware controls (Moje wydarzenia, Profil, Wyloguj for authenticated; Zaloguj się, Zarejestruj się for guests)
+    - `EventForm.tsx` - Form with validation, character counters, and inline error messages
+    - `DescriptionPanel.tsx` - Container for generated description and actions
+    - `DescriptionPreview.tsx` - Display component for AI-generated descriptions
+    - `ActionButtons.tsx` - Generate and Save buttons with loading states
+    - `RatingButtons.tsx` - Thumbs up/down rating interface with tooltips
+    - `CharacterCounter.tsx` - Reusable character limit indicator with color coding
+    - `AuthPromptBanner.tsx` - Guest user prompt to log in for additional features
+    - `TimeoutNotice.tsx` - Alert for slow AI generation (>10s threshold)
+  - **Custom Hooks:**
+    - `useSupabaseSession.ts` - Auth state monitoring with session refresh
+    - `useEventForm.ts` - Form state with Zod validation and 300ms debouncing
+    - `useGeneratorFlow.ts` - Mutations for generate/save/rate/copy with timeout tracking and AbortController
+  - **Features:**
+    - Guest and authenticated user support with feature gating
+    - Real-time form validation with debounced error messages
+    - Character counters with color coding (>90% orange, >100% red)
+    - Skeleton loading states for better UX
+    - Toast notifications via Sonner
+    - Clipboard API integration for copying descriptions
+    - 10-second timeout notice for slow AI generation
+    - Tooltips on disabled buttons explaining auth requirements
+    - Responsive 2-column layout (mobile: stack, desktop: side-by-side)
+    - Accessibility: ARIA labels, live regions, keyboard navigation
+
+- **Global Application Features**
+  - Dark mode support with system preference detection and localStorage persistence
+  - Global header with theme toggle (sun/moon icon)
+  - Seamless theme switching without page reload
+  - FOUC prevention (Flash of Unstyled Content)
+  - Header moved to global layout (`src/layouts/Layout.astro`) for consistency across all pages
 
 - **Validation Layer**
   - `validators/events.ts` - Zod schema for CreateEventDTO
@@ -113,12 +153,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `.env.example` with `AI_MODEL_VERSION` variable
 - Updated `README.md` with project structure, API documentation, and development status
 
+- **AI Service Implementation**
+  - OpenRouter API integration for event description generation
+  - Model: `openai/gpt-4o-mini` (optimized for cost and Polish language quality)
+  - JSON Schema structured output with strict mode (max 500 characters)
+  - Retry logic with exponential backoff (max 2 retries: 1s, 2s delays)
+  - 30-second timeout with AbortController
+  - No retry for 4xx client errors, automatic retry for 5xx server errors
+  - Comprehensive error handling with status codes (401, 503, etc.)
+  - API key validation (must start with `sk-or-v1-`)
+  - Singleton pattern for service instance
+  - Polish language prompts with grammatical requirements (miasto w miejscowniku, grupa wiekowa w dopełniaczu)
+  - Validation ensuring AI-generated descriptions don't exceed 500 characters
+
 ### Technical Details
 
 - **Framework:** Astro 5 with TypeScript 5
 - **Database:** Supabase (PostgreSQL)
 - **Validation:** Zod
-- **AI Provider:** OpenRouter (planned, currently using mock)
+- **AI Provider:** OpenRouter.ai with `openai/gpt-4o-mini` model
 
 ## [0.0.0] - 2025-10-17
 

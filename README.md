@@ -45,6 +45,24 @@ cd CulturAllyAI
 npm install
 ```
 
+### Environment Configuration
+
+Create a `.env` file in the project root with the following variables:
+
+```bash
+# Supabase Configuration
+PUBLIC_SUPABASE_URL=your-supabase-url
+PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# OpenRouter API Configuration
+OPENROUTER_API_KEY=sk-or-v1-your-api-key
+
+# Optional: AI Model Version (for tracking)
+AI_MODEL_VERSION=openai/gpt-4o-mini
+```
+
+**Note:** Get your OpenRouter API key from [openrouter.ai](https://openrouter.ai/)
+
 ### Database Setup
 
 This project uses Supabase for the database. To set up the local development database:
@@ -103,7 +121,11 @@ CulturAllyAI/
 │   │   └── index.astro   # Home page
 │   ├── lib/              # Services and utilities
 │   │   ├── services/     # Business logic
-│   │   │   ├── ai/       # AI service (event description generation)
+│   │   │   ├── ai/       # AI service (OpenRouter integration)
+│   │   │   │   ├── generate-event-description.ts  # Public API
+│   │   │   │   ├── openrouter.service.ts          # OpenRouter client
+│   │   │   │   └── openrouter.types.ts            # Type definitions
+│   │   │   ├── categories.service.ts
 │   │   │   └── events.service.ts
 │   │   └── validators/   # Zod validation schemas
 │   ├── db/               # Supabase client and types
@@ -574,10 +596,19 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ API endpoint for soft delete (DELETE /api/events/:id)
 - ✅ API endpoint for age categories (GET /api/categories/age)
 - ✅ API endpoint for event categories (GET /api/categories/events)
-- ✅ AI mock service for event description generation
+- ✅ OpenRouter AI integration for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
-- 🚧 Frontend UI (in progress)
-- 📋 Additional event management features (planned)
+- ✅ Generator View (MVP Complete)
+  - Event creation form with validation and character limits
+  - AI-powered description generation
+  - Save, copy, and rate functionality
+  - Guest and authenticated user support
+  - Dark mode with theme toggle
+  - Responsive design (mobile and desktop)
+  - Accessibility features (ARIA, keyboard navigation)
+- 📋 Events list view (planned)
+- 📋 User profile and settings (planned)
+- 📋 Login and registration pages (planned)
 
 ## 10. License
 
