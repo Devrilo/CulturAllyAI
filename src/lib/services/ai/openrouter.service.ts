@@ -66,11 +66,17 @@ export class OpenRouterService {
     return `Jesteś ekspertem od opisów wydarzeń kulturalnych w języku polskim.
 
 Wymagania:
-- Poprawna polszczyzna (miasta w miejscowniku, grupy wiekowe w dopełniaczu)
+- Poprawna polszczyzna (używaj odpowiednich przypadków gramatycznych)
 - Maksymalnie 500 znaków
 - Ton profesjonalny, ciepły, zachęcający
 - Unikaj generycznych fraz typu "nie przegap okazji", "niezapomniane chwile"
 - Struktura: co + gdzie → dlaczego warto → szczegóły
+
+WAŻNE dotyczące lokalizacji:
+- Pole "Lokalizacja" może zawierać miasto, dzielnicę, adres, lub nietypowe miejsce
+- NIE zakładaj automatycznie, że to nazwa miasta
+- Dostosuj opis do kontekstu (np. "u mnie w garażu" → intymna atmosfera, "Warszawa" → standardowe miasto)
+- Użyj odpowiedniego przypadka gramatycznego w zależności od typu lokalizacji
 
 Zwróć odpowiedź w formacie JSON: {"description": "tekst opisu"}`;
   }
@@ -88,11 +94,13 @@ Zwróć odpowiedź w formacie JSON: {"description": "tekst opisu"}`;
     return `Napisz opis wydarzenia:
 
 Tytuł: ${input.title}
-Miasto: ${input.city}
+Lokalizacja: ${input.city}
 Data: ${eventDateFormatted}
 Kategoria: ${input.category}
 Grupa docelowa: ${input.age_category}
-Kluczowe informacje: ${input.key_information}`;
+Kluczowe informacje: ${input.key_information}
+
+UWAGA: "Lokalizacja" może być miastem, dzielnicą, adresem lub nietypowym miejscem (np. "u mnie w garażu", "w lokalnym klubie"). Dostosuj opis do kontekstu lokalizacji.`;
   }
 
   /**

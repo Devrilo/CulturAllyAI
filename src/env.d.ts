@@ -6,6 +6,18 @@ declare global {
   namespace App {
     interface Locals {
       supabase: SupabaseClient;
+      openRouterApiKey: string;
+    }
+  }
+
+  namespace NodeJS {
+    interface ProcessEnv {
+      SUPABASE_URL: string;
+      SUPABASE_KEY: string;
+      OPENROUTER_API_KEY: string;
+      AI_MODEL_VERSION?: string;
+      PUBLIC_SUPABASE_URL: string;
+      PUBLIC_SUPABASE_KEY: string;
     }
   }
 }

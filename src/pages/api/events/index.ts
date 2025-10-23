@@ -98,6 +98,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ...(validatedData as CreateEventDTO),
       userId: user?.id || null,
       isAuthenticated: !!user,
+      openRouterApiKey: locals.openRouterApiKey,
     };
 
     // Step 5: Create event via service

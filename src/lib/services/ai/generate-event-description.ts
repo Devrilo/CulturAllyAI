@@ -22,34 +22,30 @@ export class AIGenerationError extends Error {
   }
 }
 
-// Singleton instance of OpenRouterService
-let service: OpenRouterService | null = null;
-
-/**
- * Get or create OpenRouterService instance
- */
-function getService(): OpenRouterService {
-  if (!service) {
-    const apiKey = import.meta.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      throw new AIGenerationError("OPENROUTER_API_KEY environment variable is not set", 503);
-    }
-
-    service = new OpenRouterService({
-      apiKey,
-      model: "openai/gpt-4o-mini",
-    });
-  }
-  return service;
-}
-
 /**
  * Generates event description based on input data
  *
  * @param input - Event data to generate description from
+ * @param apiKey - Optional OpenRouter API key (defaults to env variable)
  * @returns Generated description and model version
  * @throws AIGenerationError if generation fails
  */
-export async function generateEventDescription(input: CreateEventDTO): Promise<GenerateDescriptionResult> {
-  return await getService().generateEventDescription(input);
+export async function generateEventDescription(
+  input: CreateEventDTO,
+  apiKey?: string
+): Promise<GenerateDescriptionResult> {
+  // Get API key from parameter or environment
+  const openRouterKey = apiKey || import.meta.env.OPENROUTER_API_KEY;
+
+  if (!openRouterKey) {
+    throw new AIGenerationError("OPENROUTER_API_KEY environment variable is not set", 503);
+  }
+
+  // Create a new service instance for each request (stateless)
+  const service = new OpenRouterService({
+    apiKey: openRouterKey,
+    model: "openai/gpt-4o-mini",
+  });
+
+  return await service.generateEventDescription(input);
 }

@@ -5,6 +5,7 @@ import type { Database } from "../db/database.types";
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+const openRouterApiKey = import.meta.env.OPENROUTER_API_KEY;
 
 export const onRequest = defineMiddleware((context, next) => {
   // Pobierz token z headera Authorization
@@ -23,5 +24,6 @@ export const onRequest = defineMiddleware((context, next) => {
   });
 
   context.locals.supabase = supabase;
+  context.locals.openRouterApiKey = openRouterApiKey;
   return next();
 });

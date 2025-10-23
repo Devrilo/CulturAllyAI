@@ -16,6 +16,7 @@ import { generateEventDescription } from "./ai/generate-event-description";
 export interface CreateEventCommand extends CreateEventDTO {
   userId: string | null;
   isAuthenticated: boolean;
+  openRouterApiKey: string;
 }
 
 /**
@@ -112,14 +113,17 @@ export class EventServiceError extends Error {
 export async function createEvent(supabase: SupabaseClient, command: CreateEventCommand): Promise<CreateEventResult> {
   try {
     // Step 1: Generate AI description
-    const { description, modelVersion } = await generateEventDescription({
-      title: command.title,
-      city: command.city,
-      event_date: command.event_date,
-      category: command.category,
-      age_category: command.age_category,
-      key_information: command.key_information,
-    });
+    const { description, modelVersion } = await generateEventDescription(
+      {
+        title: command.title,
+        city: command.city,
+        event_date: command.event_date,
+        category: command.category,
+        age_category: command.age_category,
+        key_information: command.key_information,
+      },
+      command.openRouterApiKey
+    );
 
     // Validate generated description is not empty after trimming
     if (!description || description.trim().length === 0) {
