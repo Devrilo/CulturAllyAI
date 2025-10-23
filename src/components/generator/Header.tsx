@@ -1,4 +1,6 @@
 import { Button } from "../ui/button";
+import { User, FileText } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
   isAuthenticated: boolean;
@@ -10,14 +12,27 @@ interface HeaderProps {
  */
 export function Header({ isAuthenticated, onSignOut }: HeaderProps) {
   return (
-    <header className="border-b">
+    <header className="border-b bg-background">
       <nav className="container mx-auto flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold">CulturAllyAI</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">CulturAllyAI</h1>
+          <ThemeToggle />
+        </div>
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <Button onClick={onSignOut} variant="destructive">
-              Wyloguj
-            </Button>
+            <>
+              <a href="/events" className="flex items-center gap-2 text-primary hover:underline">
+                <FileText className="h-4 w-4" aria-hidden="true" />
+                Moje wydarzenia
+              </a>
+              <a href="/profile" className="flex items-center gap-2 text-primary hover:underline">
+                <User className="h-4 w-4" aria-hidden="true" />
+                Profil
+              </a>
+              <Button onClick={onSignOut} variant="destructive">
+                Wyloguj
+              </Button>
+            </>
           ) : (
             <>
               <a href="/login" className="text-primary hover:underline">

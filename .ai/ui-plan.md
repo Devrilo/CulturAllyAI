@@ -7,6 +7,7 @@ Interfejs został zaprojektowany w podejściu "guest-first", zapewniając natych
 ## 2. Lista widoków
 
 ### Widok: Generator Wydarzeń
+
 - **Nazwa widoku:** Generator
 - **Ścieżka widoku:** `/`
 - **Główny cel:** Umożliwić generowanie i ocenianie opisów wydarzeń zarówno gościom, jak i zalogowanym użytkownikom.
@@ -17,6 +18,7 @@ Interfejs został zaprojektowany w podejściu "guest-first", zapewniając natych
 - **UX, dostępność i względy bezpieczeństwa:** Realtime validation z komunikatami inline (PRD 3.1), blokada formularza i stan disabled wszystkich pól podczas żądań POST `/api/events`, skeleton + spinner + tekst "Generowanie..." widoczny w `DescriptionPreview`, przycisk „Zapisz” i oceny warunkowo aktywne dla uwierzytelnionych użytkowników (weryfikacja Supabase session), aria-invalid/aria-describedby dla błędów, toast po kopiowaniu (2 s) i w przypadku konieczności logowania, obsługa retry i komunikatu modalnego dla błędów 500/503, fallback informujący o wymaganym ponownym logowaniu (401), zabezpieczenie przed ponowną oceną poprzez zablokowanie przycisków po wyborze.
 
 ### Widok: Moje Wydarzenia
+
 - **Nazwa widoku:** Moje Wydarzenia
 - **Ścieżka widoku:** `/events`
 - **Główny cel:** Zapewnić zalogowanym użytkownikom listę zapisanych wydarzeń oraz pełne zarządzanie nimi.
@@ -27,6 +29,7 @@ Interfejs został zaprojektowany w podejściu "guest-first", zapewniając natych
 - **UX, dostępność i względy bezpieczeństwa:** Widok chroniony (middleware Supabase -> redirect na `/login`), focus trap w modalach, aria-live dla toastów, debounce filtrów z synchronizacją do URL params, optimistic updates dla edycji (`PATCH /api/events/:id`) i usuwania (`DELETE /api/events/:id`) z rollbackiem przy błędzie, disabled akcje po usunięciu/ocenie, ochrona przed wielokrotną oceną poprzez stan lokalny + backend validation, komunikaty inline dla 400 oraz toast + redirect dla 401/403, modale retry dla 500/503.
 
 ### Widok: Logowanie
+
 - **Nazwa widoku:** Logowanie
 - **Ścieżka widoku:** `/login`
 - **Główny cel:** Umożliwić istniejącym użytkownikom zalogowanie się i kontynuowanie pracy.
@@ -37,6 +40,7 @@ Interfejs został zaprojektowany w podejściu "guest-first", zapewniając natych
 - **UX, dostępność i względy bezpieczeństwa:** Walidacja email/hasła przed wysłaniem, obsługa błędów Supabase (np. `Invalid login credentials`) jako aria-live, automatyczne przekierowanie na `/` po zalogowaniu, zapamiętywanie docelowej ścieżki (np. po próbie zapisu wydarzenia), zabezpieczenie przed brute-force (wyświetlanie ogólnych błędów), komunikaty w języku polskim.
 
 ### Widok: Rejestracja
+
 - **Nazwa widoku:** Rejestracja
 - **Ścieżka widoku:** `/register`
 - **Główny cel:** Pozwolić nowym użytkownikom utworzyć konto, automatycznie zalogować się i wrócić do generatora.
@@ -47,6 +51,7 @@ Interfejs został zaprojektowany w podejściu "guest-first", zapewniając natych
 - **UX, dostępność i względy bezpieczeństwa:** Etykiety i komunikaty aria-live, maskowanie hasła z opcją podglądu, focus management po błędach, natychmiastowe zalogowanie i przekierowanie z zachowaniem stanu formularza generatora (opcjonalny kontekst), wyświetlenie CTA powrotu do generatora.
 
 ### Widok: Ustawienia Konta
+
 - **Nazwa widoku:** Ustawienia
 - **Ścieżka widoku:** `/settings`
 - **Główny cel:** Umożliwić zarządzanie kontem (zmiana hasła, usunięcie konta) i przegląd danych profilu.

@@ -4,6 +4,7 @@
 ## Przygotowanie środowiska testowego
 
 ### Wymagania wstępne
+
 - Uruchomiony lokalny Supabase (`supabase start`)
 - Aplikacja uruchomiona na `http://localhost:3000`
 - Zainstalowany Postman lub curl
@@ -22,16 +23,17 @@
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://127.0.0.1:54321/auth/v1/token?grant_type=password
 ```
 
 **3. Ustaw Headers:**
 
-| Key | Value |
-|-----|-------|
-| `Content-Type` | `application/json` |
-| `apikey` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0` |
+| Key            | Value                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Content-Type` | `application/json`                                                                                                                                     |
+| `apikey`       | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0` |
 
 **4. Ustaw Body (raw, JSON):**
 
@@ -45,6 +47,7 @@ http://127.0.0.1:54321/auth/v1/token?grant_type=password
 **5. Send i skopiuj `access_token` z odpowiedzi**
 
 Odpowiedź będzie zawierać:
+
 ```json
 {
   "access_token": "eyJhbGc...",
@@ -66,6 +69,7 @@ Skopiuj wartość `access_token` - będzie potrzebna we wszystkich testach poni�
 Utwórz kilka wydarzeń testowych za pomocą `POST /api/events`:
 
 **Wydarzenie 1 - Należy do zalogowanego użytkownika**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -84,6 +88,7 @@ curl -X POST http://localhost:3000/api/events \
 Np. `"id": "3cc6c482-e88f-496f-a8fc-b2f3669a0b44"`
 
 **Wydarzenie 2 - Utworzone przez gościa (bez tokenu)**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -102,6 +107,7 @@ curl -X POST http://localhost:3000/api/events \
 **Wydarzenie 3 - Zaloguj się jako inny użytkownik i utwórz wydarzenie**
 
 Jeśli masz dostęp do drugiego konta testowego, utwórz wydarzenie:
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -123,9 +129,11 @@ curl -X POST http://localhost:3000/api/events \
 ## PRZYPADEK TESTOWY 1: Pobranie wydarzenia należącego do zalogowanego użytkownika (Sukces - 200)
 
 ### Opis
+
 Pobranie szczegółów wydarzenia, które należy do aktualnie zalogowanego użytkownika.
 
 ### Dane testowe
+
 - Event ID: `3cc6c482-e88f-496f-a8fc-b2f3669a0b44` (UUID swojego wydarzenia)
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee` (twoje user_id)
 
@@ -138,14 +146,15 @@ Pobranie szczegółów wydarzenia, które należy do aktualnie zalogowanego uży
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:** brak
@@ -159,6 +168,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana struktura odpowiedzi:**
+
 ```json
 {
   "id": "3cc6c482-e88f-496f-a8fc-b2f3669a0b44",
@@ -181,6 +191,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Weryfikacja:**
+
 - Status HTTP = 200
 - `id` zgadza się z UUID w URL
 - `user_id` = twoje user_id z tokenu
@@ -194,9 +205,11 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ## PRZYPADEK TESTOWY 2: Próba pobrania wydarzenia innego użytkownika (Błąd - 404)
 
 ### Opis
+
 Próba pobrania wydarzenia, które należy do innego użytkownika. RLS powinno zablokować dostęp i zwrócić 404.
 
 ### Dane testowe
+
 - Event ID: UUID wydarzenia utworzonego przez innego użytkownika
 - Aktualny user: `32373b34-4b94-4cbc-973b-949c6659cbee`
 
@@ -209,14 +222,15 @@ Próba pobrania wydarzenia, które należy do innego użytkownika. RLS powinno z
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/<UUID_WYDARZENIA_INNEGO_UŻYTKOWNIKA>
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 #### 3. Wyślij request
@@ -226,6 +240,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_INNEGO_UŻYTKOWNIKA>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -234,6 +249,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_INNEGO_UŻYTKOWNIKA>
 ```
 
 **Wyjaśnienie:**
+
 - RLS (Row Level Security) filtruje wyniki po `user_id = auth.uid()`
 - Supabase zwraca błąd PGRST116 (no rows returned)
 - Serwis mapuje to na 404 z kodem `EVENT_NOT_FOUND`
@@ -244,9 +260,11 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_INNEGO_UŻYTKOWNIKA>
 ## PRZYPADEK TESTOWY 3: Próba pobrania wydarzenia gościa (Błąd - 404)
 
 ### Opis
+
 Próba pobrania wydarzenia utworzonego przez gościa (user_id = null). RLS blokuje dostęp.
 
 ### Dane testowe
+
 - Event ID: UUID wydarzenia utworzonego bez tokenu (przez gościa)
 - user_id wydarzenia: `null`
 
@@ -259,14 +277,15 @@ Próba pobrania wydarzenia utworzonego przez gościa (user_id = null). RLS bloku
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/<UUID_WYDARZENIA_GOŚCIA>
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 #### 3. Wyślij request
@@ -276,6 +295,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_GOŚCIA>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -284,6 +304,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_GOŚCIA>
 ```
 
 **Wyjaśnienie:**
+
 - Wydarzenie ma `user_id = null`
 - Query filtruje `.eq("user_id", userId)` gdzie userId = twoje ID
 - `null` ≠ twoje UUID → Supabase nie zwraca wiersza
@@ -294,6 +315,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_GOŚCIA>
 ## PRZYPADEK TESTOWY 4: Brak tokenu autoryzacyjnego (Błąd - 401)
 
 ### Opis
+
 Próba pobrania wydarzenia bez podania tokenu Bearer w nagłówku Authorization.
 
 ### Kroki wykonania
@@ -305,6 +327,7 @@ Próba pobrania wydarzenia bez podania tokenu Bearer w nagłówku Authorization.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
@@ -312,8 +335,8 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 **Headers:** (NIE dodawaj nagłówka Authorization!)
 
 | Key | Value |
-|-----|-------|
-| - | - |
+| --- | ----- |
+| -   | -     |
 
 #### 3. Wyślij request
 
@@ -322,6 +345,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -330,6 +354,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Weryfikacja:**
+
 - Status 401 (nie 403 ani 400!)
 - Komunikat jasno wskazuje na brak autoryzacji
 - Endpoint nie ujawnia czy ID istnieje (bezpieczeństwo)
@@ -339,6 +364,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ## PRZYPADEK TESTOWY 5: Nieprawidłowy token autoryzacyjny (Błąd - 401)
 
 ### Opis
+
 Próba pobrania wydarzenia z nieprawidłowym lub wygasłym tokenem Bearer.
 
 ### Kroki wykonania
@@ -350,14 +376,15 @@ Próba pobrania wydarzenia z nieprawidłowym lub wygasłym tokenem Bearer.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                         |
+| --------------- | ----------------------------- |
 | `Authorization` | `Bearer invalid-token-abc123` |
 
 #### 3. Wyślij request
@@ -367,6 +394,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -375,6 +403,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Wyjaśnienie:**
+
 - `supabase.auth.getUser()` wykrywa nieprawidłowy token
 - Zwraca błąd lub `user = null`
 - Handler mapuje to na 401
@@ -384,6 +413,7 @@ http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ## PRZYPADEK TESTOWY 6: Nieprawidłowy format UUID (Błąd - 400)
 
 ### Opis
+
 Próba pobrania wydarzenia z ID w nieprawidłowym formacie (nie jest UUID v4).
 
 ### Kroki wykonania
@@ -395,14 +425,15 @@ Próba pobrania wydarzenia z ID w nieprawidłowym formacie (nie jest UUID v4).
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/nieprawidlowy-uuid-123
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 #### 3. Wyślij request
@@ -412,6 +443,7 @@ http://localhost:3000/api/events/nieprawidlowy-uuid-123
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -426,6 +458,7 @@ http://localhost:3000/api/events/nieprawidlowy-uuid-123
 ```
 
 **Weryfikacja:**
+
 - Status 400 (nie 404!)
 - Walidacja UUID odbywa się przed zapytaniem do bazy
 - Pole `details` zawiera szczegóły błędu walidacji
@@ -435,6 +468,7 @@ http://localhost:3000/api/events/nieprawidlowy-uuid-123
 ## PRZYPADEK TESTOWY 7: Nieistniejące UUID (Błąd - 404)
 
 ### Opis
+
 Próba pobrania wydarzenia z prawidłowym formatem UUID, ale ID nie istnieje w bazie danych.
 
 ### Kroki wykonania
@@ -446,6 +480,7 @@ Próba pobrania wydarzenia z prawidłowym formatem UUID, ale ID nie istnieje w b
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000
 ```
@@ -454,8 +489,8 @@ http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 #### 3. Wyślij request
@@ -465,6 +500,7 @@ http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -473,6 +509,7 @@ http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000
 ```
 
 **Wyjaśnienie:**
+
 - UUID jest prawidłowy (walidacja przeszła)
 - Supabase wykonuje query ale nie znajduje wiersza
 - Błąd PGRST116 → mapowany na 404
@@ -482,9 +519,11 @@ http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000
 ## PRZYPADEK TESTOWY 8: Pobranie wydarzenia z edytowanym opisem (Sukces - 200)
 
 ### Opis
+
 Pobranie wydarzenia, które ma ustawione `edited_description`.
 
 ### Przygotowanie
+
 1. Utwórz wydarzenie (POST /api/events)
 2. Zaktualizuj je dodając `edited_description` (PATCH /api/events/:id)
 3. Zapisz UUID
@@ -498,14 +537,15 @@ Pobranie wydarzenia, które ma ustawione `edited_description`.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/<UUID_WYDARZENIA_Z_EDYCJĄ>
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 #### 3. Wyślij request
@@ -515,6 +555,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_Z_EDYCJĄ>
 **Oczekiwany status:** `200 OK`
 
 **Weryfikacja kluczowych pól:**
+
 ```json
 {
   "id": "<UUID>",
@@ -525,6 +566,7 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_Z_EDYCJĄ>
 ```
 
 **Weryfikacja:**
+
 - Pole `generated_description` zawiera oryginalny opis (niezmienialny)
 - Pole `edited_description` zawiera opis edytowany przez użytkownika
 - Oba opisy są zwracane w odpowiedzi
@@ -534,9 +576,11 @@ http://localhost:3000/api/events/<UUID_WYDARZENIA_Z_EDYCJĄ>
 ## PRZYPADEK TESTOWY 9: Pobranie zapisanego wydarzenia z feedbackiem (Sukces - 200)
 
 ### Opis
+
 Pobranie wydarzenia, które zostało zapisane i ocenione przez użytkownika.
 
 ### Przygotowanie
+
 1. Utwórz wydarzenie
 2. Oznacz jako zapisane: PATCH z `{"saved": true, "feedback": "thumbs_up"}`
 3. Zapisz UUID
@@ -550,14 +594,15 @@ Pobranie wydarzenia, które zostało zapisane i ocenione przez użytkownika.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/<UUID_ZAPISANEGO_WYDARZENIA>
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 #### 3. Wyślij request
@@ -567,6 +612,7 @@ http://localhost:3000/api/events/<UUID_ZAPISANEGO_WYDARZENIA>
 **Oczekiwany status:** `200 OK`
 
 **Weryfikacja kluczowych pól:**
+
 ```json
 {
   "id": "<UUID>",
@@ -578,6 +624,7 @@ http://localhost:3000/api/events/<UUID_ZAPISANEGO_WYDARZENIA>
 ```
 
 **Weryfikacja:**
+
 - `saved` = true
 - `feedback` = "thumbs_up" lub "thumbs_down"
 - `updated_at` jest późniejsze niż `created_at` (został zaktualizowany)
@@ -587,6 +634,7 @@ http://localhost:3000/api/events/<UUID_ZAPISANEGO_WYDARZENIA>
 ## PRZYPADEK TESTOWY 10: Curl - Pobranie wydarzenia (Sukces - 200)
 
 ### Opis
+
 Test tego samego endpointu używając curl (alternatywa dla Postmana).
 
 ### Kroki wykonania
@@ -605,6 +653,7 @@ curl -X GET "http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b
 #### 3. Weryfikacja odpowiedzi
 
 **Oczekiwany output:**
+
 ```json
 {
   "id": "3cc6c482-e88f-496f-a8fc-b2f3669a0b44",
@@ -620,18 +669,18 @@ curl -X GET "http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b
 
 ### Matryca przypadków testowych
 
-| Test | Typ | Scenariusz | Oczekiwany status | Oczekiwany rezultat |
-|------|-----|-----------|-------------------|---------------------|
-| 1 | ✅ Pozytywny | Pobranie swojego wydarzenia | 200 | Pełny obiekt EventResponseDTO |
-| 2 | ❌ Negatywny | Wydarzenie innego użytkownika | 404 | Event not found (RLS) |
-| 3 | ❌ Negatywny | Wydarzenie gościa (user_id=null) | 404 | Event not found (RLS) |
-| 4 | ❌ Negatywny | Brak tokenu | 401 | Unauthorized |
-| 5 | ❌ Negatywny | Nieprawidłowy token | 401 | Unauthorized |
-| 6 | ❌ Negatywny | Nieprawidłowy format UUID | 400 | Validation error |
-| 7 | ❌ Negatywny | Nieistniejące UUID | 404 | Event not found |
-| 8 | ✅ Pozytywny | Wydarzenie z edytowanym opisem | 200 | Oba opisy w odpowiedzi |
-| 9 | ✅ Pozytywny | Zapisane wydarzenie z feedbackiem | 200 | saved=true, feedback obecny |
-| 10 | ✅ Pozytywny | Test z curl (alternatywa) | 200 | Pełny obiekt wydarzenia |
+| Test | Typ          | Scenariusz                        | Oczekiwany status | Oczekiwany rezultat           |
+| ---- | ------------ | --------------------------------- | ----------------- | ----------------------------- |
+| 1    | ✅ Pozytywny | Pobranie swojego wydarzenia       | 200               | Pełny obiekt EventResponseDTO |
+| 2    | ❌ Negatywny | Wydarzenie innego użytkownika     | 404               | Event not found (RLS)         |
+| 3    | ❌ Negatywny | Wydarzenie gościa (user_id=null)  | 404               | Event not found (RLS)         |
+| 4    | ❌ Negatywny | Brak tokenu                       | 401               | Unauthorized                  |
+| 5    | ❌ Negatywny | Nieprawidłowy token               | 401               | Unauthorized                  |
+| 6    | ❌ Negatywny | Nieprawidłowy format UUID         | 400               | Validation error              |
+| 7    | ❌ Negatywny | Nieistniejące UUID                | 404               | Event not found               |
+| 8    | ✅ Pozytywny | Wydarzenie z edytowanym opisem    | 200               | Oba opisy w odpowiedzi        |
+| 9    | ✅ Pozytywny | Zapisane wydarzenie z feedbackiem | 200               | saved=true, feedback obecny   |
+| 10   | ✅ Pozytywny | Test z curl (alternatywa)         | 200               | Pełny obiekt wydarzenia       |
 
 ### Legenda statusów HTTP
 
@@ -643,14 +692,14 @@ curl -X GET "http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b
 
 ### Różnice między GET /api/events/:id a GET /api/events
 
-| Właściwość | GET /api/events/:id | GET /api/events |
-|-----------|---------------------|-----------------|
-| **Zwraca** | Pojedyncze wydarzenie | Lista wydarzeń |
-| **Pole model_version** | ✅ Obecne | ❌ Usunięte (optymalizacja) |
-| **Paginacja** | ❌ Nie | ✅ Tak |
-| **Filtrowanie** | ❌ Nie (tylko ID) | ✅ Tak (saved, category, age_category) |
-| **Sortowanie** | ❌ Nie | ✅ Tak (created_at, event_date, title) |
-| **Use case** | Szczegóły konkretnego wydarzenia | Lista z filtrowaniem |
+| Właściwość             | GET /api/events/:id              | GET /api/events                        |
+| ---------------------- | -------------------------------- | -------------------------------------- |
+| **Zwraca**             | Pojedyncze wydarzenie            | Lista wydarzeń                         |
+| **Pole model_version** | ✅ Obecne                        | ❌ Usunięte (optymalizacja)            |
+| **Paginacja**          | ❌ Nie                           | ✅ Tak                                 |
+| **Filtrowanie**        | ❌ Nie (tylko ID)                | ✅ Tak (saved, category, age_category) |
+| **Sortowanie**         | ❌ Nie                           | ✅ Tak (created_at, event_date, title) |
+| **Use case**           | Szczegóły konkretnego wydarzenia | Lista z filtrowaniem                   |
 
 ### Uwagi końcowe
 
@@ -708,6 +757,7 @@ curl -X GET "http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b
 ### Test: Wszystkie pola DTO
 
 Sprawdź czy odpowiedź zawiera wszystkie pola z `EventResponseDTO`:
+
 - `id` (UUID)
 - `user_id` (UUID lub null)
 - `created_by_authenticated_user` (boolean)
@@ -724,5 +774,4 @@ Sprawdź czy odpowiedź zawiera wszystkie pola z `EventResponseDTO`:
 - `model_version` (string)
 - `created_at` (timestamp)
 - `updated_at` (timestamp)
-
 ````

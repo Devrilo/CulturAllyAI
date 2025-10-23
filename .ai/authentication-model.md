@@ -9,6 +9,7 @@ CulturAllyAI wykorzystuje **Supabase Auth** jako wyłączny system autoryzacji i
 ### Client-Side (Frontend)
 
 **Odpowiedzialność:**
+
 - Rejestracja użytkowników
 - Logowanie/wylogowanie
 - Zmiana hasła
@@ -17,36 +18,42 @@ CulturAllyAI wykorzystuje **Supabase Auth** jako wyłączny system autoryzacji i
 - Automatyczne odświeżanie tokenów
 
 **Implementacja:**
-```typescript
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+```typescript
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Rejestracja
-await supabase.auth.signUp({ email, password })
+await supabase.auth.signUp({ email, password });
 
 // Logowanie
-await supabase.auth.signInWithPassword({ email, password })
+await supabase.auth.signInWithPassword({ email, password });
 
 // Wylogowanie
-await supabase.auth.signOut()
+await supabase.auth.signOut();
 
 // Zmiana hasła
-await supabase.auth.updateUser({ password: newPassword })
+await supabase.auth.updateUser({ password: newPassword });
 ```
 
 ### Backend (API Routes)
 
 **Odpowiedzialność:**
+
 - **Wyłącznie weryfikacja** tokenów JWT wystawionych przez Supabase Auth
 - Ekstrakcja `user_id` z zweryfikowanego tokenu
 - Zastosowanie polityk RLS (Row Level Security)
 
 **Implementacja:**
+
 ```typescript
 // src/pages/api/events/index.ts
 const supabase = context.locals.supabase;
-const { data: { user }, error } = await supabase.auth.getUser();
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
 
 if (error || !user) {
   // Return 401 Unauthorized
@@ -114,14 +121,17 @@ if (error || !user) {
 ### Tabela `events`
 
 **SELECT:**
+
 - Zalogowani użytkownicy: `user_id = auth.uid()`
 - Goście: brak dostępu do zapisanych wydarzeń
 
 **INSERT:**
+
 - Zalogowani: `user_id = auth.uid()`
 - Goście: `user_id IS NULL` (specjalna polityka)
 
 **UPDATE/DELETE:**
+
 - Tylko właściciel: `user_id = auth.uid()`
 - Goście: brak uprawnień
 
@@ -139,6 +149,7 @@ SUPABASE_KEY=your-anon-key
 ## Migracja z Własnej Implementacji
 
 ❌ **USUNIĘTE (nie będą implementowane):**
+
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
@@ -147,6 +158,7 @@ SUPABASE_KEY=your-anon-key
 - DTOs: `RegisterUserDTO`, `LoginUserDTO`, `ChangePasswordDTO`, etc.
 
 ✅ **ZACHOWANE:**
+
 - Middleware wstrzykujący Supabase client do `context.locals`
 - Weryfikacja tokenów w API routes przez `supabase.auth.getUser()`
 - Polityki RLS w bazie danych

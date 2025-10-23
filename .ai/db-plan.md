@@ -65,10 +65,10 @@ Główna tabela przechowująca wszystkie wygenerowane wydarzenia.
 CREATE TABLE events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  
+
   -- Flaga określająca czy wydarzenie zostało utworzone przez zalogowanego użytkownika
   created_by_authenticated_user BOOLEAN NOT NULL DEFAULT false,
-  
+
   -- Dane wejściowe użytkownika
   title VARCHAR(100) NOT NULL,
   city VARCHAR(50) NOT NULL,
@@ -76,31 +76,31 @@ CREATE TABLE events (
   category event_category NOT NULL,
   age_category age_category NOT NULL,
   key_information TEXT NOT NULL CHECK (char_length(key_information) <= 200),
-  
+
   -- Wygenerowany opis przez AI (niezmienialny)
   generated_description TEXT NOT NULL CHECK (char_length(generated_description) <= 500),
-  
+
   -- Edytowalny opis (opcjonalny, NULL jeśli użytkownik nie edytował)
   edited_description TEXT CHECK (char_length(edited_description) <= 500),
-  
+
   -- Czy wydarzenie zostało zapisane przez użytkownika
   saved BOOLEAN NOT NULL DEFAULT false,
-  
+
   -- Opcjonalna ocena wygenerowanego opisu
   feedback feedback,
-  
+
   -- Metadane
   model_version VARCHAR(50) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  
+
   CONSTRAINT valid_event_date CHECK (event_date >= CURRENT_DATE),
-  
+
   -- Ograniczenia dla wydarzeń niezalogowanych użytkowników
   CONSTRAINT guest_events_cannot_be_saved CHECK (created_by_authenticated_user = true OR saved = false),
   CONSTRAINT guest_events_cannot_have_feedback CHECK (created_by_authenticated_user = true OR feedback IS NULL),
   CONSTRAINT guest_events_cannot_be_edited CHECK (created_by_authenticated_user = true OR edited_description IS NULL),
-  
+
   -- Spójność: jeśli user_id nie jest NULL, to musi być created_by_authenticated_user = true
   CONSTRAINT authenticated_user_consistency CHECK (user_id IS NULL OR created_by_authenticated_user = true)
 );
@@ -240,6 +240,7 @@ CREATE POLICY "Users can delete own events"
 ### 6.1 Typy ENUM
 
 Zastosowano typy ENUM dla kategorialnych danych (kategorie wydarzeń, kategorie wiekowe, typy akcji) w celu:
+
 - Zapewnienia integralności danych na poziomie bazy
 - Zwiększenia czytelności schematu
 - Ograniczenia możliwych wartości do predefiniowanych opcji
@@ -247,10 +248,10 @@ Zastosowano typy ENUM dla kategorialnych danych (kategorie wydarzeń, kategorie 
 ### 6.2 Separacja opisów i zarządzanie stanem wydarzenia
 
 Tabela `events` zawiera:
+
 - **Dwa typy opisów**:
   - `generated_description`: Oryginalny opis wygenerowany przez AI (niezmienialny, zawsze przechowywany)
   - `edited_description`: Opis edytowany przez użytkownika (opcjonalny, NULL jeśli użytkownik nie edytował)
-  
 - **Pole `user_id`**: UUID (nullable) identyfikujący użytkownika
   - `NULL` = użytkownik nie jest przypisany (gość lub usunięte konto)
   - UUID = wydarzenie ma przypisanego aktywnego użytkownika
@@ -263,19 +264,18 @@ Tabela `events` zawiera:
   - `true` = wydarzenie utworzone przez **zalogowanego użytkownika**
     - `user_id` może być UUID (użytkownik aktywny) lub `NULL` (użytkownik usunął konto)
     - Może mieć zapisane wartości `saved`, `feedback`, `edited_description` (zachowane po usunięciu konta)
-  
 - **Pole `saved`**: Boolean określający czy użytkownik "zapisał" wydarzenie (domyślnie `false`)
   - Wydarzenia niezapisane (`saved = false`) pozostają w bazie dla celów historycznych i analitycznych
   - Użytkownik może w każdej chwili zmienić status zapisu
   - **Soft delete**: Usunięcie wydarzenia przez użytkownika ustawia `saved = false`, ale nie usuwa fizycznie rekordu z bazy
   - **Ograniczenie**: Niezalogowani użytkownicy (`user_id IS NULL`) nie mogą mieć `saved = true`
-  
 - **Pole `feedback`**: Opcjonalna ocena (thumbs_up/thumbs_down)
   - Użytkownik może ocenić wygenerowany opis w interfejsie generowania
   - Każde wydarzenie może mieć maksymalnie jedną ocenę
   - **Ograniczenie**: Niezalogowani użytkownicy (`user_id IS NULL`) nie mogą oceniać (feedback musi być NULL)
 
 To rozwiązanie pozwala na:
+
 - Generowanie opisów przez niezalogowanych użytkowników (gości) bez możliwości zapisywania/edycji/oceny
 - Zachowanie oryginalnej wersji dla celów analitycznych
 - Możliwość przywrócenia oryginalnego opisu (użytkownik może usunąć `edited_description`)
@@ -307,23 +307,27 @@ To rozwiązanie pozwala na:
 ### 6.4 Ograniczenia walidacyjne
 
 Zaimplementowano ograniczenia CHECK dla:
+
 - Limitów znaków (200 dla key_information, 500 dla opisów)
 - Walidacji daty wydarzenia (nie może być w przeszłości)
 
 ### 6.5 Indeksowanie
 
 Indeksy zostały dodane dla:
+
 - Kluczy obcych (optymalizacja JOIN)
 - Kolumn często używanych w klauzulach WHERE (user_id, event_date, category, saved, created_by_authenticated_user)
 - Kolumn używanych do sortowania (created_at DESC)
 
 Indeksy na kolumnach `saved` i `created_by_authenticated_user` zostały dodane, ponieważ będą często używane do:
+
 - Filtrowania wydarzeń zapisanych przez użytkownika
 - Analiz rozróżniających wydarzenia gości od wydarzeń zalogowanych użytkowników
 
 ### 6.6 Bezpieczeństwo na poziomie wierszy (RLS)
 
 Zasady RLS zapewniają:
+
 - Izolację danych użytkowników w tabeli `events` (każdy użytkownik widzi tylko swoje wydarzenia)
 - Zgodność z zasadą najmniejszych uprawnień
 - Tabele logów (`user_activity_logs`, `event_management_logs`) nie mają włączonego RLS, co umożliwia dostęp z poziomu bazy danych dla celów analitycznych i audytowych
@@ -331,12 +335,14 @@ Zasady RLS zapewniają:
 ### 6.7 Audytowalność
 
 Wszystkie kluczowe akcje są logowane w dedykowanych tabelach:
+
 - `user_activity_logs`: Akcje związane z kontem użytkownika (rejestracja, logowanie, zmiana hasła, usunięcie konta)
 - `event_management_logs`: Akcje związane z zarządzaniem wydarzeniami (tworzenie, zapisywanie, edycja, "usuwanie")
   - Kolumna `user_id` jest nullable, co umożliwia logowanie akcji niezalogowanych użytkowników
   - `event_created` z `user_id = NULL` oznacza generację przez niezalogowanego użytkownika
 
 Oceny AI są przechowywane bezpośrednio w tabeli `events` w kolumnie `feedback`, co umożliwia:
+
 - Monitorowanie aktywności użytkowników (zalogowanych i niezalogowanych)
 - Analizę skuteczności AI poprzez proste zapytania agregujące
 - Zgodność z wymaganiami audytowymi
@@ -345,6 +351,7 @@ Oceny AI są przechowywane bezpośrednio w tabeli `events` w kolumnie `feedback`
 ### 6.8 Normalizacja
 
 Schemat jest znormalizowany do 3NF, co zapewnia:
+
 - Eliminację redundancji danych
 - Łatwość utrzymania i aktualizacji
 - Integralność danych
@@ -352,6 +359,7 @@ Schemat jest znormalizowany do 3NF, co zapewnia:
 ### 6.9 Skalowalność
 
 Projekt uwzględnia przyszłą skalowalność poprzez:
+
 - Użycie UUID jako kluczy głównych (rozproszenie danych)
 - Odpowiednie indeksowanie
 - Optymalne strategie usuwania kaskadowego
@@ -360,6 +368,7 @@ Projekt uwzględnia przyszłą skalowalność poprzez:
 ### 6.10 Integracja z Supabase Auth
 
 Schemat wykorzystuje wbudowaną tabelę `auth.users` z Supabase, co zapewnia:
+
 - Bezproblemową integrację z systemem autentykacji
 - Zgodność z najlepszymi praktykami Supabase
 - Automatyczne zarządzanie sesjami i tokenami JWT

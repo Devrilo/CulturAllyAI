@@ -5,7 +5,6 @@ import { useSupabaseSession } from "../hooks/useSupabaseSession";
 import { useEventForm } from "../hooks/useEventForm";
 import { useGeneratorFlow } from "../hooks/useGeneratorFlow";
 import { supabaseClient } from "../../db/supabase.client";
-import { Header } from "./Header";
 import { AuthPromptBanner } from "./AuthPromptBanner";
 import { TimeoutNotice } from "./TimeoutNotice";
 import { EventForm } from "./EventForm";
@@ -158,11 +157,6 @@ function GeneratorPageContent() {
     copy(generatedEvent.description);
   }, [generatedEvent, copy]);
 
-  const handleSignOut = useCallback(async () => {
-    await supabaseClient.auth.signOut();
-    window.location.href = "/login";
-  }, []);
-
   // Loading state
   if (authState.status === "loading" || categoriesLoading || ageCategoriesLoading) {
     return (
@@ -194,8 +188,6 @@ function GeneratorPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header isAuthenticated={authState.isAuthenticated} onSignOut={handleSignOut} />
-
       <main className="container mx-auto px-4 py-8">
         <AuthPromptBanner visible={!authState.isAuthenticated && !!generatedEvent} />
         <TimeoutNotice visible={status.timeoutElapsed} onRetry={handleGenerate} />

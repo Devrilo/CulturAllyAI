@@ -3,6 +3,7 @@
 ## Przygotowanie środowiska testowego
 
 ### Wymagania wstępne
+
 - Uruchomiony lokalny Supabase (`supabase start`)
 - Aplikacja uruchomiona na `http://localhost:3000`
 - Zainstalowany Postman
@@ -14,17 +15,20 @@ Przed wykonaniem testów musisz uzyskać token dostępowy (access_token) dla uż
 #### Krok 1: Logowanie przez Supabase Auth API
 
 **Request:**
+
 ```
 POST http://127.0.0.1:54321/auth/v1/token?grant_type=password
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "email": "marcin.szwajgier@o2.pl",
@@ -33,6 +37,7 @@ apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9
 ```
 
 **Oczekiwana odpowiedź (200 OK):**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -56,10 +61,12 @@ Skopiuj wartość `access_token` z odpowiedzi. Będzie potrzebny we wszystkich t
 ## PRZYPADEK TESTOWY 1A: Próba aktualizacji wydarzenia gościa (Błąd - 404)
 
 ### Opis
-Próba aktualizacji wydarzenia utworzonego przez niezalogowanego użytkownika (gościa). 
+
+Próba aktualizacji wydarzenia utworzonego przez niezalogowanego użytkownika (gościa).
 Powinno zakończyć się błędem 404, ponieważ RLS nie pozwoli na znalezienie wydarzenia należącego do innego użytkownika.
 
 ### Dane testowe
+
 - Event ID: `50a5338b-18a2-4454-bf1e-ec379a2dd046`
 - created_by_authenticated_user: `false`
 - user_id: `NULL`
@@ -73,17 +80,20 @@ Powinno zakończyć się błędem 404, ponieważ RLS nie pozwoli na znalezienie 
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/50a5338b-18a2-4454-bf1e-ec379a2dd046
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN_Z_KROKU_PRZYGOTOWANIA>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "saved": true
@@ -97,6 +107,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN_Z_KROKU_PRZYGOTOWANIA>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -104,7 +115,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN_Z_KROKU_PRZYGOTOWANIA>
 }
 ```
 
-**Wyjaśnienie:** 
+**Wyjaśnienie:**
 RLS (Row Level Security) blokuje dostęp do wydarzeń gości. Wydarzenie istnieje w bazie, ale z punktu widzenia zalogowanego użytkownika "nie istnieje", ponieważ `user_id` nie pasuje.
 
 ---
@@ -112,6 +123,7 @@ RLS (Row Level Security) blokuje dostęp do wydarzeń gości. Wydarzenie istniej
 ## PRZYPADEK TESTOWY 1B: Brak możliwości aktualizacji - nieprawidłowy UUID (Błąd - 400)
 
 ### Opis
+
 Próba aktualizacji wydarzenia z nieprawidłowym formatem ID (nie jest to poprawny UUID).
 
 ### Kroki wykonania
@@ -123,17 +135,20 @@ Próba aktualizacji wydarzenia z nieprawidłowym formatem ID (nie jest to popraw
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/nieprawidlowy-uuid-123
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "saved": true
@@ -147,6 +162,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -165,10 +181,12 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 2A: Próba aktualizacji wydarzenia z usuniętego konta (Błąd - 403)
 
 ### Opis
+
 Próba aktualizacji wydarzenia, które zostało utworzone przez zalogowanego użytkownika, ale konto zostało usunięte.
 Wydarzenie ma `created_by_authenticated_user = TRUE` ale `user_id = NULL`.
 
 ### Dane testowe
+
 - Event ID: `5af88917-3f9d-41b8-9af8-67f9ac1d4418`
 - created_by_authenticated_user: `true`
 - user_id: `NULL`
@@ -182,17 +200,20 @@ Wydarzenie ma `created_by_authenticated_user = TRUE` ale `user_id = NULL`.
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/5af88917-3f9d-41b8-9af8-67f9ac1d4418
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "feedback": "thumbs_up"
@@ -206,6 +227,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -213,7 +235,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 }
 ```
 
-**Wyjaśnienie:** 
+**Wyjaśnienie:**
 RLS blokuje dostęp, ponieważ `user_id = NULL` nie pasuje do zalogowanego użytkownika.
 
 ---
@@ -221,6 +243,7 @@ RLS blokuje dostęp, ponieważ `user_id = NULL` nie pasuje do zalogowanego użyt
 ## PRZYPADEK TESTOWY 2B: Próba aktualizacji bez tokenu autoryzacyjnego (Błąd - 401)
 
 ### Opis
+
 Próba aktualizacji wydarzenia bez podania tokenu autoryzacyjnego.
 
 ### Kroki wykonania
@@ -232,17 +255,21 @@ Próba aktualizacji wydarzenia bez podania tokenu autoryzacyjnego.
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 ```
+
 **UWAGA:** Nie dodawaj headera `Authorization`!
 
 **Body (raw JSON):**
+
 ```json
 {
   "saved": true
@@ -256,6 +283,7 @@ Content-Type: application/json
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -268,10 +296,12 @@ Content-Type: application/json
 ## PRZYPADEK TESTOWY 3A: Aktualizacja pól saved i feedback (Sukces - 200)
 
 ### Opis
+
 Aktualizacja wydarzenia, które należy do zalogowanego użytkownika.
 Wydarzenie ma `saved = false` i `feedback = null`, więc możemy zaktualizować oba pola.
 
 ### Dane testowe
+
 - Event ID: `3cc6c482-e88f-496f-a8fc-b2f3669a0b44`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -287,17 +317,20 @@ Wydarzenie ma `saved = false` i `feedback = null`, więc możemy zaktualizować 
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "saved": true,
@@ -312,6 +345,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana struktura odpowiedzi:**
+
 ```json
 {
   "id": "3cc6c482-e88f-496f-a8fc-b2f3669a0b44",
@@ -334,6 +368,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Weryfikacja:**
+
 - `saved` powinno być `true`
 - `feedback` powinno być `"thumbs_down"`
 - `updated_at` powinno mieć nową datę (późniejszą niż created_at)
@@ -343,6 +378,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 3B: Próba aktualizacji z pustym body (Błąd - 400)
 
 ### Opis
+
 Próba aktualizacji wydarzenia bez podania żadnych pól do zmiany.
 
 ### Kroki wykonania
@@ -354,17 +390,20 @@ Próba aktualizacji wydarzenia bez podania żadnych pól do zmiany.
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {}
 ```
@@ -376,6 +415,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -394,10 +434,12 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 4A: Aktualizacja tylko pola saved gdy feedback już istnieje (Sukces - 200)
 
 ### Opis
+
 Aktualizacja wydarzenia, które ma już ustawioną wartość `feedback`.
 Możemy zmienić tylko pole `saved`.
 
 ### Dane testowe
+
 - Event ID: `3e11b5de-7733-4ffd-b454-82b9dbe00777`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -413,17 +455,20 @@ Możemy zmienić tylko pole `saved`.
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3e11b5de-7733-4ffd-b454-82b9dbe00777
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "saved": true
@@ -437,6 +482,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `200 OK`
 
 **Weryfikacja kluczowych pól:**
+
 ```json
 {
   "id": "3e11b5de-7733-4ffd-b454-82b9dbe00777",
@@ -448,6 +494,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Weryfikacja:**
+
 - `saved` powinno być `true` (zmienione z `false`)
 - `feedback` powinno pozostać `"thumbs_up"` (bez zmian)
 - `edited_description` powinno pozostać `null`
@@ -457,6 +504,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 4B: Próba zmiany feedback na nieprawidłową wartość (Błąd - 400)
 
 ### Opis
+
 Próba ustawienia nieprawidłowej wartości dla pola `feedback` (dozwolone: `thumbs_up`, `thumbs_down`, `null`).
 
 ### Kroki wykonania
@@ -468,17 +516,20 @@ Próba ustawienia nieprawidłowej wartości dla pola `feedback` (dozwolone: `thu
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3e11b5de-7733-4ffd-b454-82b9dbe00777
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "feedback": "invalid_value"
@@ -492,6 +543,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -510,10 +562,12 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 5A: Aktualizacja edited_description i saved dla zapisanego wydarzenia (Sukces - 200)
 
 ### Opis
+
 Aktualizacja wydarzenia, które jest już zapisane (`saved = true`).
 Możemy dodać lub zmienić `edited_description` oraz zmienić status `saved`.
 
 ### Dane testowe
+
 - Event ID: `c774ab0f-306a-4195-95fd-34fdd5c65468`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -529,17 +583,20 @@ Możemy dodać lub zmienić `edited_description` oraz zmienić status `saved`.
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "edited_description": "To jest mój niestandardowy, edytowany opis wydarzenia. Zmieniam go, ponieważ wygenerowany opis nie do końca mi odpowiada.",
@@ -554,6 +611,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `200 OK`
 
 **Weryfikacja kluczowych pól:**
+
 ```json
 {
   "id": "c774ab0f-306a-4195-95fd-34fdd5c65468",
@@ -566,6 +624,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Weryfikacja:**
+
 - `saved` powinno być `false` (zmienione z `true`)
 - `edited_description` powinno zawierać nowy tekst
 - `generated_description` pozostaje bez zmian (niezmienialny)
@@ -575,6 +634,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 5B: Próba aktualizacji z zbyt długim edited_description (Błąd - 400)
 
 ### Opis
+
 Próba ustawienia zbyt długiej wartości dla pola `edited_description` (limit: 500 znaków).
 
 ### Kroki wykonania
@@ -586,17 +646,20 @@ Próba ustawienia zbyt długiej wartości dla pola `edited_description` (limit: 
 **Metoda:** `PATCH`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "edited_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam"
@@ -612,6 +675,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -631,18 +695,18 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 
 ### Matryca przypadków testowych
 
-| Test | Typ | Scenariusz | Event ID | Oczekiwany status | Oczekiwany rezultat |
-|------|-----|-----------|----------|-------------------|---------------------|
-| 1A | ❌ Negatywny | Próba aktualizacji wydarzenia gościa | `50a5338b...` | 404 | Event not found (RLS) |
-| 1B | ❌ Negatywny | Nieprawidłowy format UUID | `nieprawidlowy-uuid-123` | 400 | Validation error |
-| 2A | ❌ Negatywny | Wydarzenie z usuniętego konta | `5af88917...` | 404 | Event not found (RLS) |
-| 2B | ❌ Negatywny | Brak tokenu autoryzacyjnego | `3cc6c482...` | 401 | Unauthorized |
-| 3A | ✅ Pozytywny | Aktualizacja saved + feedback | `3cc6c482...` | 200 | Sukces |
-| 3B | ❌ Negatywny | Pusty body (brak pól) | `3cc6c482...` | 400 | Validation error |
-| 4A | ✅ Pozytywny | Aktualizacja tylko saved | `3e11b5de...` | 200 | Sukces |
-| 4B | ❌ Negatywny | Nieprawidłowa wartość feedback | `3e11b5de...` | 400 | Validation error |
-| 5A | ✅ Pozytywny | Aktualizacja edited_description + saved | `c774ab0f...` | 200 | Sukces |
-| 5B | ❌ Negatywny | Za długi edited_description | `c774ab0f...` | 400 | Validation error |
+| Test | Typ          | Scenariusz                              | Event ID                 | Oczekiwany status | Oczekiwany rezultat   |
+| ---- | ------------ | --------------------------------------- | ------------------------ | ----------------- | --------------------- |
+| 1A   | ❌ Negatywny | Próba aktualizacji wydarzenia gościa    | `50a5338b...`            | 404               | Event not found (RLS) |
+| 1B   | ❌ Negatywny | Nieprawidłowy format UUID               | `nieprawidlowy-uuid-123` | 400               | Validation error      |
+| 2A   | ❌ Negatywny | Wydarzenie z usuniętego konta           | `5af88917...`            | 404               | Event not found (RLS) |
+| 2B   | ❌ Negatywny | Brak tokenu autoryzacyjnego             | `3cc6c482...`            | 401               | Unauthorized          |
+| 3A   | ✅ Pozytywny | Aktualizacja saved + feedback           | `3cc6c482...`            | 200               | Sukces                |
+| 3B   | ❌ Negatywny | Pusty body (brak pól)                   | `3cc6c482...`            | 400               | Validation error      |
+| 4A   | ✅ Pozytywny | Aktualizacja tylko saved                | `3e11b5de...`            | 200               | Sukces                |
+| 4B   | ❌ Negatywny | Nieprawidłowa wartość feedback          | `3e11b5de...`            | 400               | Validation error      |
+| 5A   | ✅ Pozytywny | Aktualizacja edited_description + saved | `c774ab0f...`            | 200               | Sukces                |
+| 5B   | ❌ Negatywny | Za długi edited_description             | `c774ab0f...`            | 400               | Validation error      |
 
 ### Legenda statusów HTTP
 

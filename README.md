@@ -50,16 +50,19 @@ npm install
 This project uses Supabase for the database. To set up the local development database:
 
 1. Install Supabase CLI (if not already installed):
+
 ```bash
 npm install -g supabase
 ```
 
 2. Start the local Supabase instance:
+
 ```bash
 supabase start
 ```
 
 3. Apply migrations (automatically applied on start, but you can manually run):
+
 ```bash
 supabase db reset
 ```
@@ -120,6 +123,7 @@ CulturAllyAI/
 **Important:** This application uses **Supabase Auth** for user authentication. All authentication operations are handled **client-side** using the Supabase JavaScript SDK (`@supabase/supabase-js`).
 
 Authentication features include:
+
 - User registration (email + password)
 - Login/logout
 - Password management
@@ -284,15 +288,15 @@ Retrieves a paginated list of events for the authenticated user.
 
 **Query Parameters (all optional):**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `saved` | boolean | - | Filter by saved status (`true` or `false`) |
-| `category` | string | - | Filter by event category (enum) |
-| `age_category` | string | - | Filter by age category (enum) |
-| `page` | integer | 1 | Page number (min: 1) |
-| `limit` | integer | 20 | Items per page (min: 1, max: 100) |
-| `sort` | string | `created_at` | Sort field: `created_at`, `event_date`, or `title` |
-| `order` | string | `desc` | Sort order: `asc` or `desc` |
+| Parameter      | Type    | Default      | Description                                        |
+| -------------- | ------- | ------------ | -------------------------------------------------- |
+| `saved`        | boolean | -            | Filter by saved status (`true` or `false`)         |
+| `category`     | string  | -            | Filter by event category (enum)                    |
+| `age_category` | string  | -            | Filter by age category (enum)                      |
+| `page`         | integer | 1            | Page number (min: 1)                               |
+| `limit`        | integer | 20           | Items per page (min: 1, max: 100)                  |
+| `sort`         | string  | `created_at` | Sort field: `created_at`, `event_date`, or `title` |
+| `order`        | string  | `desc`       | Sort order: `asc` or `desc`                        |
 
 **Example Request:**
 

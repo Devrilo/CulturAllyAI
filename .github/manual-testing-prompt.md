@@ -6,7 +6,7 @@ Użyj tego promptu dla każdego planu testowego. Zastąp `<manual_test_plan>` od
 
 ## PROMPT DO UŻYCIA:
 
-```
+````
 Jesteś testerem API dla projektu CulturAllyAI. Twoim zadaniem jest wykonanie testów manualnych z pliku:
 
 <manual_test_plan>
@@ -59,9 +59,10 @@ $response = Invoke-RestMethod -Uri "http://127.0.0.1:54321/auth/v1/token?grant_t
     -ContentType 'application/json' `
     -Headers @{apikey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.TIRWY0tqcwughf1mRzKTmoPFz2XidJIgMvCGvKnWCY0'}
 $token = $response.access_token
-```
+````
 
 #### GET request z tokenem:
+
 ```powershell
 $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events" `
     -Method GET `
@@ -69,6 +70,7 @@ $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events" `
 ```
 
 #### POST request z body i tokenem:
+
 ```powershell
 $body = @{
     title='Test Event'
@@ -87,6 +89,7 @@ $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events" `
 ```
 
 #### PATCH request:
+
 ```powershell
 $body = @{saved=$true} | ConvertTo-Json
 $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events/$eventId" `
@@ -97,6 +100,7 @@ $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events/$eventId" `
 ```
 
 #### DELETE request:
+
 ```powershell
 $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events/$eventId" `
     -Method DELETE `
@@ -104,6 +108,7 @@ $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events/$eventId" `
 ```
 
 #### Obsługa błędów (sprawdzanie kodów HTTP):
+
 ```powershell
 try {
     $result = Invoke-RestMethod -Uri "http://localhost:3000/api/events/invalid-id" `
@@ -121,6 +126,7 @@ try {
 ```
 
 #### Sprawdzanie nagłówków:
+
 ```powershell
 $response = Invoke-WebRequest -Uri "http://localhost:3000/api/categories/age" -Method GET
 $cacheControl = $response.Headers['Cache-Control']
@@ -140,6 +146,7 @@ Write-Host "Cache-Control: $cacheControl"
    - Loguj kluczowe informacje (nie całe JSON'y)
 
 3. **Format raportu**:
+
 ```
 TEST 1: [Nazwa testu]
 Status: ✅ PASS / ❌ FAIL
@@ -151,28 +158,33 @@ TEST 2: [Nazwa testu]
 ```
 
 4. **Podsumowanie**:
-Na końcu wyświetl:
+   Na końcu wyświetl:
+
 - Liczbę testów: X
 - Zaliczone: Y (✅)
 - Niezaliczone: Z (❌)
-- Wskaźnik sukcesu: Y/X * 100%
+- Wskaźnik sukcesu: Y/X \* 100%
 
 ## Uwagi specjalne:
 
 ### Dla POST /api/events:
+
 - Możesz tworzyć wydarzenia jako zalogowany użytkownik (z tokenem) lub jako gość (bez tokenu)
 - Zapisz zwrócone ID wydarzeń do późniejszego użycia w testach GET/PATCH/DELETE
 
 ### Dla GET /api/events:
+
 - Pamiętaj o testowaniu filtrów: `?saved=true`, `?category=koncerty`, `?age_category=dzieci`
 - Testuj paginację: `?page=1&limit=2`
 - Testuj sortowanie: `?sort=title&order=asc`
 
 ### Dla PATCH /api/events/:id:
+
 - Możesz aktualizować: `saved`, `feedback`, `edited_description`
 - Sprawdź czy `updated_at` się zmienia
 
 ### Dla DELETE /api/events/:id:
+
 - To jest SOFT DELETE - tylko ustawia `saved=false`
 - Sprawdź czy wydarzenie nadal istnieje (GET powinien działać)
 - Sprawdź czy `saved` jest ustawione na `false`
@@ -180,6 +192,7 @@ Na końcu wyświetl:
 ## Rozpocznij testowanie:
 
 Wykonaj wszystkie testy z pliku <manual_test_plan> i wygeneruj szczegółowy raport.
+
 ```
 
 ---
@@ -188,32 +201,38 @@ Wykonaj wszystkie testy z pliku <manual_test_plan> i wygeneruj szczegółowy rap
 
 ### Przykład 1: Testowanie GET /api/categories/age
 ```
+
 [Wklej powyższy prompt]
 
 Zastąp:
 <manual_test_plan>
 #file:docs/manual-tests/get-age-categories-manual-test-plan.md
 </manual_test_plan>
+
 ```
 
 ### Przykład 2: Testowanie GET /api/events
 ```
+
 [Wklej powyższy prompt]
 
 Zastąp:
 <manual_test_plan>
 #file:docs/manual-tests/get-user-events-manual-test-plan.md
 </manual_test_plan>
+
 ```
 
 ### Przykład 3: Testowanie DELETE /api/events/:id
 ```
+
 [Wklej powyższy prompt]
 
 Zastąp:
 <manual_test_plan>
 #file:docs/manual-tests/soft-delete-event-id-manual-test-plan.md
 </manual_test_plan>
+
 ```
 
 ---
@@ -236,3 +255,4 @@ Zastąp:
 - Supabase musi działać: `supabase start`
 - W razie potrzeby odśwież tokeny (wygasają po 1 godzinie)
 - Możesz utworzyć dodatkowe wydarzenia testowe używając POST /api/events
+```

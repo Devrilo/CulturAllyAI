@@ -3,6 +3,7 @@
 ## Przygotowanie środowiska testowego
 
 ### Wymagania wstępne
+
 - Uruchomiony lokalny Supabase (`supabase start`)
 - Aplikacja uruchomiona na `http://localhost:3000`
 - Zainstalowany Postman
@@ -10,6 +11,7 @@
 ### Konfiguracja Postmana - Uzyskanie tokenu dostępowego (OPCJONALNIE)
 
 ⚠️ **UWAGA:** Token jest **opcjonalny** dla tego endpointu! Możesz tworzyć wydarzenia jako:
+
 - **Gość** (bez tokenu) - wydarzenie zostanie utworzone z `user_id = NULL`
 - **Zalogowany użytkownik** (z tokenem) - wydarzenie będzie przypisane do użytkownika
 
@@ -28,16 +30,17 @@ Jeśli chcesz przetestować utworzenie wydarzenia jako zalogowany użytkownik, w
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://127.0.0.1:54321/auth/v1/token?grant_type=password
 ```
 
 **3. Ustaw Headers:**
 
-| Key | Value |
-|-----|-------|
-| `Content-Type` | `application/json` |
-| `apikey` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0` |
+| Key            | Value                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Content-Type` | `application/json`                                                                                                                                     |
+| `apikey`       | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0` |
 
 **4. Ustaw Body (raw, JSON):**
 
@@ -55,6 +58,7 @@ http://127.0.0.1:54321/auth/v1/token?grant_type=password
 ## PRZYPADEK TESTOWY 1A: Utworzenie wydarzenia jako gość (Sukces - 201)
 
 ### Opis
+
 Utworzenie nowego wydarzenia przez niezalogowanego użytkownika (gościa) ze wszystkimi poprawnymi danymi.
 
 ### Kroki wykonania
@@ -66,14 +70,15 @@ Utworzenie nowego wydarzenia przez niezalogowanego użytkownika (gościa) ze wsz
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 ⚠️ **UWAGA:** NIE dodawaj headera `Authorization`! To test dla gościa.
@@ -98,6 +103,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `201 Created`
 
 **Oczekiwana struktura odpowiedzi:**
+
 ```json
 {
   "id": "<UUID>",
@@ -120,6 +126,7 @@ http://localhost:3000/api/events
 ```
 
 **Weryfikacja:**
+
 - `user_id` powinno być `null` (gość)
 - `created_by_authenticated_user` powinno być `false`
 - `generated_description` powinien zawierać opis wygenerowany przez AI
@@ -130,6 +137,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 1B: Utworzenie wydarzenia jako zalogowany użytkownik (Sukces - 201)
 
 ### Opis
+
 Utworzenie wydarzenia przez zalogowanego użytkownika z tokenem autoryzacyjnym.
 
 ### Kroki wykonania
@@ -141,15 +149,16 @@ Utworzenie wydarzenia przez zalogowanego użytkownika z tokenem autoryzacyjnym.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
-| `Content-Type` | `application/json` |
+| Key             | Value                        |
+| --------------- | ---------------------------- |
+| `Content-Type`  | `application/json`           |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Body (raw, JSON):**
@@ -172,6 +181,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `201 Created`
 
 **Weryfikacja kluczowych pól:**
+
 ```json
 {
   "id": "<UUID>",
@@ -184,6 +194,7 @@ http://localhost:3000/api/events
 ```
 
 **Weryfikacja:**
+
 - `user_id` powinno być UUID zalogowanego użytkownika (`32373b34-4b94-4cbc-973b-949c6659cbee`)
 - `created_by_authenticated_user` powinno być `true`
 - `generated_description` zawiera opis AI
@@ -193,6 +204,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 2A: Brak wymaganego pola - title (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia bez podania obowiązkowego pola `title`.
 
 ### Kroki wykonania
@@ -204,14 +216,15 @@ Próba utworzenia wydarzenia bez podania obowiązkowego pola `title`.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -233,6 +246,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -251,6 +265,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 2B: Puste pole title (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z pustym stringiem jako `title`.
 
 ### Kroki wykonania
@@ -262,14 +277,15 @@ Próba utworzenia wydarzenia z pustym stringiem jako `title`.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -292,6 +308,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -310,6 +327,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 3A: Zbyt długi tytuł (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z tytułem przekraczającym 100 znaków.
 
 ### Kroki wykonania
@@ -321,14 +339,15 @@ Próba utworzenia wydarzenia z tytułem przekraczającym 100 znaków.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -353,6 +372,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -371,6 +391,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 3B: Zbyt długie key_information (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z `key_information` przekraczającym 200 znaków.
 
 ### Kroki wykonania
@@ -382,14 +403,15 @@ Próba utworzenia wydarzenia z `key_information` przekraczającym 200 znaków.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -414,6 +436,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -432,6 +455,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 4A: Nieprawidłowa kategoria wydarzenia (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z nieprawidłową wartością `category` (niezgodną z enumem).
 
 ### Kroki wykonania
@@ -443,14 +467,15 @@ Próba utworzenia wydarzenia z nieprawidłową wartością `category` (niezgodn�
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -473,6 +498,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -493,6 +519,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 4B: Nieprawidłowa kategoria wiekowa (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z nieprawidłową wartością `age_category`.
 
 ### Kroki wykonania
@@ -504,14 +531,15 @@ Próba utworzenia wydarzenia z nieprawidłową wartością `age_category`.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -534,6 +562,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -554,6 +583,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 5A: Data w przeszłości (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z datą, która już minęła.
 
 ### Kroki wykonania
@@ -565,14 +595,15 @@ Próba utworzenia wydarzenia z datą, która już minęła.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -595,6 +626,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -613,6 +645,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 5B: Nieprawidłowy format daty (Błąd - 400)
 
 ### Opis
+
 Próba utworzenia wydarzenia z datą w nieprawidłowym formacie (nie ISO 8601).
 
 ### Kroki wykonania
@@ -624,14 +657,15 @@ Próba utworzenia wydarzenia z datą w nieprawidłowym formacie (nie ISO 8601).
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -654,6 +688,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -674,6 +709,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 6A: Nieprawidłowy JSON w body (Błąd - 400)
 
 ### Opis
+
 Próba wysłania requestu z niepoprawnie sformatowanym JSON.
 
 ### Kroki wykonania
@@ -685,14 +721,15 @@ Próba wysłania requestu z niepoprawnie sformatowanym JSON.
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value              |
+| -------------- | ------------------ |
 | `Content-Type` | `application/json` |
 
 **Body (raw, JSON):**
@@ -718,6 +755,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Invalid JSON",
@@ -730,6 +768,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 6B: Nieprawidłowy token autoryzacyjny (Błąd - 401)
 
 ### Opis
+
 Próba utworzenia wydarzenia z nieprawidłowym tokenem w headerze `Authorization`.
 
 ### Kroki wykonania
@@ -741,15 +780,16 @@ Próba utworzenia wydarzenia z nieprawidłowym tokenem w headerze `Authorization
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
-| `Content-Type` | `application/json` |
+| Key             | Value                        |
+| --------------- | ---------------------------- |
+| `Content-Type`  | `application/json`           |
 | `Authorization` | `Bearer invalid-token-12345` |
 
 **Body (raw, JSON):**
@@ -772,6 +812,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -785,20 +826,20 @@ http://localhost:3000/api/events
 
 ### Matryca przypadków testowych
 
-| Test | Typ | Scenariusz | Oczekiwany status | Oczekiwany rezultat |
-|------|-----|-----------|-------------------|---------------------|
-| 1A | ✅ Pozytywny | Utworzenie wydarzenia jako gość | 201 | Event created (user_id=null) |
-| 1B | ✅ Pozytywny | Utworzenie jako zalogowany użytkownik | 201 | Event created (user_id=UUID) |
-| 2A | ❌ Negatywny | Brak pola title | 400 | Validation error |
-| 2B | ❌ Negatywny | Pusty title | 400 | Validation error |
-| 3A | ❌ Negatywny | Zbyt długi tytuł (>100 znaków) | 400 | Validation error |
-| 3B | ❌ Negatywny | Zbyt długie key_information (>200) | 400 | Validation error |
-| 4A | ❌ Negatywny | Nieprawidłowa category | 400 | Validation error |
-| 4B | ❌ Negatywny | Nieprawidłowa age_category | 400 | Validation error |
-| 5A | ❌ Negatywny | Data w przeszłości | 400 | Validation error |
-| 5B | ❌ Negatywny | Nieprawidłowy format daty | 400 | Validation error |
-| 6A | ❌ Negatywny | Nieprawidłowy JSON | 400 | Invalid JSON |
-| 6B | ❌ Negatywny | Nieprawidłowy token | 401 | Unauthorized |
+| Test | Typ          | Scenariusz                            | Oczekiwany status | Oczekiwany rezultat          |
+| ---- | ------------ | ------------------------------------- | ----------------- | ---------------------------- |
+| 1A   | ✅ Pozytywny | Utworzenie wydarzenia jako gość       | 201               | Event created (user_id=null) |
+| 1B   | ✅ Pozytywny | Utworzenie jako zalogowany użytkownik | 201               | Event created (user_id=UUID) |
+| 2A   | ❌ Negatywny | Brak pola title                       | 400               | Validation error             |
+| 2B   | ❌ Negatywny | Pusty title                           | 400               | Validation error             |
+| 3A   | ❌ Negatywny | Zbyt długi tytuł (>100 znaków)        | 400               | Validation error             |
+| 3B   | ❌ Negatywny | Zbyt długie key_information (>200)    | 400               | Validation error             |
+| 4A   | ❌ Negatywny | Nieprawidłowa category                | 400               | Validation error             |
+| 4B   | ❌ Negatywny | Nieprawidłowa age_category            | 400               | Validation error             |
+| 5A   | ❌ Negatywny | Data w przeszłości                    | 400               | Validation error             |
+| 5B   | ❌ Negatywny | Nieprawidłowy format daty             | 400               | Validation error             |
+| 6A   | ❌ Negatywny | Nieprawidłowy JSON                    | 400               | Invalid JSON                 |
+| 6B   | ❌ Negatywny | Nieprawidłowy token                   | 401               | Unauthorized                 |
 
 ### Legenda statusów HTTP
 
@@ -811,6 +852,7 @@ http://localhost:3000/api/events
 ### Dozwolone wartości dla pól enum
 
 #### `category` (kategoria wydarzenia):
+
 - `koncerty`
 - `imprezy`
 - `teatr_i_taniec`
@@ -821,6 +863,7 @@ http://localhost:3000/api/events
 - `inne`
 
 #### `age_category` (kategoria wiekowa):
+
 - `wszystkie`
 - `najmlodsi`
 - `dzieci`
@@ -831,14 +874,14 @@ http://localhost:3000/api/events
 
 ### Limity długości pól
 
-| Pole | Min | Max | Wymagane |
-|------|-----|-----|----------|
-| `title` | 1 | 100 | ✅ Tak |
-| `city` | 1 | 50 | ✅ Tak |
-| `event_date` | - | - | ✅ Tak (ISO 8601, przyszłość) |
-| `category` | - | - | ✅ Tak (enum) |
-| `age_category` | - | - | ✅ Tak (enum) |
-| `key_information` | 1 | 200 | ✅ Tak |
+| Pole              | Min | Max | Wymagane                      |
+| ----------------- | --- | --- | ----------------------------- |
+| `title`           | 1   | 100 | ✅ Tak                        |
+| `city`            | 1   | 50  | ✅ Tak                        |
+| `event_date`      | -   | -   | ✅ Tak (ISO 8601, przyszłość) |
+| `category`        | -   | -   | ✅ Tak (enum)                 |
+| `age_category`    | -   | -   | ✅ Tak (enum)                 |
+| `key_information` | 1   | 200 | ✅ Tak                        |
 
 ### Uwagi końcowe
 

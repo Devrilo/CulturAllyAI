@@ -1,6 +1,7 @@
 # API Endpoint Implementation Plan: DELETE /api/events/:id
 
 ## 1. Przegląd punktu końcowego
+
 - Wykonuje soft delete wydarzenia poprzez ustawienie flagi `saved` na `false`.
 - Wymaga autoryzacji Bearer token - tylko właściciel wydarzenia może je usunąć.
 - Obsługuje wyłącznie wydarzenia utworzone przez zalogowanych użytkowników (`created_by_authenticated_user = true`).
@@ -9,6 +10,7 @@
 - Wykorzystuje RLS oraz jawne filtrowanie po `user_id` dla dodatkowego bezpieczeństwa.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: `DELETE`
 - Ścieżka: `/api/events/:id`
 - Nagłówki: `Authorization: Bearer <token>`
@@ -25,6 +27,7 @@
   - Nowy `DeleteEventResult` (`eventId: string`, `message: string`)
 
 ## 3. Szczegóły odpowiedzi
+
 - Sukces 200: `MessageResponseDTO` z polami `message` i `id`
   ```json
   {
@@ -41,6 +44,7 @@
 - Wszystkie odpowiedzi JSON z nagłówkiem `Content-Type: application/json`
 
 ## 4. Przepływ danych
+
 1. Handler odczytuje parametr `id` z path (`context.params.id`)
 2. Walidacja UUID przez `deleteEventParamsSchema` (Zod)
 3. Weryfikacja tokenu: `locals.supabase.auth.getUser()` – niepowodzenie lub brak użytkownika → 401
@@ -53,6 +57,7 @@
 6. Handler zwraca 200 z `MessageResponseDTO` lub propaguje błędy jako odpowiednie statusy HTTP
 
 ## 5. Względy bezpieczeństwa
+
 - Autoryzacja wymagana (Bearer token) – każde żądanie musi być autentykowane
 - RLS automatycznie filtruje po `user_id = auth.uid()`, ale dodajemy jawne `.eq("user_id", userId)` jako defense-in-depth
 - Walidacja UUID zapobiega SQL injection i nieprawidłowym wartościom w zapytaniu
@@ -63,8 +68,9 @@
 - Walidacja `created_by_authenticated_user` flagi zapobiega próbom usunięcia wydarzeń gości
 
 ## 6. Obsługa błędów
+
 - `400 Bad Request`: nieprawidłowy format UUID w parametrze `id`
-- `401 Unauthorized`: 
+- `401 Unauthorized`:
   - Brak nagłówka Authorization
   - Token nieprawidłowy lub wygasły (błąd z `getUser()`)
   - Brak użytkownika w sesji
@@ -80,6 +86,7 @@
 - Handler mapuje kody na statusy HTTP; logi błędów przez `console.error`
 
 ## 7. Wydajność
+
 - Operacja UPDATE po primary key (`id`) + `user_id` – bardzo szybka dzięki indeksom
 - Użycie `.single()` gwarantuje max 1 rekord lub błąd (brak przetwarzania list)
 - Transakcja obejmuje UPDATE + INSERT do logs – minimalne overhead
@@ -89,10 +96,11 @@
 - Możliwość batching dla multiple delete (przyszła optymalizacja) – obecnie single delete only
 
 ## 8. Kroki implementacji
+
 1. Dodać `deleteEventParamsSchema` w `src/lib/validators/events.ts` z walidacją UUID; export typu `DeleteEventParamsInput`
    ```typescript
    export const deleteEventParamsSchema = z.object({
-     id: z.string().uuid("Invalid event ID format")
+     id: z.string().uuid("Invalid event ID format"),
    });
    export type DeleteEventParamsInput = z.infer<typeof deleteEventParamsSchema>;
    ```

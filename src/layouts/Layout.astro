@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { AppHeader } from "../components/generator/AppHeader";
 
 interface Props {
   title?: string;
@@ -9,15 +10,24 @@ const { title = "10x Astro Starter" } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline>
+      // Initialize theme before page load to prevent flash
+      (function () {
+        const stored = localStorage.getItem("theme");
+        const theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.classList.add(theme);
+      })();
+    </script>
   </head>
   <body>
+    <AppHeader client:load />
     <slot />
   </body>
 </html>

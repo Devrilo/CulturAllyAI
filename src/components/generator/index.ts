@@ -1,4 +1,6 @@
 export { Header } from "./Header";
+export { AppHeader } from "./AppHeader";
+export { ThemeToggle } from "./ThemeToggle";
 export { AuthPromptBanner } from "./AuthPromptBanner";
 export { TimeoutNotice } from "./TimeoutNotice";
 export { EventForm } from "./EventForm";

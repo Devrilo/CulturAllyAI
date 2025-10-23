@@ -5,6 +5,7 @@
 Endpoint DELETE /api/events/:id wykonuje operację **soft delete** na wydarzeniu poprzez ustawienie pola `saved = false`. Nie usuwa rekordu z bazy danych - pozwala tylko na "odklikanie" zapisanego wydarzenia.
 
 **Kluczowe cechy:**
+
 - Wymaga autoryzacji (Bearer token)
 - Działa tylko dla wydarzeń należących do zalogowanego użytkownika
 - Blokuje usuwanie wydarzeń utworzonych przez gości (`created_by_authenticated_user = false`)
@@ -16,6 +17,7 @@ Endpoint DELETE /api/events/:id wykonuje operację **soft delete** na wydarzeniu
 ## Przygotowanie środowiska testowego
 
 ### Wymagania wstępne
+
 - Uruchomiony lokalny Supabase (`supabase start`)
 - Aplikacja uruchomiona na `http://localhost:3000`
 - Zainstalowany Postman lub curl
@@ -28,17 +30,20 @@ Przed wykonaniem testów musisz uzyskać token dostępowy (access_token) dla uż
 #### Krok 1: Logowanie przez Supabase Auth API
 
 **Request:**
+
 ```
 POST http://127.0.0.1:54321/auth/v1/token?grant_type=password
 ```
 
 **Headers:**
+
 ```
 Content-Type: application/json
 apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0
 ```
 
 **Body (raw JSON):**
+
 ```json
 {
   "email": "marcin.szwajgier@o2.pl",
@@ -47,6 +52,7 @@ apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9
 ```
 
 **Oczekiwana odpowiedź (200 OK):**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -70,10 +76,12 @@ Skopiuj wartość `access_token` z odpowiedzi. Będzie potrzebny we wszystkich t
 ## PRZYPADEK TESTOWY 1A: Soft delete zapisanego wydarzenia (Sukces - 200)
 
 ### Opis
+
 Usunięcie (soft delete) wydarzenia, które jest zapisane (`saved = true`) i należy do zalogowanego użytkownika.
 Po operacji pole `saved` powinno zostać ustawione na `false`.
 
 ### Dane testowe
+
 - Event ID: `c774ab0f-306a-4195-95fd-34fdd5c65468`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -86,6 +94,7 @@ Po operacji pole `saved` powinno zostać ustawione na `false`.
 Możesz sprawdzić stan wydarzenia przed wykonaniem soft delete:
 
 **Request GET:**
+
 ```
 GET http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -100,11 +109,13 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN_Z_KROKU_PRZYGOTOWANIA>
 ```
@@ -118,6 +129,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN_Z_KROKU_PRZYGOTOWANIA>
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "message": "Event removed from saved list",
@@ -130,13 +142,15 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN_Z_KROKU_PRZYGOTOWANIA>
 Sprawdź w bazie danych, że pole `saved` zostało ustawione na `false`:
 
 **Zapytanie SQL w Supabase Studio:**
+
 ```sql
-SELECT id, title, saved, updated_at 
-FROM events 
+SELECT id, title, saved, updated_at
+FROM events
 WHERE id = 'c774ab0f-306a-4195-95fd-34fdd5c65468';
 ```
 
 **Oczekiwany wynik:**
+
 - `saved` = `false`
 - `updated_at` ma nową datę
 
@@ -145,6 +159,7 @@ WHERE id = 'c774ab0f-306a-4195-95fd-34fdd5c65468';
 Sprawdź czy akcja została zalogowana w `event_management_logs`:
 
 **Zapytanie SQL:**
+
 ```sql
 SELECT action_type, event_id, user_id, created_at
 FROM event_management_logs
@@ -154,6 +169,7 @@ LIMIT 1;
 ```
 
 **Oczekiwany wynik:**
+
 - `action_type` = `'event_deleted'`
 - `event_id` = `'c774ab0f-306a-4195-95fd-34fdd5c65468'`
 - `user_id` = `'32373b34-4b94-4cbc-973b-949c6659cbee'`
@@ -163,10 +179,12 @@ LIMIT 1;
 ## PRZYPADEK TESTOWY 1B: Soft delete wydarzenia już niezapisanego (Sukces - 200)
 
 ### Opis
-Próba soft delete wydarzenia, które ma już `saved = false`. 
+
+Próba soft delete wydarzenia, które ma już `saved = false`.
 Operacja powinna zakończyć się sukcesem (idempotentność), ale w bazie danych nic się nie zmieni.
 
 ### Dane testowe
+
 - Event ID: `3cc6c482-e88f-496f-a8fc-b2f3669a0b44`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -181,11 +199,13 @@ Operacja powinna zakończyć się sukcesem (idempotentność), ale w bazie danyc
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
@@ -197,6 +217,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "message": "Event removed from saved list",
@@ -204,7 +225,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 }
 ```
 
-**Wyjaśnienie:** 
+**Wyjaśnienie:**
 Operacja jest idempotentna - wykonanie soft delete na już "usuniętym" wydarzeniu nie powoduje błędu.
 
 ---
@@ -212,6 +233,7 @@ Operacja jest idempotentna - wykonanie soft delete na już "usuniętym" wydarzen
 ## PRZYPADEK TESTOWY 2A: Nieprawidłowy format UUID (Błąd - 400)
 
 ### Opis
+
 Próba soft delete wydarzenia z nieprawidłowym formatem ID (nie jest to poprawny UUID).
 
 ### Kroki wykonania
@@ -223,11 +245,13 @@ Próba soft delete wydarzenia z nieprawidłowym formatem ID (nie jest to poprawn
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/nieprawidlowy-uuid-123
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
@@ -239,6 +263,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -257,6 +282,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 2B: Puste ID w URL (Błąd - 404)
 
 ### Opis
+
 Próba wywołania endpointa bez podania ID wydarzenia w URL.
 
 ### Kroki wykonania
@@ -268,12 +294,15 @@ Próba wywołania endpointa bez podania ID wydarzenia w URL.
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/
 ```
+
 **Uwaga:** URL kończy się na `/events/` bez ID
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
@@ -292,6 +321,7 @@ Astro zwróci błąd, że route nie został znaleziony (brak handlera DELETE dla
 ## PRZYPADEK TESTOWY 3A: Brak tokenu autoryzacyjnego (Błąd - 401)
 
 ### Opis
+
 Próba soft delete wydarzenia bez podania tokenu autoryzacyjnego.
 
 ### Kroki wykonania
@@ -303,6 +333,7 @@ Próba soft delete wydarzenia bez podania tokenu autoryzacyjnego.
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468
 ```
@@ -317,6 +348,7 @@ Nie dodawaj headera `Authorization`!
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -329,6 +361,7 @@ Nie dodawaj headera `Authorization`!
 ## PRZYPADEK TESTOWY 3B: Nieprawidłowy token (Błąd - 401)
 
 ### Opis
+
 Próba soft delete wydarzenia z nieprawidłowym lub wygasłym tokenem.
 
 ### Kroki wykonania
@@ -340,11 +373,13 @@ Próba soft delete wydarzenia z nieprawidłowym lub wygasłym tokenem.
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer invalid_token_xyz123
 ```
@@ -356,6 +391,7 @@ Authorization: Bearer invalid_token_xyz123
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -368,14 +404,17 @@ Authorization: Bearer invalid_token_xyz123
 ## PRZYPADEK TESTOWY 4A: Próba usunięcia wydarzenia innego użytkownika (Błąd - 404)
 
 ### Opis
+
 Próba soft delete wydarzenia, które należy do innego użytkownika.
 RLS automatycznie blokuje dostęp, więc endpoint zwróci 404 zamiast 403 (nie ujawniamy czy ID istnieje).
 
 ### Przygotowanie
+
 Musisz mieć dwa konta użytkowników i wydarzenia utworzone przez użytkownika A.
 Próbujesz usunąć to wydarzenie jako użytkownik B.
 
 ### Dane testowe
+
 - Event ID: `<ID_WYDARZENIA_UŻYTKOWNIKA_A>`
 - Zalogowany jako: Użytkownik B
 
@@ -390,11 +429,13 @@ Próbujesz usunąć to wydarzenie jako użytkownik B.
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/<ID_WYDARZENIA_UŻYTKOWNIKA_A>
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TOKEN_UŻYTKOWNIKA_B>
 ```
@@ -406,6 +447,7 @@ Authorization: Bearer <TOKEN_UŻYTKOWNIKA_B>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -422,9 +464,11 @@ Nie używamy 403, aby nie ujawniać istnienia wydarzenia (ochrona przed enumerac
 ## PRZYPADEK TESTOWY 4B: Nieistniejące ID wydarzenia (Błąd - 404)
 
 ### Opis
+
 Próba soft delete wydarzenia, które nie istnieje w bazie danych.
 
 ### Dane testowe
+
 - Event ID: `00000000-0000-0000-0000-000000000000` (prawidłowy UUID, ale nieistniejący)
 
 ### Kroki wykonania
@@ -436,11 +480,13 @@ Próba soft delete wydarzenia, które nie istnieje w bazie danych.
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
@@ -452,6 +498,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -464,10 +511,12 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ## PRZYPADEK TESTOWY 5A: Próba usunięcia wydarzenia gościa (Błąd - 403)
 
 ### Opis
+
 Próba soft delete wydarzenia, które zostało utworzone przez gościa (`created_by_authenticated_user = false`).
 Nawet jeśli `user_id` pasuje, operacja jest zabroniona ze względów bezpieczeństwa.
 
 ### Dane testowe
+
 - Event ID: `50a5338b-18a2-4454-bf1e-ec379a2dd046`
 - created_by_authenticated_user: `false`
 - user_id: `NULL` (utworzone jako gość)
@@ -481,11 +530,13 @@ Nawet jeśli `user_id` pasuje, operacja jest zabroniona ze względów bezpiecze�
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/50a5338b-18a2-4454-bf1e-ec379a2dd046
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
@@ -497,6 +548,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `404 Not Found` (z powodu RLS)
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -509,8 +561,8 @@ RLS automatycznie blokuje dostęp do wydarzeń gości (`user_id = NULL` nie pasu
 Endpoint nigdy nie dotrze do logiki sprawdzającej `created_by_authenticated_user`, bo RLS odrzuci zapytanie wcześniej.
 
 **Uwaga dla przyszłości:**
-Jeśli w przyszłości zmienisz polityki RLS tak, aby zalogowani użytkownicy mogli widzieć swoje wydarzenia gościa 
-(np. przez powiązanie session_id), wtedy ten test powinien zwrócić `403 Forbidden` z komunikatem 
+Jeśli w przyszłości zmienisz polityki RLS tak, aby zalogowani użytkownicy mogli widzieć swoje wydarzenia gościa
+(np. przez powiązanie session_id), wtedy ten test powinien zwrócić `403 Forbidden` z komunikatem
 "Usuwanie wydarzeń utworzonych przez gości jest zabronione".
 
 ---
@@ -518,10 +570,12 @@ Jeśli w przyszłości zmienisz polityki RLS tak, aby zalogowani użytkownicy mo
 ## PRZYPADEK TESTOWY 5B: Wydarzenie z usuniętego konta (Błąd - 404)
 
 ### Opis
+
 Próba soft delete wydarzenia, które zostało utworzone przez zalogowanego użytkownika, ale konto zostało usunięte.
 Wydarzenie ma `created_by_authenticated_user = true` ale `user_id = NULL`.
 
 ### Dane testowe
+
 - Event ID: `5af88917-3f9d-41b8-9af8-67f9ac1d4418`
 - created_by_authenticated_user: `true`
 - user_id: `NULL` (konto usunięte)
@@ -535,11 +589,13 @@ Wydarzenie ma `created_by_authenticated_user = true` ale `user_id = NULL`.
 **Metoda:** `DELETE`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events/5af88917-3f9d-41b8-9af8-67f9ac1d4418
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 ```
@@ -551,6 +607,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `404 Not Found`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Not Found",
@@ -566,10 +623,12 @@ RLS blokuje dostęp, ponieważ `user_id = NULL` nie pasuje do ID zalogowanego u�
 ## PRZYPADEK TESTOWY 6A: Wielokrotne soft delete tego samego wydarzenia (Sukces - 200)
 
 ### Opis
+
 Test idempotentności operacji soft delete.
 Wykonanie soft delete na tym samym wydarzeniu dwa razy z rzędu powinno zakończyć się sukcesem oba razy.
 
 ### Dane testowe
+
 - Event ID: `3e11b5de-7733-4ffd-b454-82b9dbe00777`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -580,6 +639,7 @@ Wykonanie soft delete na tym samym wydarzeniu dwa razy z rzędu powinno zakończ
 #### 1. Pierwsze wywołanie soft delete
 
 **Request:**
+
 ```
 DELETE http://localhost:3000/api/events/3e11b5de-7733-4ffd-b454-82b9dbe00777
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -592,6 +652,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 #### 2. Drugie wywołanie soft delete (na tym samym wydarzeniu)
 
 **Request:**
+
 ```
 DELETE http://localhost:3000/api/events/3e11b5de-7733-4ffd-b454-82b9dbe00777
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -600,6 +661,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "message": "Event removed from saved list",
@@ -614,6 +676,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 Sprawdź ile razy akcja została zalogowana:
 
 **Zapytanie SQL:**
+
 ```sql
 SELECT COUNT(*) as deletion_count
 FROM event_management_logs
@@ -622,6 +685,7 @@ AND action_type = 'event_deleted';
 ```
 
 **Oczekiwany wynik:**
+
 - `deletion_count` = `2` (każde wywołanie loguje akcję, nawet jeśli `saved` nie zmienia się)
 
 ---
@@ -629,9 +693,11 @@ AND action_type = 'event_deleted';
 ## PRZYPADEK TESTOWY 6B: Przywrócenie i ponowne soft delete
 
 ### Opis
+
 Test scenariusza: zapisanie → soft delete → zapisanie ponownie → soft delete ponownie.
 
 ### Dane testowe
+
 - Event ID: `3cc6c482-e88f-496f-a8fc-b2f3669a0b44`
 - created_by_authenticated_user: `true`
 - user_id: `32373b34-4b94-4cbc-973b-949c6659cbee`
@@ -641,6 +707,7 @@ Test scenariusza: zapisanie → soft delete → zapisanie ponownie → soft dele
 #### 1. Zapisanie wydarzenia (PATCH)
 
 **Request:**
+
 ```
 PATCH http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -658,6 +725,7 @@ Content-Type: application/json
 #### 2. Soft delete (DELETE)
 
 **Request:**
+
 ```
 DELETE http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -670,6 +738,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 #### 3. Zapisanie ponownie (PATCH)
 
 **Request:**
+
 ```
 PATCH http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -687,6 +756,7 @@ Content-Type: application/json
 #### 4. Soft delete ponownie (DELETE)
 
 **Request:**
+
 ```
 DELETE http://localhost:3000/api/events/3cc6c482-e88f-496f-a8fc-b2f3669a0b44
 Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
@@ -699,6 +769,7 @@ Authorization: Bearer <TWÓJ_ACCESS_TOKEN>
 #### 5. Weryfikacja logów w bazie danych
 
 **Zapytanie SQL:**
+
 ```sql
 SELECT action_type, created_at
 FROM event_management_logs
@@ -708,6 +779,7 @@ LIMIT 4;
 ```
 
 **Oczekiwany wynik (od najnowszego):**
+
 1. `action_type = 'event_deleted'`
 2. `action_type = 'event_saved'`
 3. `action_type = 'event_deleted'`
@@ -719,20 +791,20 @@ LIMIT 4;
 
 ### Matryca przypadków testowych
 
-| Test | Typ | Scenariusz | Event ID | Oczekiwany status | Oczekiwany rezultat |
-|------|-----|-----------|----------|-------------------|---------------------|
-| 1A | ✅ Pozytywny | Soft delete zapisanego wydarzenia | `c774ab0f...` | 200 | Sukces, `saved = false` |
-| 1B | ✅ Pozytywny | Soft delete już niezapisanego | `3cc6c482...` | 200 | Sukces (idempotentność) |
-| 2A | ❌ Negatywny | Nieprawidłowy format UUID | `nieprawidlowy-uuid` | 400 | Validation error |
-| 2B | ❌ Negatywny | Puste ID w URL | `/events/` | 404 | Route not found |
-| 3A | ❌ Negatywny | Brak tokenu autoryzacyjnego | `c774ab0f...` | 401 | Unauthorized |
-| 3B | ❌ Negatywny | Nieprawidłowy token | `c774ab0f...` | 401 | Unauthorized |
-| 4A | ❌ Negatywny | Wydarzenie innego użytkownika | `<user_a_event>` | 404 | Event not found (RLS) |
-| 4B | ❌ Negatywny | Nieistniejące ID | `00000000...` | 404 | Event not found |
-| 5A | ❌ Negatywny | Wydarzenie gościa (user_id=NULL) | `50a5338b...` | 404 | Event not found (RLS) |
-| 5B | ❌ Negatywny | Wydarzenie z usuniętego konta | `5af88917...` | 404 | Event not found (RLS) |
-| 6A | ✅ Pozytywny | Wielokrotne soft delete | `3e11b5de...` | 200 | Sukces (idempotentność) |
-| 6B | ✅ Pozytywny | Zapisz → usuń → zapisz → usuń | `3cc6c482...` | 200 | Sukces (cykl życia) |
+| Test | Typ          | Scenariusz                        | Event ID             | Oczekiwany status | Oczekiwany rezultat     |
+| ---- | ------------ | --------------------------------- | -------------------- | ----------------- | ----------------------- |
+| 1A   | ✅ Pozytywny | Soft delete zapisanego wydarzenia | `c774ab0f...`        | 200               | Sukces, `saved = false` |
+| 1B   | ✅ Pozytywny | Soft delete już niezapisanego     | `3cc6c482...`        | 200               | Sukces (idempotentność) |
+| 2A   | ❌ Negatywny | Nieprawidłowy format UUID         | `nieprawidlowy-uuid` | 400               | Validation error        |
+| 2B   | ❌ Negatywny | Puste ID w URL                    | `/events/`           | 404               | Route not found         |
+| 3A   | ❌ Negatywny | Brak tokenu autoryzacyjnego       | `c774ab0f...`        | 401               | Unauthorized            |
+| 3B   | ❌ Negatywny | Nieprawidłowy token               | `c774ab0f...`        | 401               | Unauthorized            |
+| 4A   | ❌ Negatywny | Wydarzenie innego użytkownika     | `<user_a_event>`     | 404               | Event not found (RLS)   |
+| 4B   | ❌ Negatywny | Nieistniejące ID                  | `00000000...`        | 404               | Event not found         |
+| 5A   | ❌ Negatywny | Wydarzenie gościa (user_id=NULL)  | `50a5338b...`        | 404               | Event not found (RLS)   |
+| 5B   | ❌ Negatywny | Wydarzenie z usuniętego konta     | `5af88917...`        | 404               | Event not found (RLS)   |
+| 6A   | ✅ Pozytywny | Wielokrotne soft delete           | `3e11b5de...`        | 200               | Sukces (idempotentność) |
+| 6B   | ✅ Pozytywny | Zapisz → usuń → zapisz → usuń     | `3cc6c482...`        | 200               | Sukces (cykl życia)     |
 
 ### Legenda statusów HTTP
 
@@ -748,40 +820,48 @@ LIMIT 4;
 ## Uwagi końcowe
 
 ### 1. Token wygasa po 1 godzinie
+
 Jeśli otrzymasz błąd 401 podczas testowania, wykonaj ponownie krok przygotowania i uzyskaj nowy token.
 
 ### 2. RLS (Row Level Security)
+
 Supabase automatycznie filtruje wyniki na podstawie polityk RLS. Jeśli wydarzenie nie należy do zalogowanego użytkownika, otrzymasz 404 zamiast 403, co chroni przed enumeracją ID.
 
 ### 3. Pole updated_at
+
 Jest automatycznie aktualizowane przez trigger bazodanowy `update_updated_at_column` przy każdej modyfikacji rekordu.
 
 ### 4. Logowanie akcji
+
 Każda udana operacja soft delete jest zapisywana w tabeli `event_management_logs` z typem `event_deleted`, nawet jeśli `saved` już było `false`.
 
 ### 5. Soft delete vs Hard delete
+
 Ten endpoint NIE usuwa rekordów z bazy danych. Ustawia tylko `saved = false`, co pozwala na późniejsze przywrócenie wydarzenia przez PATCH z `saved = true`.
 
 ### 6. Różnica między PATCH i DELETE
+
 - **PATCH** `/api/events/:id` - Pozwala na zmianę `saved`, `feedback`, `edited_description`
 - **DELETE** `/api/events/:id` - Ustawia tylko `saved = false` (soft delete)
 
 Użytkownik może użyć PATCH do "odznaczenia" zapisanego wydarzenia (`saved: false`) lub DELETE do szybkiego soft delete.
 
 ### 7. Przywracanie stanu testowego
+
 Po wykonaniu testów możesz chcieć przywrócić oryginalne wartości w bazie danych za pomocą PATCH lub bezpośrednio w SQL:
 
 ```sql
-UPDATE events 
-SET saved = true 
+UPDATE events
+SET saved = true
 WHERE id = 'c774ab0f-306a-4195-95fd-34fdd5c65468';
 ```
 
 ### 8. Weryfikacja polityk RLS
+
 Możesz sprawdzić aktywne polityki RLS dla tabeli `events`:
 
 ```sql
-SELECT * FROM pg_policies 
+SELECT * FROM pg_policies
 WHERE tablename = 'events';
 ```
 
@@ -800,6 +880,7 @@ Symulacja dwóch równoczesnych żądań soft delete na tym samym wydarzeniu:
 3. Kliknij "Send" w obu oknach jednocześnie
 
 **Oczekiwany rezultat:**
+
 - Oba żądania powinny zwrócić 200 OK
 - W bazie danych `saved = false`
 - W `event_management_logs` powinny być 2 wpisy z `action_type = 'event_deleted'`
@@ -811,6 +892,7 @@ Symulacja dwóch równoczesnych żądań soft delete na tym samym wydarzeniu:
 3. Sprawdź czy `edited_description` jest zachowany po soft delete
 
 **Oczekiwany rezultat:**
+
 - Soft delete nie usuwa `edited_description`
 - Wszystkie pola poza `saved` i `updated_at` pozostają niezmienione
 
@@ -821,6 +903,7 @@ Symulacja dwóch równoczesnych żądań soft delete na tym samym wydarzeniu:
 3. Sprawdź czy `feedback` jest zachowana
 
 **Oczekiwany rezultat:**
+
 - Soft delete nie zmienia `feedback`
 - `feedback` pozostaje `"thumbs_down"`
 
@@ -831,23 +914,27 @@ Symulacja dwóch równoczesnych żądań soft delete na tym samym wydarzeniu:
 Dla użytkowników preferujących curl zamiast Postmana:
 
 ### Sukces (200):
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ### Brak autoryzacji (401):
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/events/c774ab0f-306a-4195-95fd-34fdd5c65468"
 ```
 
 ### Nieprawidłowy UUID (400):
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/events/invalid-uuid" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ### Nieistniejące ID (404):
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/events/00000000-0000-0000-0000-000000000000" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
@@ -860,11 +947,13 @@ curl -X DELETE "http://localhost:3000/api/events/00000000-0000-0000-0000-0000000
 ### Problem: Otrzymuję 500 zamiast 200
 
 **Możliwe przyczyny:**
+
 1. Baza danych nie jest uruchomiona (`supabase start`)
 2. Tabela `event_management_logs` nie istnieje lub nie ma uprawnień INSERT
 3. Trigger `update_updated_at_column` jest nieprawidłowo skonfigurowany
 
 **Rozwiązanie:**
+
 - Sprawdź logi serwera (`npm run dev` output)
 - Sprawdź logi Supabase (`supabase logs`)
 - Zweryfikuj strukturę bazy danych
@@ -872,11 +961,13 @@ curl -X DELETE "http://localhost:3000/api/events/00000000-0000-0000-0000-0000000
 ### Problem: Otrzymuję 404 dla mojego własnego wydarzenia
 
 **Możliwe przyczyny:**
+
 1. Token należy do innego użytkownika
 2. `user_id` w wydarzeniu nie pasuje do `auth.uid()` z tokenu
 3. Polityki RLS blokują dostęp
 
 **Rozwiązanie:**
+
 - Sprawdź ID użytkownika w tokenie (zdekoduj JWT na jwt.io)
 - Sprawdź `user_id` w rekordzie wydarzenia w bazie
 - Zweryfikuj polityki RLS dla tabeli `events`
@@ -884,11 +975,13 @@ curl -X DELETE "http://localhost:3000/api/events/00000000-0000-0000-0000-0000000
 ### Problem: Logowanie nie działa (brak wpisów w event_management_logs)
 
 **Możliwe przyczyny:**
+
 1. Brak uprawnień INSERT dla tabeli `event_management_logs`
 2. Polityka RLS blokuje INSERT
 3. Constraint naruszony (np. foreign key)
 
 **Rozwiązanie:**
+
 - Sprawdź logi błędów w konsoli serwera
 - Zweryfikuj polityki RLS dla `event_management_logs`
 - Sprawdź czy `user_id` i `event_id` są prawidłowe

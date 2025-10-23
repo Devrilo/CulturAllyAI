@@ -48,13 +48,15 @@
 ## Architektura UI
 
 ### Tech Stack
+
 Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, React Query, Supabase Auth
 
 ### Routes
+
 ```
 /           Generator (public)
 /login      Logowanie
-/register   Rejestracja  
+/register   Rejestracja
 /events     Moje wydarzenia (protected)
 /settings   Zarządzanie kontem (protected)
 ```
@@ -62,6 +64,7 @@ Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, React Query, Supabase Au
 ### Widoki
 
 **Generator (/):**
+
 - Desktop: Formularz (40%) | Podgląd (60%, sticky)
 - Mobile: Vertical stack
 - Formularz: 7 pól → "Generuj opis"
@@ -69,6 +72,7 @@ Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, React Query, Supabase Au
 - Guest: Toast "Zaloguj się aby zapisać/ocenić"
 
 **Moje wydarzenia (/events):**
+
 - Header: Tytuł + licznik + Filtry + Sortowanie
 - Infinite scroll (20/batch) z "Load more" fallback
 - Karta: Tytuł + Meta + Badge + Pełny opis + [Edytuj] [Kopiuj] [Usuń]
@@ -77,16 +81,19 @@ Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, React Query, Supabase Au
 - Empty state: Ilustracja + CTA
 
 **Auth (/login, /register):**
+
 - Centered card
 - Login: Email + Password + "Zaloguj się"
 - Register: Email + Password + Confirm + "Zarejestruj się"
 - Supabase SDK, redirect → Generator
 
 **Ustawienia (/settings):**
+
 - Sekcja "Zarządzanie kontem": Email (read-only) + [Zmień hasło] + [Usuń konto]
 - Modals dla zmian
 
 ### API Integration
+
 ```
 POST   /api/events              Generowanie
 GET    /api/events              Lista
@@ -97,27 +104,30 @@ GET    /api/categories/age      Kategorie wiekowe
 ```
 
 ### State Management
+
 ```typescript
 // Local UI
-useState(formData)
+useState(formData);
 
 // Server (React Query)
-useQuery(['events', filters], fetchEvents, { staleTime: 5*60*1000 })
-useMutation(saveEvent, { onMutate: optimisticUpdate })
+useQuery(["events", filters], fetchEvents, { staleTime: 5 * 60 * 1000 });
+useMutation(saveEvent, { onMutate: optimisticUpdate });
 
 // Auth
-useUser() // Supabase wrapper
+useUser(); // Supabase wrapper
 
 // URL
-useSearchParams() // Filtry, sortowanie
+useSearchParams(); // Filtry, sortowanie
 ```
 
 ### Responsywność
+
 - Mobile <768px: Vertical, full-width, burger menu
 - Tablet 768-1024px: 50/50 split
 - Desktop ≥1024px: 40/60 split, sticky
 
 ### Accessibility (WCAG 2.1 AA)
+
 - Semantic HTML, ARIA labels, keyboard nav, focus states
 - Color contrast min 4.5:1
 - Form labels + aria-invalid + aria-describedby
@@ -128,22 +138,27 @@ useSearchParams() // Filtry, sortowanie
 Button, Input, Textarea, Select, Toast, Modal, Card, EmptyState, Skeleton, Spinner
 
 **Colors:**
+
 - Primary: Blue-600
 - Success: Green-600 (#16a34a)
 - Error: Red-600 (#dc2626)
 - Neutral: Gray-50 to Gray-900
 
 **Typography:**
+
 - Font: Inter (Google Fonts)
 - Sizes: text-sm (12px), text-base (14px), text-lg (16px), text-xl (18px), text-2xl (24px)
 
 **Spacing:**
+
 - Base: 8px (Tailwind: space-2, space-4, space-6, space-8)
 
 **Icons:**
+
 - Lucide React (tree-shakeable)
 
 **Toasts:**
+
 - Position: top-right
 - Max: 3 simultaneous
 - Auto-dismiss: 2-3s

@@ -3,6 +3,7 @@
 ## Przygotowanie środowiska testowego
 
 ### Wymagania wstępne
+
 - Uruchomiony lokalny Supabase (`supabase start`)
 - Aplikacja uruchomiona na `http://localhost:3000`
 - Zainstalowany Postman lub curl
@@ -21,16 +22,17 @@
 **Metoda:** `POST`
 
 **URL:**
+
 ```
 http://127.0.0.1:54321/auth/v1/token?grant_type=password
 ```
 
 **3. Ustaw Headers:**
 
-| Key | Value |
-|-----|-------|
-| `Content-Type` | `application/json` |
-| `apikey` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0` |
+| Key            | Value                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Content-Type` | `application/json`                                                                                                                                     |
+| `apikey`       | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXPooJeXxjNni43kdQwgnWNReilDMblYTn_I0` |
 
 **4. Ustaw Body (raw, JSON):**
 
@@ -44,6 +46,7 @@ http://127.0.0.1:54321/auth/v1/token?grant_type=password
 **5. Send i skopiuj `access_token` z odpowiedzi**
 
 Odpowiedź będzie zawierać:
+
 ```json
 {
   "access_token": "eyJhbGc...",
@@ -61,6 +64,7 @@ Skopiuj wartość `access_token` - będzie potrzebna we wszystkich testach poni�
 Utwórz kilka wydarzeń testowych za pomocą `POST /api/events`:
 
 **Wydarzenie 1 - Zapisane, kategoria: koncerty**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -76,6 +80,7 @@ curl -X POST http://localhost:3000/api/events \
 ```
 
 Następnie oznacz to wydarzenie jako zapisane (`PATCH /api/events/{id}`):
+
 ```bash
 curl -X PATCH http://localhost:3000/api/events/<ID_WYDARZENIA> \
   -H "Content-Type: application/json" \
@@ -84,6 +89,7 @@ curl -X PATCH http://localhost:3000/api/events/<ID_WYDARZENIA> \
 ```
 
 **Wydarzenie 2 - Niezapisane, kategoria: teatr_i_taniec**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -99,6 +105,7 @@ curl -X POST http://localhost:3000/api/events \
 ```
 
 **Wydarzenie 3 - Zapisane, kategoria: sztuka_i_wystawy**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -114,6 +121,7 @@ curl -X POST http://localhost:3000/api/events \
 ```
 
 Oznacz jako zapisane:
+
 ```bash
 curl -X PATCH http://localhost:3000/api/events/<ID_WYDARZENIA> \
   -H "Content-Type: application/json" \
@@ -122,6 +130,7 @@ curl -X PATCH http://localhost:3000/api/events/<ID_WYDARZENIA> \
 ```
 
 **Wydarzenie 4 - Niezapisane, kategoria: koncerty**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -137,6 +146,7 @@ curl -X POST http://localhost:3000/api/events \
 ```
 
 **Wydarzenie 5 - Zapisane, kategoria: dzieci**
+
 ```bash
 curl -X POST http://localhost:3000/api/events \
   -H "Content-Type: application/json" \
@@ -152,6 +162,7 @@ curl -X POST http://localhost:3000/api/events \
 ```
 
 Oznacz jako zapisane:
+
 ```bash
 curl -X PATCH http://localhost:3000/api/events/<ID_WYDARZENIA> \
   -H "Content-Type: application/json" \
@@ -160,6 +171,7 @@ curl -X PATCH http://localhost:3000/api/events/<ID_WYDARZENIA> \
 ```
 
 Po wykonaniu tych kroków powinieneś mieć w bazie:
+
 - **3 wydarzenia zapisane** (saved = true): Koncert Chopina, Wystawa Impresjonizmu, Bajkowy Teatrzyk
 - **2 wydarzenia niezapisane** (saved = false): Hamlet, Koncert Rockowy
 - **Różne kategorie**: koncerty (2), teatr_i_taniec (2), sztuka_i_wystawy (1)
@@ -170,6 +182,7 @@ Po wykonaniu tych kroków powinieneś mieć w bazie:
 ## PRZYPADEK TESTOWY 1: Pobranie wszystkich wydarzeń bez filtrów (Sukces - 200)
 
 ### Opis
+
 Pobranie wszystkich wydarzeń użytkownika z domyślną paginacją (strona 1, limit 20).
 
 ### Kroki wykonania
@@ -181,14 +194,15 @@ Pobranie wszystkich wydarzeń użytkownika z domyślną paginacją (strona 1, li
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:** (brak - używamy domyślnych wartości)
@@ -200,6 +214,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana struktura odpowiedzi:**
+
 ```json
 {
   "data": [
@@ -238,6 +253,7 @@ http://localhost:3000/api/events
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera wszystkie 5 wydarzeń użytkownika
 - Pole `model_version` **NIE jest obecne** w obiektach (zostało usunięte)
 - `pagination.page` = 1 (domyślnie)
@@ -253,6 +269,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 2: Filtrowanie po statusie zapisania - saved=true (Sukces - 200)
 
 ### Opis
+
 Pobranie tylko wydarzeń, które zostały zapisane przez użytkownika.
 
 ### Kroki wykonania
@@ -262,20 +279,21 @@ Pobranie tylko wydarzeń, które zostały zapisane przez użytkownika.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?saved=true
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key     | Value  |
+| ------- | ------ |
 | `saved` | `true` |
 
 #### 2. Wyślij request
@@ -285,6 +303,7 @@ http://localhost:3000/api/events?saved=true
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -319,6 +338,7 @@ http://localhost:3000/api/events?saved=true
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko 3 wydarzenia
 - Wszystkie wydarzenia mają `saved: true`
 - `pagination.total` = 3
@@ -329,6 +349,7 @@ http://localhost:3000/api/events?saved=true
 ## PRZYPADEK TESTOWY 3: Filtrowanie po statusie zapisania - saved=false (Sukces - 200)
 
 ### Opis
+
 Pobranie tylko wydarzeń, które NIE zostały zapisane (wersje robocze).
 
 ### Kroki wykonania
@@ -338,20 +359,21 @@ Pobranie tylko wydarzeń, które NIE zostały zapisane (wersje robocze).
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?saved=false
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key     | Value   |
+| ------- | ------- |
 | `saved` | `false` |
 
 #### 2. Wyślij request
@@ -361,6 +383,7 @@ http://localhost:3000/api/events?saved=false
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -389,6 +412,7 @@ http://localhost:3000/api/events?saved=false
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko 2 wydarzenia
 - Wszystkie wydarzenia mają `saved: false`
 - `pagination.total` = 2
@@ -399,6 +423,7 @@ http://localhost:3000/api/events?saved=false
 ## PRZYPADEK TESTOWY 4: Filtrowanie po kategorii - category=koncerty (Sukces - 200)
 
 ### Opis
+
 Pobranie tylko wydarzeń z kategorii "koncerty".
 
 ### Kroki wykonania
@@ -408,20 +433,21 @@ Pobranie tylko wydarzeń z kategorii "koncerty".
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?category=koncerty
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key        | Value      |
+| ---------- | ---------- |
 | `category` | `koncerty` |
 
 #### 2. Wyślij request
@@ -431,6 +457,7 @@ http://localhost:3000/api/events?category=koncerty
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -459,6 +486,7 @@ http://localhost:3000/api/events?category=koncerty
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko 2 wydarzenia
 - Wszystkie wydarzenia mają `category: "koncerty"`
 - `pagination.total` = 2
@@ -468,6 +496,7 @@ http://localhost:3000/api/events?category=koncerty
 ## PRZYPADEK TESTOWY 5: Filtrowanie po kategorii wiekowej - age_category=dzieci (Sukces - 200)
 
 ### Opis
+
 Pobranie tylko wydarzeń przeznaczonych dla dzieci.
 
 ### Kroki wykonania
@@ -477,20 +506,21 @@ Pobranie tylko wydarzeń przeznaczonych dla dzieci.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?age_category=dzieci
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value    |
+| -------------- | -------- |
 | `age_category` | `dzieci` |
 
 #### 2. Wyślij request
@@ -500,6 +530,7 @@ http://localhost:3000/api/events?age_category=dzieci
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -522,6 +553,7 @@ http://localhost:3000/api/events?age_category=dzieci
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko 1 wydarzenie
 - Wydarzenie ma `age_category: "dzieci"`
 - `pagination.total` = 1
@@ -531,6 +563,7 @@ http://localhost:3000/api/events?age_category=dzieci
 ## PRZYPADEK TESTOWY 6: Łączenie filtrów - saved=true + category=koncerty (Sukces - 200)
 
 ### Opis
+
 Pobranie zapisanych wydarzeń tylko z kategorii "koncerty".
 
 ### Kroki wykonania
@@ -540,21 +573,22 @@ Pobranie zapisanych wydarzeń tylko z kategorii "koncerty".
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?saved=true&category=koncerty
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `saved` | `true` |
+| Key        | Value      |
+| ---------- | ---------- |
+| `saved`    | `true`     |
 | `category` | `koncerty` |
 
 #### 2. Wyślij request
@@ -564,6 +598,7 @@ http://localhost:3000/api/events?saved=true&category=koncerty
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -587,6 +622,7 @@ http://localhost:3000/api/events?saved=true&category=koncerty
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko 1 wydarzenie (Koncert Chopina)
 - Wydarzenie ma `saved: true` AND `category: "koncerty"`
 - `pagination.total` = 1
@@ -597,6 +633,7 @@ http://localhost:3000/api/events?saved=true&category=koncerty
 ## PRZYPADEK TESTOWY 7: Sortowanie po dacie wydarzenia - sort=event_date&order=asc (Sukces - 200)
 
 ### Opis
+
 Pobranie wydarzeń posortowanych według daty wydarzenia (rosnąco - od najwcześniejszej).
 
 ### Kroki wykonania
@@ -606,22 +643,23 @@ Pobranie wydarzeń posortowanych według daty wydarzenia (rosnąco - od najwcze�
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?sort=event_date&order=asc
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `sort` | `event_date` |
-| `order` | `asc` |
+| Key     | Value        |
+| ------- | ------------ |
+| `sort`  | `event_date` |
+| `order` | `asc`        |
 
 #### 2. Wyślij request
 
@@ -630,6 +668,7 @@ http://localhost:3000/api/events?sort=event_date&order=asc
 **Oczekiwany status:** `200 OK`
 
 **Weryfikacja kolejności:**
+
 ```json
 {
   "data": [
@@ -666,6 +705,7 @@ http://localhost:3000/api/events?sort=event_date&order=asc
 ```
 
 **Weryfikacja:**
+
 - Wydarzenia są posortowane według `event_date` rosnąco (najwcześniejsze pierwsze)
 - Kolejność: 2025-10-30 → 2025-11-15 → 2025-12-05 → 2025-12-25 → 2026-01-10
 
@@ -674,6 +714,7 @@ http://localhost:3000/api/events?sort=event_date&order=asc
 ## PRZYPADEK TESTOWY 8: Sortowanie po tytule - sort=title&order=asc (Sukces - 200)
 
 ### Opis
+
 Pobranie wydarzeń posortowanych alfabetycznie według tytułu.
 
 ### Kroki wykonania
@@ -683,22 +724,23 @@ Pobranie wydarzeń posortowanych alfabetycznie według tytułu.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?sort=title&order=asc
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `sort` | `title` |
-| `order` | `asc` |
+| Key     | Value   |
+| ------- | ------- |
+| `sort`  | `title` |
+| `order` | `asc`   |
 
 #### 2. Wyślij request
 
@@ -707,6 +749,7 @@ http://localhost:3000/api/events?sort=title&order=asc
 **Oczekiwany status:** `200 OK`
 
 **Weryfikacja kolejności:**
+
 ```json
 {
   "data": [
@@ -731,6 +774,7 @@ http://localhost:3000/api/events?sort=title&order=asc
 ```
 
 **Weryfikacja:**
+
 - Wydarzenia są posortowane alfabetycznie według tytułu (A-Z)
 
 ---
@@ -738,6 +782,7 @@ http://localhost:3000/api/events?sort=title&order=asc
 ## PRZYPADEK TESTOWY 9: Paginacja - strona 1 z limitem 2 (Sukces - 200)
 
 ### Opis
+
 Pobranie pierwszej strony wyników z limitem 2 wydarzeń na stronę.
 
 ### Kroki wykonania
@@ -747,22 +792,23 @@ Pobranie pierwszej strony wyników z limitem 2 wydarzeń na stronę.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?page=1&limit=2
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `page` | `1` |
-| `limit` | `2` |
+| Key     | Value |
+| ------- | ----- |
+| `page`  | `1`   |
+| `limit` | `2`   |
 
 #### 2. Wyślij request
 
@@ -771,6 +817,7 @@ http://localhost:3000/api/events?page=1&limit=2
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -797,6 +844,7 @@ http://localhost:3000/api/events?page=1&limit=2
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera dokładnie 2 wydarzenia (pierwsze 2)
 - `pagination.page` = 1
 - `pagination.limit` = 2
@@ -810,6 +858,7 @@ http://localhost:3000/api/events?page=1&limit=2
 ## PRZYPADEK TESTOWY 10: Paginacja - strona 2 z limitem 2 (Sukces - 200)
 
 ### Opis
+
 Pobranie drugiej strony wyników z limitem 2 wydarzeń na stronę.
 
 ### Kroki wykonania
@@ -819,22 +868,23 @@ Pobranie drugiej strony wyników z limitem 2 wydarzeń na stronę.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?page=2&limit=2
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `page` | `2` |
-| `limit` | `2` |
+| Key     | Value |
+| ------- | ----- |
+| `page`  | `2`   |
+| `limit` | `2`   |
 
 #### 2. Wyślij request
 
@@ -843,6 +893,7 @@ http://localhost:3000/api/events?page=2&limit=2
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -869,6 +920,7 @@ http://localhost:3000/api/events?page=2&limit=2
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera wydarzenia 3-4 (offset: 2-3)
 - `pagination.page` = 2
 - `pagination.limit` = 2
@@ -882,6 +934,7 @@ http://localhost:3000/api/events?page=2&limit=2
 ## PRZYPADEK TESTOWY 11: Paginacja - ostatnia strona (Sukces - 200)
 
 ### Opis
+
 Pobranie ostatniej strony wyników (częściowo wypełniona).
 
 ### Kroki wykonania
@@ -891,22 +944,23 @@ Pobranie ostatniej strony wyników (częściowo wypełniona).
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?page=3&limit=2
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `page` | `3` |
-| `limit` | `2` |
+| Key     | Value |
+| ------- | ----- |
+| `page`  | `3`   |
+| `limit` | `2`   |
 
 #### 2. Wyślij request
 
@@ -915,6 +969,7 @@ http://localhost:3000/api/events?page=3&limit=2
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [
@@ -936,6 +991,7 @@ http://localhost:3000/api/events?page=3&limit=2
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko 1 wydarzenie (ostatnie)
 - `pagination.page` = 3
 - `pagination.limit` = 2
@@ -949,6 +1005,7 @@ http://localhost:3000/api/events?page=3&limit=2
 ## PRZYPADEK TESTOWY 12: Paginacja - strona poza zakresem (Sukces - 200, pusta tablica)
 
 ### Opis
+
 Próba pobrania strony, która nie istnieje (np. strona 10 gdy mamy tylko 3 strony).
 
 ### Kroki wykonania
@@ -958,22 +1015,23 @@ Próba pobrania strony, która nie istnieje (np. strona 10 gdy mamy tylko 3 stro
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?page=10&limit=2
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
-| `page` | `10` |
-| `limit` | `2` |
+| Key     | Value |
+| ------- | ----- |
+| `page`  | `10`  |
+| `limit` | `2`   |
 
 #### 2. Wyślij request
 
@@ -982,6 +1040,7 @@ http://localhost:3000/api/events?page=10&limit=2
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [],
@@ -997,6 +1056,7 @@ http://localhost:3000/api/events?page=10&limit=2
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` jest pusta (nie ma błędu 404!)
 - `pagination.page` = 10 (strona żądana)
 - `pagination.total_pages` = 3 (faktyczna liczba stron)
@@ -1008,6 +1068,7 @@ http://localhost:3000/api/events?page=10&limit=2
 ## PRZYPADEK TESTOWY 13: Maksymalny limit - limit=100 (Sukces - 200)
 
 ### Opis
+
 Pobranie wydarzeń z maksymalnym dozwolonym limitem (100 na stronę).
 
 ### Kroki wykonania
@@ -1017,20 +1078,21 @@ Pobranie wydarzeń z maksymalnym dozwolonym limitem (100 na stronę).
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?limit=100
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key     | Value |
+| ------- | ----- |
 | `limit` | `100` |
 
 #### 2. Wyślij request
@@ -1040,6 +1102,7 @@ http://localhost:3000/api/events?limit=100
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [ ... wszystkie 5 wydarzeń ... ],
@@ -1055,6 +1118,7 @@ http://localhost:3000/api/events?limit=100
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera wszystkie wydarzenia (max 100)
 - `pagination.limit` = 100 (maksymalny dozwolony limit)
 - `pagination.total_pages` = 1 (wszystkie wydarzenia zmieściły się na jednej stronie)
@@ -1064,6 +1128,7 @@ http://localhost:3000/api/events?limit=100
 ## PRZYPADEK TESTOWY 14: Limit przekraczający maksimum - limit=150 (Sukces - 200, limit obcięty do 100)
 
 ### Opis
+
 Próba ustawienia limitu powyżej 100 (zostanie automatycznie obcięty do 100).
 
 ### Kroki wykonania
@@ -1073,20 +1138,21 @@ Próba ustawienia limitu powyżej 100 (zostanie automatycznie obcięty do 100).
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?limit=150
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key     | Value |
+| ------- | ----- |
 | `limit` | `150` |
 
 #### 2. Wyślij request
@@ -1096,6 +1162,7 @@ http://localhost:3000/api/events?limit=150
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [ ... wszystkie wydarzenia ... ],
@@ -1111,6 +1178,7 @@ http://localhost:3000/api/events?limit=150
 ```
 
 **Weryfikacja:**
+
 - `pagination.limit` = 100 (NIE 150! - zostało obcięte do maksimum)
 - Request nie zwraca błędu 400, tylko automatycznie koryguje wartość
 
@@ -1119,6 +1187,7 @@ http://localhost:3000/api/events?limit=150
 ## PRZYPADEK TESTOWY 15: Brak tokenu autoryzacyjnego (Błąd - 401)
 
 ### Opis
+
 Próba pobrania wydarzeń bez podania tokenu Bearer w nagłówku.
 
 ### Kroki wykonania
@@ -1128,6 +1197,7 @@ Próba pobrania wydarzeń bez podania tokenu Bearer w nagłówku.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
@@ -1135,8 +1205,8 @@ http://localhost:3000/api/events
 **Headers:** (NIE dodawaj nagłówka Authorization!)
 
 | Key | Value |
-|-----|-------|
-| - | - |
+| --- | ----- |
+| -   | -     |
 
 #### 2. Wyślij request
 
@@ -1145,6 +1215,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -1153,6 +1224,7 @@ http://localhost:3000/api/events
 ```
 
 **Weryfikacja:**
+
 - Status 401 (nie 403 ani 400!)
 - Komunikat jasno wskazuje na brak autoryzacji
 
@@ -1161,6 +1233,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 16: Nieprawidłowy token autoryzacyjny (Błąd - 401)
 
 ### Opis
+
 Próba pobrania wydarzeń z nieprawidłowym tokenem Bearer.
 
 ### Kroki wykonania
@@ -1170,14 +1243,15 @@ Próba pobrania wydarzeń z nieprawidłowym tokenem Bearer.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer invalid-token-12345` |
 
 #### 2. Wyślij request
@@ -1187,6 +1261,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `401 Unauthorized`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Unauthorized",
@@ -1195,6 +1270,7 @@ http://localhost:3000/api/events
 ```
 
 **Weryfikacja:**
+
 - Status 401
 - Użytkownik nie może uzyskać dostępu z nieprawidłowym tokenem
 
@@ -1203,6 +1279,7 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 17: Nieprawidłowa kategoria wydarzenia (Błąd - 400)
 
 ### Opis
+
 Próba filtrowania z nieprawidłową wartością parametru `category`.
 
 ### Kroki wykonania
@@ -1212,20 +1289,21 @@ Próba filtrowania z nieprawidłową wartością parametru `category`.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?category=invalid_category
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key        | Value              |
+| ---------- | ------------------ |
 | `category` | `invalid_category` |
 
 #### 2. Wyślij request
@@ -1235,6 +1313,7 @@ http://localhost:3000/api/events?category=invalid_category
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -1249,6 +1328,7 @@ http://localhost:3000/api/events?category=invalid_category
 ```
 
 **Prawidłowe wartości category:**
+
 - `koncerty`
 - `imprezy`
 - `teatr_i_taniec`
@@ -1263,6 +1343,7 @@ http://localhost:3000/api/events?category=invalid_category
 ## PRZYPADEK TESTOWY 18: Nieprawidłowa kategoria wiekowa (Błąd - 400)
 
 ### Opis
+
 Próba filtrowania z nieprawidłową wartością parametru `age_category`.
 
 ### Kroki wykonania
@@ -1272,20 +1353,21 @@ Próba filtrowania z nieprawidłową wartością parametru `age_category`.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?age_category=invalid_age
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key            | Value         |
+| -------------- | ------------- |
 | `age_category` | `invalid_age` |
 
 #### 2. Wyślij request
@@ -1295,6 +1377,7 @@ http://localhost:3000/api/events?age_category=invalid_age
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -1309,6 +1392,7 @@ http://localhost:3000/api/events?age_category=invalid_age
 ```
 
 **Prawidłowe wartości age_category:**
+
 - `wszystkie`
 - `najmlodsi`
 - `dzieci`
@@ -1322,6 +1406,7 @@ http://localhost:3000/api/events?age_category=invalid_age
 ## PRZYPADEK TESTOWY 19: Nieprawidłowe pole sortowania (Błąd - 400)
 
 ### Opis
+
 Próba sortowania po polu, które nie jest dozwolone.
 
 ### Kroki wykonania
@@ -1331,20 +1416,21 @@ Próba sortowania po polu, które nie jest dozwolone.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?sort=invalid_field
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key    | Value           |
+| ------ | --------------- |
 | `sort` | `invalid_field` |
 
 #### 2. Wyślij request
@@ -1354,6 +1440,7 @@ http://localhost:3000/api/events?sort=invalid_field
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -1368,6 +1455,7 @@ http://localhost:3000/api/events?sort=invalid_field
 ```
 
 **Prawidłowe wartości sort:**
+
 - `created_at` (domyślnie)
 - `event_date`
 - `title`
@@ -1377,6 +1465,7 @@ http://localhost:3000/api/events?sort=invalid_field
 ## PRZYPADEK TESTOWY 20: Nieprawidłowy kierunek sortowania (Błąd - 400)
 
 ### Opis
+
 Próba ustawienia nieprawidłowego kierunku sortowania.
 
 ### Kroki wykonania
@@ -1386,20 +1475,21 @@ Próba ustawienia nieprawidłowego kierunku sortowania.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events?order=invalid_order
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                        |
+| --------------- | ---------------------------- |
 | `Authorization` | `Bearer <TWÓJ_ACCESS_TOKEN>` |
 
 **Query Parameters:**
 
-| Key | Value |
-|-----|-------|
+| Key     | Value           |
+| ------- | --------------- |
 | `order` | `invalid_order` |
 
 #### 2. Wyślij request
@@ -1409,6 +1499,7 @@ http://localhost:3000/api/events?order=invalid_order
 **Oczekiwany status:** `400 Bad Request`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "error": "Validation Error",
@@ -1423,6 +1514,7 @@ http://localhost:3000/api/events?order=invalid_order
 ```
 
 **Prawidłowe wartości order:**
+
 - `asc` (ascending - rosnąco A→Z, 1→9)
 - `desc` (descending - malejąco Z→A, 9→1, domyślnie)
 
@@ -1431,9 +1523,11 @@ http://localhost:3000/api/events?order=invalid_order
 ## PRZYPADEK TESTOWY 21: Pusta baza - użytkownik bez wydarzeń (Sukces - 200, pusta tablica)
 
 ### Opis
+
 Pobranie wydarzeń dla użytkownika, który jeszcze nie utworzył żadnych wydarzeń.
 
 ### Przygotowanie
+
 Zaloguj się jako nowy użytkownik, który nie ma żadnych wydarzeń w bazie.
 
 ### Kroki wykonania
@@ -1443,14 +1537,15 @@ Zaloguj się jako nowy użytkownik, który nie ma żadnych wydarzeń w bazie.
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                               |
+| --------------- | ----------------------------------- |
 | `Authorization` | `Bearer <TOKEN_NOWEGO_UŻYTKOWNIKA>` |
 
 #### 2. Wyślij request
@@ -1460,6 +1555,7 @@ http://localhost:3000/api/events
 **Oczekiwany status:** `200 OK`
 
 **Oczekiwana odpowiedź:**
+
 ```json
 {
   "data": [],
@@ -1475,6 +1571,7 @@ http://localhost:3000/api/events
 ```
 
 **Weryfikacja:**
+
 - Tablica `data` jest pusta
 - `pagination.total` = 0
 - `pagination.total_pages` = 0
@@ -1485,9 +1582,11 @@ http://localhost:3000/api/events
 ## PRZYPADEK TESTOWY 22: Izolacja danych użytkowników (Sukces - 200)
 
 ### Opis
+
 Weryfikacja, że użytkownik widzi tylko swoje wydarzenia (RLS działa poprawnie).
 
 ### Przygotowanie
+
 1. Zaloguj się jako użytkownik A i utwórz wydarzenie "Event A"
 2. Zaloguj się jako użytkownik B i utwórz wydarzenie "Event B"
 
@@ -1498,17 +1597,19 @@ Weryfikacja, że użytkownik widzi tylko swoje wydarzenia (RLS działa poprawnie
 **Metoda:** `GET`
 
 **URL:**
+
 ```
 http://localhost:3000/api/events
 ```
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                          |
+| --------------- | ------------------------------ |
 | `Authorization` | `Bearer <TOKEN_UŻYTKOWNIKA_A>` |
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko "Event A"
 - Nie ma "Event B" (należy do innego użytkownika)
 
@@ -1516,11 +1617,12 @@ http://localhost:3000/api/events
 
 **Headers:**
 
-| Key | Value |
-|-----|-------|
+| Key             | Value                          |
+| --------------- | ------------------------------ |
 | `Authorization` | `Bearer <TOKEN_UŻYTKOWNIKA_B>` |
 
 **Weryfikacja:**
+
 - Tablica `data` zawiera tylko "Event B"
 - Nie ma "Event A" (należy do innego użytkownika)
 
@@ -1532,30 +1634,30 @@ http://localhost:3000/api/events
 
 ### Matryca przypadków testowych
 
-| Test | Typ | Scenariusz | Oczekiwany status | Kluczowe weryfikacje |
-|------|-----|-----------|-------------------|---------------------|
-| 1 | ✅ Pozytywny | Pobranie wszystkich wydarzeń | 200 | 5 wydarzeń, domyślna paginacja |
-| 2 | ✅ Pozytywny | Filtrowanie: saved=true | 200 | 3 zapisane wydarzenia |
-| 3 | ✅ Pozytywny | Filtrowanie: saved=false | 200 | 2 niezapisane wydarzenia |
-| 4 | ✅ Pozytywny | Filtrowanie: category=koncerty | 200 | 2 koncerty |
-| 5 | ✅ Pozytywny | Filtrowanie: age_category=dzieci | 200 | 1 wydarzenie dla dzieci |
-| 6 | ✅ Pozytywny | Łączenie filtrów (saved + category) | 200 | 1 zapisany koncert |
-| 7 | ✅ Pozytywny | Sortowanie: event_date asc | 200 | Kolejność chronologiczna |
-| 8 | ✅ Pozytywny | Sortowanie: title asc | 200 | Kolejność alfabetyczna |
-| 9 | ✅ Pozytywny | Paginacja: strona 1, limit 2 | 200 | 2 wydarzenia, has_next=true |
-| 10 | ✅ Pozytywny | Paginacja: strona 2, limit 2 | 200 | 2 wydarzenia, has_prev=true |
-| 11 | ✅ Pozytywny | Paginacja: ostatnia strona | 200 | 1 wydarzenie, has_next=false |
-| 12 | ✅ Pozytywny | Paginacja: strona poza zakresem | 200 | Pusta tablica, total_pages=3 |
-| 13 | ✅ Pozytywny | Limit maksymalny (100) | 200 | limit=100 |
-| 14 | ✅ Pozytywny | Limit > 100 (auto-obcięcie) | 200 | limit obcięty do 100 |
-| 15 | ❌ Negatywny | Brak tokenu | 401 | Unauthorized |
-| 16 | ❌ Negatywny | Nieprawidłowy token | 401 | Unauthorized |
-| 17 | ❌ Negatywny | Nieprawidłowa category | 400 | Validation error |
-| 18 | ❌ Negatywny | Nieprawidłowa age_category | 400 | Validation error |
-| 19 | ❌ Negatywny | Nieprawidłowe pole sort | 400 | Validation error |
-| 20 | ❌ Negatywny | Nieprawidłowy kierunek order | 400 | Validation error |
-| 21 | ✅ Edge Case | Użytkownik bez wydarzeń | 200 | Pusta tablica, total=0 |
-| 22 | ✅ Security | Izolacja danych użytkowników | 200 | RLS działa poprawnie |
+| Test | Typ          | Scenariusz                          | Oczekiwany status | Kluczowe weryfikacje           |
+| ---- | ------------ | ----------------------------------- | ----------------- | ------------------------------ |
+| 1    | ✅ Pozytywny | Pobranie wszystkich wydarzeń        | 200               | 5 wydarzeń, domyślna paginacja |
+| 2    | ✅ Pozytywny | Filtrowanie: saved=true             | 200               | 3 zapisane wydarzenia          |
+| 3    | ✅ Pozytywny | Filtrowanie: saved=false            | 200               | 2 niezapisane wydarzenia       |
+| 4    | ✅ Pozytywny | Filtrowanie: category=koncerty      | 200               | 2 koncerty                     |
+| 5    | ✅ Pozytywny | Filtrowanie: age_category=dzieci    | 200               | 1 wydarzenie dla dzieci        |
+| 6    | ✅ Pozytywny | Łączenie filtrów (saved + category) | 200               | 1 zapisany koncert             |
+| 7    | ✅ Pozytywny | Sortowanie: event_date asc          | 200               | Kolejność chronologiczna       |
+| 8    | ✅ Pozytywny | Sortowanie: title asc               | 200               | Kolejność alfabetyczna         |
+| 9    | ✅ Pozytywny | Paginacja: strona 1, limit 2        | 200               | 2 wydarzenia, has_next=true    |
+| 10   | ✅ Pozytywny | Paginacja: strona 2, limit 2        | 200               | 2 wydarzenia, has_prev=true    |
+| 11   | ✅ Pozytywny | Paginacja: ostatnia strona          | 200               | 1 wydarzenie, has_next=false   |
+| 12   | ✅ Pozytywny | Paginacja: strona poza zakresem     | 200               | Pusta tablica, total_pages=3   |
+| 13   | ✅ Pozytywny | Limit maksymalny (100)              | 200               | limit=100                      |
+| 14   | ✅ Pozytywny | Limit > 100 (auto-obcięcie)         | 200               | limit obcięty do 100           |
+| 15   | ❌ Negatywny | Brak tokenu                         | 401               | Unauthorized                   |
+| 16   | ❌ Negatywny | Nieprawidłowy token                 | 401               | Unauthorized                   |
+| 17   | ❌ Negatywny | Nieprawidłowa category              | 400               | Validation error               |
+| 18   | ❌ Negatywny | Nieprawidłowa age_category          | 400               | Validation error               |
+| 19   | ❌ Negatywny | Nieprawidłowe pole sort             | 400               | Validation error               |
+| 20   | ❌ Negatywny | Nieprawidłowy kierunek order        | 400               | Validation error               |
+| 21   | ✅ Edge Case | Użytkownik bez wydarzeń             | 200               | Pusta tablica, total=0         |
+| 22   | ✅ Security  | Izolacja danych użytkowników        | 200               | RLS działa poprawnie           |
 
 ### Legenda statusów HTTP
 
@@ -1567,11 +1669,13 @@ http://localhost:3000/api/events
 ### Dozwolone wartości dla query parameters
 
 #### `saved` (boolean, opcjonalny):
+
 - `true` - tylko zapisane wydarzenia
 - `false` - tylko niezapisane wydarzenia
 - brak parametru - wszystkie wydarzenia
 
 #### `category` (enum, opcjonalny):
+
 - `koncerty`
 - `imprezy`
 - `teatr_i_taniec`
@@ -1582,6 +1686,7 @@ http://localhost:3000/api/events
 - `inne`
 
 #### `age_category` (enum, opcjonalny):
+
 - `wszystkie`
 - `najmlodsi`
 - `dzieci`
@@ -1591,22 +1696,26 @@ http://localhost:3000/api/events
 - `osoby_starsze`
 
 #### `page` (integer, opcjonalny):
+
 - Domyślnie: `1`
 - Minimum: `1`
 - Wartości < 1 są automatycznie korygowane do 1
 - Wartości poza zakresem zwracają pustą tablicę (nie błąd 404!)
 
 #### `limit` (integer, opcjonalny):
+
 - Domyślnie: `20`
 - Minimum: `1`
 - Maksimum: `100` (wartości > 100 są automatycznie obcinane)
 
 #### `sort` (string, opcjonalny):
+
 - `created_at` (domyślnie) - data utworzenia
 - `event_date` - data wydarzenia
 - `title` - tytuł alfabetycznie
 
 #### `order` (string, opcjonalny):
+
 - `desc` (domyślnie) - malejąco (Z→A, 9→1, najnowsze pierwsze)
 - `asc` - rosnąco (A→Z, 1→9, najstarsze pierwsze)
 
@@ -1643,24 +1752,28 @@ http://localhost:3000/api/events
 ## Przykładowe kombinacje parametrów (curl)
 
 ### Wszystkie zapisane koncerty, sortowane według daty wydarzenia:
+
 ```bash
 curl -X GET "http://localhost:3000/api/events?saved=true&category=koncerty&sort=event_date&order=asc" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
 ### Pierwsza strona wydarzeń dla dzieci (5 na stronę):
+
 ```bash
 curl -X GET "http://localhost:3000/api/events?age_category=dzieci&page=1&limit=5" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
 ### Wszystkie niezapisane wydarzenia, alfabetycznie:
+
 ```bash
 curl -X GET "http://localhost:3000/api/events?saved=false&sort=title&order=asc" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
 ### Druga strona wszystkich wydarzeń (10 na stronę), najnowsze pierwsze:
+
 ```bash
 curl -X GET "http://localhost:3000/api/events?page=2&limit=10&sort=created_at&order=desc" \
   -H "Authorization: Bearer <TOKEN>"

@@ -1,12 +1,14 @@
 # API Endpoint Implementation Plan: GET /api/events/:id
 
 ## 1. Przegląd punktu końcowego
+
 - Pobiera pojedyncze wydarzenie zalogowanego użytkownika na podstawie ID.
 - Wykorzystuje RLS oraz jawne filtrowanie po `user_id` dla dodatkowego zabezpieczenia przed wyciekiem danych.
 - Zwraca pełny obiekt wydarzenia (`EventResponseDTO`) zawierający wszystkie metadane, w tym `model_version` i znaczniki czasu.
 - Wymaga autentykacji Bearer token; brak dostępu dla gości lub wydarzeń innych użytkowników.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: `GET`
 - Ścieżka: `/api/events/:id`
 - Nagłówki: `Authorization: Bearer <token>`
@@ -23,6 +25,7 @@
   - Nowy `GetEventByIdResult` (`event: EventResponseDTO`)
 
 ## 3. Szczegóły odpowiedzi
+
 - Sukces 200: `EventResponseDTO` (pełny rekord wydarzenia ze wszystkimi polami)
 - Błędy:
   - 400: `ErrorResponseDTO` z `details` dla błędów walidacji UUID
@@ -32,6 +35,7 @@
 - Wszystkie odpowiedzi JSON z nagłówkiem `Content-Type: application/json`
 
 ## 4. Przepływ danych
+
 1. Handler odczytuje parametr `id` z path (`context.params.id`)
 2. Walidacja UUID przez `getEventByIdParamsSchema` (Zod)
 3. Weryfikacja tokenu: `locals.supabase.auth.getUser()` – niepowodzenie lub brak użytkownika → 401
@@ -43,6 +47,7 @@
 6. Handler zwraca 200 z `EventResponseDTO` lub propaguje błędy jako odpowiednie statusy HTTP
 
 ## 5. Względy bezpieczeństwa
+
 - Autoryzacja wymagana (Bearer token) – każde żądanie musi być autentykowane
 - RLS automatycznie filtruje po `user_id = auth.uid()`, ale dodajemy jawne `.eq("user_id", userId)` jako defense-in-depth
 - Walidacja UUID zapobiega SQL injection i nieprawidłowym wartościom w zapytaniu
@@ -51,8 +56,9 @@
 - Podwójna weryfikacja własności: RLS policy + explicit filter w query
 
 ## 6. Obsługa błędów
+
 - `400 Bad Request`: nieprawidłowy format UUID w parametrze `id`
-- `401 Unauthorized`: 
+- `401 Unauthorized`:
   - Brak nagłówka Authorization
   - Token nieprawidłowy lub wygasły (błąd z `getUser()`)
   - Brak użytkownika w sesji
@@ -65,6 +71,7 @@
 - Handler mapuje kody na statusy HTTP; logi błędów przez `console.error`
 
 ## 7. Wydajność
+
 - Zapytanie single SELECT po primary key (`id`) + `user_id` – bardzo szybkie dzięki indeksom
 - Użycie `.single()` gwarantuje max 1 rekord lub błąd (brak przetwarzania list)
 - Brak dodatkowych JOIN-ów – bezpośredni SELECT z tabeli `events`
@@ -73,6 +80,7 @@
 - Brak cache'owania (dane mogą się zmieniać po edycji) – ewentualnie krótkotrwały cache na poziomie CDN (np. 1-5s) w przyszłości
 
 ## 8. Kroki implementacji
+
 1. Dodać `getEventByIdParamsSchema` w `src/lib/validators/events.ts` z walidacją UUID; export typu `GetEventByIdParamsInput`
 2. W `src/lib/services/events.service.ts` dodać `GetEventByIdCommand`, `GetEventByIdResult`, funkcję `getEventById`:
    - Wykonać `.select().eq("id", eventId).eq("user_id", userId).single()`
