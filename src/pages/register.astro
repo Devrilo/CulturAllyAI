@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { AuthPageShell } from "../components/auth/AuthPageShell";
+import { RegisterForm } from "../components/auth/RegisterForm";
+
+const title = "Rejestracja | CulturAllyAI";
+---
+
+<Layout title={title}>
+  <AuthPageShell title="Utwórz konto" subtitle="Zacznij tworzyć profesjonalne opisy wydarzeń" client:load>
+    <RegisterForm client:load />
+    <div slot="footerLinks">
+      <p class="text-muted-foreground">
+        Masz już konto?{" "}
+        <a href="/login" class="font-medium text-primary hover:underline"> Zaloguj się </a>
+      </p>
+    </div>
+  </AuthPageShell>
+</Layout>

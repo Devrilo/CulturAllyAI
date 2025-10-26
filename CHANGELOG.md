@@ -9,12 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Authentication UI Components**
+  - Login page (`/login`) with email/password form and error handling
+  - Registration page (`/register`) with password strength indicator (5-level)
+  - Settings page (`/settings`) with account management options
+  - Change Password modal with visual strength indicator
+  - Delete Account modal with password confirmation and consent checkbox
+  - `AuthPageShell` component for consistent auth page layout
+  - `AuthErrorAlert` component mapping Supabase errors to Polish messages
+  - `useAuthRedirect` hook for secure redirect parameter handling
+  - Custom `Checkbox` component matching shadcn/ui design system
+  - Password strength calculation utilities (0-4 score with colors)
+  
+- **Authentication DTOs and Validators**
+  - `loginSchema`, `registerSchema`, `changePasswordSchema`, `deleteAccountSchema` (Zod)
+  - `AuthActivityDTO`, `ChangePasswordRequestDTO`, `DeleteAccountRequestDTO` types
+  - Client-side form validation with field-level error messages
+  - Password requirements: minimum 8 characters, letter + number
+
 - **Authentication Model**
   - Supabase Auth integration for client-side authentication
   - Email and password authentication via Supabase SDK
   - JWT token verification in backend API routes
   - Session management handled by Supabase
   - No custom authentication endpoints required (handled client-side)
+  - Auto-login after registration (MVP without email confirmation)
 
 - **API Endpoint: POST /api/events** - Event creation with AI-generated descriptions
   - Supports both authenticated users and guest users

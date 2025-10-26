@@ -143,6 +143,37 @@ export interface ErrorResponseDTO {
 }
 
 // ============================================================================
+// AUTHENTICATION DTOs
+// ============================================================================
+
+/**
+ * Request body for logging auth activity
+ * POST /api/auth/activity
+ */
+export interface AuthActivityDTO {
+  action_type: Enums<"user_action_type">;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Request body for changing password
+ * Used in ChangePasswordModal (client-side only - calls Supabase directly)
+ */
+export interface ChangePasswordRequestDTO {
+  newPassword: string;
+  confirmPassword: string;
+}
+
+/**
+ * Request body for deleting account
+ * POST /api/auth/delete-account
+ */
+export interface DeleteAccountRequestDTO {
+  password: string;
+  confirmDeletion: boolean;
+}
+
+// ============================================================================
 // AUDIT LOG DTOs (for internal use)
 // ============================================================================
 

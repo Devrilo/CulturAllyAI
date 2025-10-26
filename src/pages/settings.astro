@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SettingsPage } from "../components/settings/SettingsPage";
+
+const title = "Ustawienia | CulturAllyAI";
+---
+
+<Layout title={title}>
+  <SettingsPage client:load />
+</Layout>

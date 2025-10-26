@@ -606,9 +606,21 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - Dark mode with theme toggle
   - Responsive design (mobile and desktop)
   - Accessibility features (ARIA, keyboard navigation)
+- ✅ Authentication UI (MVP Complete)
+  - Login page with email/password authentication
+  - Registration page with password strength indicator
+  - Settings page with account management options
+  - Change password modal (no current password required)
+  - Delete account modal with confirmation
+  - Auth error handling with Polish messages
+  - Redirect parameter support for protected routes
+  - Dark mode and responsive design
+- 📋 Backend authentication endpoints (planned)
+  - Middleware for SSR protection
+  - API endpoint for activity logging
+  - API endpoint for account deletion
 - 📋 Events list view (planned)
-- 📋 User profile and settings (planned)
-- 📋 Login and registration pages (planned)
+- 📋 User profile features (planned)
 
 ## 10. License
 

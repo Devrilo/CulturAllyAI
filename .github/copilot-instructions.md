@@ -22,8 +22,14 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/db` - Supabase clients and types
 - `./src/types.ts` - Shared types for backend and frontend (Entities, DTOs)
 - `./src/components` - Client-side components written in Astro (static) and React (dynamic)
+- `./src/components/auth` - Authentication components (LoginForm, RegisterForm, AuthPageShell)
+- `./src/components/settings` - Account management components (ChangePasswordModal, DeleteAccountModal, SettingsPage)
+- `./src/components/generator` - Event generator components (EventForm, DescriptionPanel, ActionButtons)
+- `./src/components/hooks` - Custom React hooks (useSupabaseSession, useAuthRedirect, useEventForm, useGeneratorFlow, useTheme)
 - `./src/components/ui` - Client-side components from Shadcn/ui
 - `./src/lib` - Services and helpers
+- `./src/lib/services` - Business logic services (events, categories, AI generation)
+- `./src/lib/validators` - Zod validation schemas (events, auth)
 - `./src/assets` - static internal assets
 - `./public` - public assets
 
