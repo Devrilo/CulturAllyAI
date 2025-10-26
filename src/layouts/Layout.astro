@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { AppHeader } from "../components/generator/AppHeader";
+import { ToastManager } from "../components/ui/ToastManager";
 
 interface Props {
   title?: string;
@@ -27,6 +28,7 @@ const { title = "10x Astro Starter" } = Astro.props;
     </script>
   </head>
   <body>
+    <ToastManager client:only="react" />
     <AppHeader client:load />
     <slot />
   </body>

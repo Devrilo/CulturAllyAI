@@ -49,7 +49,7 @@ export function SettingsPage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground">Musisz być zalogowany, aby zobaczyć tę stronę.</p>
-          <a href="/login?redirect=/settings" className="mt-4 inline-block text-primary hover:underline">
+          <a href="/login?redirect=/profile" className="mt-4 inline-block text-primary hover:underline">
             Zaloguj się
           </a>
         </div>

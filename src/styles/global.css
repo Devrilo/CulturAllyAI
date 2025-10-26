@@ -118,3 +118,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Sonner toast customization */
+[data-sonner-toast] {
+  background: var(--background) !important;
+  border: 2px solid oklch(0.145 0 0) !important;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.15) !important;
+}
+
+.dark [data-sonner-toast] {
+  background: var(--background) !important;
+  border: 2px solid oklch(0.985 0 0) !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.3) !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: var(--foreground) !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: var(--muted-foreground) !important;
+}

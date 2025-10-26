@@ -26,6 +26,7 @@ interface ChangePasswordModalProps {
  */
 export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
   const [formData, setFormData] = useState<ChangePasswordFormData>({
+    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
@@ -44,7 +45,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
 
   const handleClose = useCallback(() => {
     if (!isSubmitting) {
-      setFormData({ newPassword: "", confirmPassword: "" });
+      setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setErrors({});
       setAuthError(null);
       onClose();
@@ -75,7 +76,19 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
       setIsSubmitting(true);
 
       try {
-        // Update password via Supabase Auth (verified by JWT session)
+        // First verify current password
+        const { error: verifyError } = await supabaseClient.auth.signInWithPassword({
+          email: (await supabaseClient.auth.getUser()).data.user?.email || "",
+          password: formData.currentPassword,
+        });
+
+        if (verifyError) {
+          setAuthError({ ...verifyError, message: "Nieprawidłowe aktualne hasło" } as AuthError);
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Update password via Supabase Auth
         const { error } = await supabaseClient.auth.updateUser({
           password: formData.newPassword,
         });
@@ -86,7 +99,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
           return;
         }
 
-        // Optional: Log activity
+        // Log activity
         fetch("/api/auth/activity", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -129,6 +142,30 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <AuthErrorAlert error={authError} />
+
+          {/* Current Password */}
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">
+              Aktualne hasło <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              value={formData.currentPassword}
+              onChange={(e) => handleInputChange("currentPassword", e.target.value)}
+              disabled={isSubmitting}
+              placeholder="••••••••"
+              aria-invalid={!!errors.currentPassword}
+              aria-describedby={errors.currentPassword ? "currentPassword-error" : undefined}
+              className={errors.currentPassword ? "border-destructive" : ""}
+              autoComplete="current-password"
+            />
+            {errors.currentPassword && (
+              <p id="currentPassword-error" className="text-sm text-destructive" role="alert">
+                {errors.currentPassword}
+              </p>
+            )}
+          </div>
 
           {/* New Password */}
           <div className="space-y-2">
@@ -200,7 +237,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
           </div>
 
           {/* Info notice */}
-          <div className="rounded-md border bg-muted/50 p-3">
+          <div className="w-full rounded-md border bg-muted/50 p-3">
             <p className="text-sm text-muted-foreground">
               Po zmianie hasła zostaniesz automatycznie wylogowany i będziesz musiał zalogować się ponownie.
             </p>

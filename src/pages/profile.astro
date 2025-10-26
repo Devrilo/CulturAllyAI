@@ -2,7 +2,19 @@
 import Layout from "../layouts/Layout.astro";
 import { SettingsPage } from "../components/settings/SettingsPage";
 
-const title = "Ustawienia | CulturAllyAI";
+const title = "Profil | CulturAllyAI";
+
+// SSR protection: Verify user is authenticated
+const supabase = Astro.locals.supabase;
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
+
+// Redirect to login if not authenticated
+if (error || !user) {
+  return Astro.redirect("/login?redirect=/profile");
+}
 ---
 
 <Layout title={title}>

@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { Toaster } from "../ui/sonner";
 import { useSupabaseSession } from "../hooks/useSupabaseSession";
 import { useEventForm } from "../hooks/useEventForm";
 import { useGeneratorFlow } from "../hooks/useGeneratorFlow";
@@ -223,8 +222,6 @@ function GeneratorPageContent() {
           </div>
         </div>
       </main>
-
-      <Toaster position="top-right" />
     </div>
   );
 }

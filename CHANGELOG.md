@@ -9,20 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Authentication Backend Integration**
+  - Middleware updated to use `@supabase/ssr` with `createServerClient` for proper SSR cookie handling
+  - Client-side updated to use `@supabase/ssr` with `createBrowserClient` for cookie-based session sync
+  - Server-side Supabase client reads JWT from cookies (`sb-access-token`, `sb-refresh-token`)
+  - Cookie-based authentication ensures SSR and client-side session consistency
+  - SSR protection for `/profile` page (formerly `/settings`) with redirect to `/login?redirect=/profile` if unauthenticated
+  - SSR redirect on `/login` and `/register` for already authenticated users (redirects to `/?message=already_logged_in`)
+  - Toast notifications using Sonner library for user feedback (already logged in, password changed)
+  - `POST /api/auth/activity` endpoint for logging user authentication events to `user_activity_logs`
+  - Activity logging for: account creation (after signup), login (after signInWithPassword), logout (before signOut), password change, account deletion
+  - `POST /api/auth/delete-account` endpoint for permanent account deletion via Supabase Admin API with password verification
+  - Supabase Admin client (`supabaseAdmin`) for elevated permissions (service role key)
+  - Logout functionality in `AppHeader` with activity logging, `signOut()`, and redirect to `/` (home page)
+  - Session persistence across page refreshes using cookies (both client and server)
+
 - **Authentication UI Components**
-  - Login page (`/login`) with email/password form and error handling
-  - Registration page (`/register`) with password strength indicator (5-level)
-  - Settings page (`/settings`) with account management options
-  - Change Password modal with visual strength indicator
-  - Delete Account modal with password confirmation and consent checkbox
+  - Login page (`/login`) with email/password form, success messages (registration, password change), and auth redirect protection
+  - Registration page (`/register`) with password strength indicator (5-level) and redirect to login after success (manual login required)
+  - Profile page (`/profile`, formerly `/settings`) with account management options
+  - Change Password modal with current password verification, visual strength indicator, and activity logging
+  - Delete Account modal with password confirmation, consent checkbox (native HTML label wrapper), and Polish translations
+  - Improved `AuthErrorAlert` component using proper Alert/AlertDescription structure from shadcn/ui
   - `AuthPageShell` component for consistent auth page layout
-  - `AuthErrorAlert` component mapping Supabase errors to Polish messages
   - `useAuthRedirect` hook for secure redirect parameter handling
-  - Custom `Checkbox` component matching shadcn/ui design system
+  - Custom `Checkbox` component with proper label interaction and accessibility
   - Password strength calculation utilities (0-4 score with colors)
+  - Clickable app name in Header component linking to homepage
+  - Logout redirects to homepage instead of login page
+  - Global `ToastManager` component in Layout for centralized toast notifications
   
 - **Authentication DTOs and Validators**
   - `loginSchema`, `registerSchema`, `changePasswordSchema`, `deleteAccountSchema` (Zod)
+  - `changePasswordSchema` requires current password verification and prevents reusing old password
   - `AuthActivityDTO`, `ChangePasswordRequestDTO`, `DeleteAccountRequestDTO` types
   - Client-side form validation with field-level error messages
   - Password requirements: minimum 8 characters, letter + number
@@ -33,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - JWT token verification in backend API routes
   - Session management handled by Supabase
   - No custom authentication endpoints required (handled client-side)
-  - Auto-login after registration (MVP without email confirmation)
+  - Manual login required after registration (no auto-login for security)
+  - Account deletion preserves event data with ON DELETE SET NULL (anonimization)
 
 - **API Endpoint: POST /api/events** - Event creation with AI-generated descriptions
   - Supports both authenticated users and guest users

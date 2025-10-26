@@ -3,7 +3,6 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { AuthErrorAlert } from "./AuthErrorAlert";
-import { useAuthRedirect } from "../hooks/useAuthRedirect";
 import { supabaseClient } from "../../db/supabase.client";
 import {
   registerSchema,
@@ -17,7 +16,7 @@ import { Loader2 } from "lucide-react";
 
 /**
  * Registration form component with password strength indicator
- * Handles user signup via Supabase Auth with auto-login
+ * Handles user signup via Supabase Auth with redirect to login
  */
 export function RegisterForm() {
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -28,8 +27,6 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const { navigateToRedirect } = useAuthRedirect();
 
   // Calculate password strength
   const passwordStrength = useMemo(() => calculatePasswordStrength(formData.password), [formData.password]);
@@ -77,20 +74,9 @@ export function RegisterForm() {
           return;
         }
 
-        // Auto-login after registration (MVP without email confirmation)
-        const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (signInError) {
-          setAuthError(signInError);
-          setIsSubmitting(false);
-          return;
-        }
-
-        if (signInData.session) {
-          // Optional: Log activity (fire and forget)
+        // Registration successful - redirect to login
+        if (signUpData.user) {
+          // Log activity (fire and forget)
           fetch("/api/auth/activity", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -99,15 +85,15 @@ export function RegisterForm() {
             // Ignore audit log errors
           });
 
-          // Redirect to target page
-          navigateToRedirect();
+          // Show success message and redirect to login
+          window.location.href = "/login?message=registration_success";
         }
       } catch (err) {
         setAuthError(err as AuthError);
         setIsSubmitting(false);
       }
     },
-    [formData, navigateToRedirect]
+    [formData]
   );
 
   return (

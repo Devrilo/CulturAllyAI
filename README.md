@@ -47,21 +47,27 @@ npm install
 
 ### Environment Configuration
 
-Create a `.env` file in the project root with the following variables:
+Create a `.env` file in the project root with the following variables (see `.env.local.example`):
 
 ```bash
-# Supabase Configuration
+# Supabase Configuration (Server-side)
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# Supabase Configuration (Client-side)
 PUBLIC_SUPABASE_URL=your-supabase-url
-PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+PUBLIC_SUPABASE_KEY=your-supabase-anon-key
 
 # OpenRouter API Configuration
 OPENROUTER_API_KEY=sk-or-v1-your-api-key
-
-# Optional: AI Model Version (for tracking)
-AI_MODEL_VERSION=openai/gpt-4o-mini
 ```
 
-**Note:** Get your OpenRouter API key from [openrouter.ai](https://openrouter.ai/)
+**Important:** 
+- Get your Supabase keys from: Project Settings → API in your Supabase dashboard
+- `SUPABASE_SERVICE_ROLE_KEY` is required for account deletion feature (has admin permissions)
+- Never expose the service role key to the client-side
+- Get your OpenRouter API key from [openrouter.ai](https://openrouter.ai/)
 
 ### Database Setup
 
@@ -606,21 +612,25 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - Dark mode with theme toggle
   - Responsive design (mobile and desktop)
   - Accessibility features (ARIA, keyboard navigation)
-- ✅ Authentication UI (MVP Complete)
-  - Login page with email/password authentication
-  - Registration page with password strength indicator
-  - Settings page with account management options
-  - Change password modal (no current password required)
-  - Delete account modal with confirmation
+- ✅ Authentication UI & Backend (MVP Complete)
+  - Login page with email/password authentication and registration success message
+  - Registration page with password strength indicator (redirects to login after success)
+  - Profile page (`/profile`) with account management options
+  - Change password modal (no current password required, JWT verification)
+  - Delete account modal with confirmation (fully functional with backend)
   - Auth error handling with Polish messages
   - Redirect parameter support for protected routes
+  - SSR protection for authenticated pages (`/profile`)
+  - SSR redirect for already logged-in users on `/login` and `/register`
   - Dark mode and responsive design
-- 📋 Backend authentication endpoints (planned)
-  - Middleware for SSR protection
-  - API endpoint for activity logging
-  - API endpoint for account deletion
+  - Middleware with `@supabase/ssr` for cookie-based session management
+  - `POST /api/auth/activity` endpoint for audit logging
+  - `POST /api/auth/delete-account` endpoint with Supabase Admin API
+  - Session persistence across page refreshes
+  - Logout functionality with proper cleanup
+  - Account deletion with data anonimization (ON DELETE SET NULL)
 - 📋 Events list view (planned)
-- 📋 User profile features (planned)
+- 📋 User profile features (future enhancements planned)
 
 ## 10. License
 

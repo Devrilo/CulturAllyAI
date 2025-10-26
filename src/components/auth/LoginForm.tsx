@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { Alert, AlertDescription } from "../ui/alert";
 import { AuthErrorAlert } from "./AuthErrorAlert";
 import { useAuthRedirect } from "../hooks/useAuthRedirect";
 import { supabaseClient } from "../../db/supabase.client";
@@ -21,8 +22,24 @@ export function LoginForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { navigateToRedirect } = useAuthRedirect();
+
+  // Check for success message in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+    if (message === "registration_success") {
+      setSuccessMessage("Rejestracja przebiegła pomyślnie! Możesz się teraz zalogować.");
+      // Clean up URL
+      window.history.replaceState({}, "", "/login");
+    } else if (message === "password_changed") {
+      setSuccessMessage("Hasło zostało zmienione. Zaloguj się używając nowego hasła.");
+      // Clean up URL
+      window.history.replaceState({}, "", "/login");
+    }
+  }, []);
 
   const handleInputChange = useCallback((field: keyof LoginFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -90,6 +107,13 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" aria-label="Formularz logowania">
+      {/* Success message */}
+      {successMessage && (
+        <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+          <AlertDescription className="text-green-800 dark:text-green-200">{successMessage}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Auth error alert */}
       <AuthErrorAlert error={authError} />
 

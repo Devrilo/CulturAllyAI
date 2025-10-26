@@ -44,16 +44,21 @@ export const registerSchema = z
 
 /**
  * Change password form validation schema
- * Does not require current password - verified by JWT session
+ * Requires current password for verification
  */
 export const changePasswordSchema = z
   .object({
+    currentPassword: z.string().min(1, "Aktualne hasło jest wymagane"),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, "Potwierdzenie hasła jest wymagane"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Hasła muszą być identyczne",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "Nowe hasło musi być inne niż obecne",
+    path: ["newPassword"],
   });
 
 /**
@@ -70,7 +75,7 @@ export const deleteAccountSchema = z.object({
  * Auth activity log validation schema
  */
 export const authActivitySchema = z.object({
-  action_type: z.enum(["login", "logout", "account_created", "password_changed", "account_deleted", "session_expired"]),
+  action_type: z.enum(["login", "logout", "account_created", "password_changed", "account_deleted"]),
   metadata: z.record(z.unknown()).optional(),
 });
 

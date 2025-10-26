@@ -88,7 +88,7 @@ export function DeleteAccountModal({ isOpen, onClose }: DeleteAccountModalProps)
 
         // Sign out and redirect
         await supabaseClient.auth.signOut();
-        window.location.href = "/login?message=account_deleted";
+        window.location.href = "/?message=account_deleted";
       } catch (err) {
         setAuthError(err as AuthError);
         setIsSubmitting(false);
@@ -125,7 +125,7 @@ export function DeleteAccountModal({ isOpen, onClose }: DeleteAccountModalProps)
           <AuthErrorAlert error={authError} />
 
           {/* Warning */}
-          <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+          <div className="w-full rounded-md border border-destructive/50 bg-destructive/10 p-4">
             <p className="text-sm text-foreground">
               <strong>Uwaga:</strong> Ta operacja jest nieodwracalna. Twoje konto zostanie trwale usunięte, ale zapisane
               wydarzenia będą anonimizowane i zachowane dla celów statystycznych.
@@ -158,23 +158,20 @@ export function DeleteAccountModal({ isOpen, onClose }: DeleteAccountModalProps)
 
           {/* Consent checkbox */}
           <div className="space-y-2">
-            <div className="flex items-start gap-2">
+            <label className="flex items-start gap-3 cursor-pointer">
               <Checkbox
                 id="confirmDeletion"
                 checked={formData.confirmDeletion}
-                onCheckedChange={(checked) => handleInputChange("confirmDeletion", checked === true)}
+                onCheckedChange={(checked) => handleInputChange("confirmDeletion", checked)}
                 disabled={isSubmitting}
                 aria-invalid={!!errors.confirmDeletion}
                 aria-describedby={errors.confirmDeletion ? "confirmDeletion-error" : undefined}
               />
-              <Label
-                htmlFor="confirmDeletion"
-                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Rozumiem, że ta operacja jest nieodwracalna i chcę trwale usunąć moje konto
+              <span className="text-sm font-normal leading-tight select-none">
+                Rozumiem, że ta operacja jest nieodwracalna i chcę trwale usunąć moje konto{" "}
                 <span className="text-destructive">*</span>
-              </Label>
-            </div>
+              </span>
+            </label>
             {errors.confirmDeletion && (
               <p id="confirmDeletion-error" className="text-sm text-destructive" role="alert">
                 {errors.confirmDeletion}

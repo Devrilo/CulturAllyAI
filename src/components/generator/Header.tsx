@@ -15,7 +15,9 @@ export function Header({ isAuthenticated, onSignOut }: HeaderProps) {
     <header className="border-b bg-background">
       <nav className="container mx-auto flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">CulturAllyAI</h1>
+          <a href="/" className="text-2xl font-bold hover:opacity-80 transition-opacity">
+            CulturAllyAI
+          </a>
           <ThemeToggle />
         </div>
         <div className="flex items-center gap-4">

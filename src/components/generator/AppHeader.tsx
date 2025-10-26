@@ -29,8 +29,19 @@ export function AppHeader() {
   }, []);
 
   const handleSignOut = useCallback(async () => {
+    // Log logout activity before signing out
+    try {
+      await fetch("/api/auth/activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action_type: "logout" }),
+      });
+    } catch {
+      // Ignore audit log errors
+    }
+
     await supabaseClient.auth.signOut();
-    window.location.href = "/login";
+    window.location.href = "/?message=logged_out";
   }, []);
 
   // Don't render anything while loading to avoid flash of wrong content
