@@ -28,13 +28,14 @@ export function useEventsFilters(): UseEventsFiltersReturn {
     if (typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
+    const pageParam = parseInt(params.get("page") || "1", 10);
     const urlFilters: EventsFiltersState = {
       ...DEFAULT_FILTERS,
       category: (params.get("category") as EventCategory) || undefined,
       age_category: (params.get("age_category") as AgeCategory) || undefined,
       sort: (params.get("sort") as EventsFiltersState["sort"]) || DEFAULT_FILTERS.sort,
       order: (params.get("order") as EventsFiltersState["order"]) || DEFAULT_FILTERS.order,
-      page: parseInt(params.get("page") || "1", 10),
+      page: isNaN(pageParam) ? 1 : pageParam,
     };
 
     setFilters(urlFilters);

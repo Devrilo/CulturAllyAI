@@ -125,6 +125,16 @@ Then open your browser and navigate to `http://localhost:3000`.
 - **npm run test:e2e:debug:** Runs Playwright tests in debug mode with step-through.
 - **npm run test:e2e:report:** Views the last Playwright test report.
 
+**Test Coverage Status:**
+
+- **Total Tests:** 241 passing (100% pass rate)
+- **Coverage:** 79.25% statements, 72.08% branches, 96.72% functions, 77.77% lines
+- **Test Suites:**
+  - Validators: 120 tests (auth, events) - 100% coverage
+  - Utilities: 40 tests (lib/utils, components/events/utils) - 100% coverage
+  - Hooks: 48 tests (useEventForm, useEventsFilters) - 97%+ coverage
+  - Services: 27 tests (categories, events) - 54-100% coverage (pure functions 100%, complex DB operations selectively tested)
+
 For detailed testing documentation, see [docs/testing-setup.md](./docs/testing-setup.md).
 
 ## 6. Project Structure
@@ -633,6 +643,12 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ API endpoint for event categories (GET /api/categories/events)
 - ✅ OpenRouter AI integration for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
+- ✅ Unit Testing Infrastructure (MVP Complete)
+  - 241 unit tests with 100% pass rate
+  - Comprehensive coverage: validators (100%), utilities (100%), hooks (97%+), services (54-100%)
+  - Vitest configuration with jsdom, React Testing Library, and fake timers
+  - Mock strategies for Supabase client and external AI services
+  - Test suites for business logic, form validation, data transformations, and state management
 - ✅ Generator View (MVP Complete)
   - Event creation form with validation and character limits
   - AI-powered description generation

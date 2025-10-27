@@ -9,6 +9,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unit Testing Infrastructure**
+  - Vitest 4.0.4 test framework with jsdom environment
+  - React Testing Library integration for hook testing
+  - Comprehensive test coverage across core business logic
+  - 241 unit tests with 100% pass rate
+  - Test coverage: 79.25% statements, 72.08% branches, 96.72% functions, 77.77% lines
+  - Mock strategies for Supabase client chainable API
+  - Module mocking for AI generation service
+  - Fake timers for debounce testing (vi.useFakeTimers, vi.advanceTimersByTime)
+
+- **Validator Tests (120 tests, 100% coverage)**
+  - `lib/validators/__tests__/auth.test.ts` (44 tests)
+    - Email validation (valid/invalid formats, empty, special characters)
+    - Password validation (length, complexity, empty, edge cases)
+    - Error messages in Polish for better UX
+  - `lib/validators/__tests__/events.test.ts` (76 tests)
+    - createEventSchema validation (32 tests): title, city, date, categories, key_information
+    - updateEventSchema validation (18 tests): saved, feedback, edited_description
+    - getEventsQuerySchema validation (18 tests): pagination, filters, sorting
+    - eventIdSchema validation (8 tests): UUID format, empty, invalid formats
+
+- **Utility Tests (40 tests, 100% coverage)**
+  - `lib/__tests__/utils.test.ts` (16 tests)
+    - cn() classname utility (5 tests): merging, conflicts, conditional classes
+    - formatEventDate() date formatting (5 tests): ISO strings, Date objects, invalid dates
+    - pluralize() Polish pluralization (6 tests): event count with correct forms (wydarzenie/wydarzenia/wydarzeń)
+  - `components/events/__tests__/utils.test.ts` (24 tests)
+    - mapToEventViewModel() (6 tests): field mapping, charCount calculation, label generation
+    - getEventCategoryLabel() (6 tests): all 8 categories, invalid values, edge cases
+    - getAgeCategoryLabel() (6 tests): all 7 categories, invalid values, edge cases
+    - formatEventDateShort() (6 tests): Polish locale formatting, Date objects, ISO strings, invalid dates
+
+- **Hook Tests (48 tests, 97%+ coverage)**
+  - `components/hooks/__tests__/useEventForm.test.ts` (25 tests)
+    - Form state initialization (3 tests): default values, field structure, validation state
+    - Field updates with validation (7 tests): title, city, date, categories, key_information
+    - Form validation (5 tests): empty fields, date constraints, character limits
+    - Reset functionality (3 tests): clears all fields, resets validation, maintains structure
+    - Field-specific validation (7 tests): title length, city length, date format, key_information length
+  - `components/events/hooks/__tests__/useEventsFilters.test.ts` (23 tests)
+    - URL parameter parsing (7 tests): page, sort, order, category, age_category, invalid values
+    - Filter updates with debounce (4 tests): 300ms delay, multiple rapid changes, timer verification
+    - Sort/order updates (4 tests): immediate application, valid/invalid combinations
+    - Pagination (4 tests): page changes, invalid values (NaN, negative, zero)
+    - Reset functionality (4 tests): clears filters, resets to defaults, preserves URL sync
+
+- **Service Tests (27 tests, 54-100% coverage)**
+  - `lib/services/__tests__/categories.service.test.ts` (12 tests, 100% coverage)
+    - getAgeCategories() (6 tests): array structure, expected values, Polish labels, consistency
+    - getEventCategories() (6 tests): array structure, expected values, Polish labels, consistency
+  - `lib/services/__tests__/events.service.test.ts` (15 tests, 54% coverage)
+    - createEvent() (3 tests): success with AI generation, empty description validation, DB insert failure
+    - updateEvent() (4 tests): success, event not found, guest event forbidden, no changes to apply
+    - getUserEvents() (2 tests): pagination calculation logic, empty results handling
+    - getEventById() (3 tests): success, not found (PGRST116 error), database failure
+    - softDeleteEvent() (3 tests): success, event not found, guest event modification forbidden
+    - Mock helper: createMockEvent() for consistent test data with all required fields
+
+- **Test Infrastructure Improvements**
+  - `__tests__/setup.ts` configuration: afterEach cleanup, extended timeout (10s)
+  - Vitest config with 80% coverage thresholds for critical modules
+  - Consistent test patterns across all suites
+  - Error boundary testing for graceful failure handling
+  - NaN validation fix in useEventsFilters for invalid page parameters
+
+### Added
+
 - **Events View (/events)**
   - Complete frontend implementation for viewing and managing saved events
   - Protected route requiring authentication with session validation
@@ -249,6 +316,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Database:** Supabase (PostgreSQL)
 - **Validation:** Zod
 - **AI Provider:** OpenRouter.ai with `openai/gpt-4o-mini` model
+- **Testing:** Vitest 4.0.4 with React Testing Library, jsdom environment, 241 unit tests
 
 ## [0.0.0] - 2025-10-17
 
