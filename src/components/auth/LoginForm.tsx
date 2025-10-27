@@ -9,12 +9,17 @@ import { supabaseClient } from "../../db/supabase.client";
 import { loginSchema, type LoginFormData } from "../../lib/validators/auth";
 import type { AuthError } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface LoginFormProps {
+  redirectMessage?: string;
+}
 
 /**
  * Login form component
  * Handles email/password authentication via Supabase Auth
  */
-export function LoginForm() {
+export function LoginForm({ redirectMessage }: LoginFormProps) {
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -25,6 +30,13 @@ export function LoginForm() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { navigateToRedirect } = useAuthRedirect();
+
+  // Show redirect message if provided
+  useEffect(() => {
+    if (redirectMessage) {
+      toast.info(redirectMessage);
+    }
+  }, [redirectMessage]);
 
   // Check for success message in URL
   useEffect(() => {

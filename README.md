@@ -119,8 +119,21 @@ Then open your browser and navigate to `http://localhost:3000`.
 CulturAllyAI/
 ├── src/
 │   ├── components/        # UI components (Astro & React)
+│   │   ├── generator/    # Generator view components
+│   │   │   ├── AppHeader.tsx      # Global header with auth state
+│   │   │   ├── Header.tsx         # Header presentation component
+│   │   │   ├── ThemeToggle.tsx    # Dark/light mode toggle
+│   │   │   ├── GeneratorPage.tsx  # Main generator container
+│   │   │   ├── EventForm.tsx      # Event input form
+│   │   │   └── ...               # Other generator components
+│   │   ├── hooks/        # Custom React hooks
+│   │   │   ├── useTheme.ts           # Dark mode management
+│   │   │   ├── useEventForm.ts       # Form state & validation
+│   │   │   ├── useGeneratorFlow.ts   # Generator mutations
+│   │   │   └── useSupabaseSession.ts # Auth state
 │   │   └── ui/           # Shadcn/ui components
 │   ├── layouts/          # Astro layouts
+│   │   └── Layout.astro  # Global layout with AppHeader
 │   ├── pages/            # Astro pages and API routes
 │   │   ├── api/          # API endpoints
 │   │   │   └── events/   # Event-related endpoints
@@ -136,7 +149,7 @@ CulturAllyAI/
 │   │   └── validators/   # Zod validation schemas
 │   ├── db/               # Supabase client and types
 │   ├── middleware/       # Astro middleware
-│   ├── styles/           # Global styles
+│   ├── styles/           # Global styles (with dark mode CSS vars)
 │   └── types.ts          # Shared TypeScript types (DTOs)
 ├── supabase/
 │   ├── migrations/       # Database migrations
@@ -585,6 +598,8 @@ The MVP includes:
 - Event management features such as saving, editing, and deleting event descriptions.
 - A rating system for evaluating generated descriptions (thumbs up/down).
 - Clipboard functionality for quick copying of event descriptions.
+- **Dark mode support** with automatic system preference detection, localStorage persistence, and theme toggle positioned next to logo in header.
+- **Global navigation header** visible across all pages with authentication state management, responsive design, and clickable logo linking to homepage.
 
 Future enhancements may include additional mobile support, advanced social features, and extended integrations.
 
@@ -609,9 +624,10 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - AI-powered description generation
   - Save, copy, and rate functionality
   - Guest and authenticated user support
-  - Dark mode with theme toggle
+  - Dark mode with theme toggle (outline button, positioned next to logo)
   - Responsive design (mobile and desktop)
   - Accessibility features (ARIA, keyboard navigation)
+  - Global header visible across all pages with clickable logo
 - ✅ Authentication UI & Backend (MVP Complete)
   - Login page with email/password authentication and registration success message
   - Registration page with password strength indicator (redirects to login after success)
@@ -629,7 +645,23 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - Session persistence across page refreshes
   - Logout functionality with proper cleanup
   - Account deletion with data anonimization (ON DELETE SET NULL)
-- 📋 Events list view (planned)
+- ✅ Events View (`/events`) (MVP Complete)
+  - Protected route with authentication requirement
+  - Responsive layout (sidebar filters + main content)
+  - Filter by event category and age category
+  - 6 sort options (created_at, event_date, title - asc/desc)
+  - URL-synced filters with 300ms debounce
+  - Infinite scroll pagination with IntersectionObserver
+  - Event cards with metadata (title, date, city, categories, character count)
+  - Inline editing with validation (max 500 characters)
+  - Copy description to clipboard
+  - Soft delete with confirmation modal
+  - Optimistic updates with automatic rollback on error
+  - Empty states (no events vs filtered results)
+  - Error boundary for graceful error handling
+  - Skeleton loading states and error recovery
+  - React Query integration (5min cache, 1h cache for categories)
+  - Dark mode support with consistent theming
 - 📋 User profile features (future enhancements planned)
 
 ## 10. License

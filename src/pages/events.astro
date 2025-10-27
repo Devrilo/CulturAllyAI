@@ -1,0 +1,35 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import EventsPage from "@/components/events/EventsPage";
+
+const supabase = Astro.locals.supabase;
+
+// Check if user is authenticated
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+if (!session) {
+  // Set cookie for toast message on login page
+  Astro.cookies.set("redirect_message", "Musisz być zalogowany, aby zobaczyć swoje wydarzenia", {
+    path: "/",
+    maxAge: 10, // 10 seconds
+  });
+  return Astro.redirect("/login");
+}
+
+// Optionally fetch categories server-side for faster initial load
+const categoriesRes = await fetch(`${Astro.url.origin}/api/categories/events`);
+const ageCategoriesRes = await fetch(`${Astro.url.origin}/api/categories/age`);
+
+const categoriesData = categoriesRes.ok ? await categoriesRes.json() : null;
+const ageCategoriesData = ageCategoriesRes.ok ? await ageCategoriesRes.json() : null;
+
+// Extract only the data we need (no circular refs)
+const initialCategories = categoriesData?.categories || [];
+const initialAgeCategories = ageCategoriesData?.categories || [];
+---
+
+<Layout title="Moje Wydarzenia | CulturAllyAI">
+  <EventsPage client:load initialCategories={initialCategories} initialAgeCategories={initialAgeCategories} />
+</Layout>

@@ -15,11 +15,17 @@ const {
 if (user) {
   return Astro.redirect("/?message=already_logged_in");
 }
+
+// Get redirect message from cookie if exists
+const redirectMessage = Astro.cookies.get("redirect_message")?.value;
+if (redirectMessage) {
+  Astro.cookies.delete("redirect_message", { path: "/" });
+}
 ---
 
 <Layout title={title}>
   <AuthPageShell title="Zaloguj się" subtitle="Generuj opisy wydarzeń kulturalnych z pomocą AI" client:load>
-    <LoginForm client:load />
+    <LoginForm client:load redirectMessage={redirectMessage} />
     <div slot="footerLinks">
       <p class="text-muted-foreground">
         Nie masz konta?{" "}

@@ -330,3 +330,105 @@ export type CategoriesQueryData = EventCategoryDTO[];
  * Alias for age categories query data
  */
 export type AgeCategoriesQueryData = AgeCategoryDTO[];
+
+// ============================================================================
+// EVENTS VIEW TYPES (Frontend-only)
+// ============================================================================
+
+/**
+ * View model for saved events in the Events page
+ * Maps EventListItemDTO to UI-friendly format with labels
+ */
+export interface SavedEventViewModel {
+  id: string;
+  title: string;
+  city: string;
+  eventDateISO: string;
+  eventDateLabel: string;
+  category: EventCategory;
+  categoryLabel: string;
+  ageCategory: AgeCategory;
+  ageCategoryLabel: string;
+  keyInformation: string;
+  description: string;
+  editedDescription: string | null;
+  feedback: Feedback | null;
+  saved: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isGuestOwned: boolean;
+  charCount: number;
+}
+
+/**
+ * Filter state for Events page
+ */
+export interface EventsFiltersState {
+  category?: EventCategory;
+  age_category?: AgeCategory;
+  sort: "created_at" | "event_date" | "title";
+  order: "asc" | "desc";
+  page: number;
+  saved: true;
+}
+
+/**
+ * Sort option combining sort field and order
+ */
+export interface EventsSortOption {
+  sort: EventsFiltersState["sort"];
+  order: EventsFiltersState["order"];
+}
+
+/**
+ * Summary statistics for Events page
+ */
+export interface EventsSummaryStats {
+  total: number;
+  activeFilters: number;
+}
+
+/**
+ * Status of events list loading
+ */
+export interface EventsListStatus {
+  isLoading: boolean;
+  isFetchingNext: boolean;
+  isError: boolean;
+  errorCode?: string;
+}
+
+/**
+ * Payload for editing event description
+ */
+export interface EditPayload {
+  id: string;
+  edited_description: string;
+}
+
+/**
+ * Payload for rating event
+ */
+export interface RatePayload {
+  id: string;
+  feedback: Feedback;
+}
+
+/**
+ * State of inline edit form
+ */
+export interface EditFormState {
+  value: string;
+  charsLeft: number;
+  error?: string;
+}
+
+/**
+ * State of mutations for event cards
+ */
+export interface EventMutationState {
+  editing: Record<string, boolean>;
+  rating: Record<string, boolean>;
+  deleting: Record<string, boolean>;
+  error?: string;
+}

@@ -9,42 +9,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Authentication Backend Integration**
-  - Middleware updated to use `@supabase/ssr` with `createServerClient` for proper SSR cookie handling
-  - Client-side updated to use `@supabase/ssr` with `createBrowserClient` for cookie-based session sync
-  - Server-side Supabase client reads JWT from cookies (`sb-access-token`, `sb-refresh-token`)
-  - Cookie-based authentication ensures SSR and client-side session consistency
-  - SSR protection for `/profile` page (formerly `/settings`) with redirect to `/login?redirect=/profile` if unauthenticated
-  - SSR redirect on `/login` and `/register` for already authenticated users (redirects to `/?message=already_logged_in`)
-  - Toast notifications using Sonner library for user feedback (already logged in, password changed)
-  - `POST /api/auth/activity` endpoint for logging user authentication events to `user_activity_logs`
-  - Activity logging for: account creation (after signup), login (after signInWithPassword), logout (before signOut), password change, account deletion
-  - `POST /api/auth/delete-account` endpoint for permanent account deletion via Supabase Admin API with password verification
-  - Supabase Admin client (`supabaseAdmin`) for elevated permissions (service role key)
-  - Logout functionality in `AppHeader` with activity logging, `signOut()`, and redirect to `/` (home page)
-  - Session persistence across page refreshes using cookies (both client and server)
+- **Events View (/events)**
+  - Complete frontend implementation for viewing and managing saved events
+  - Protected route requiring authentication with session validation
+  - Responsive layout with sidebar filters and main content area
+  - Server-side data prefetching for categories (initial data optimization)
+  - Global header integration (AppHeader) - consistent across all pages
 
-- **Authentication UI Components**
-  - Login page (`/login`) with email/password form, success messages (registration, password change), and auth redirect protection
-  - Registration page (`/register`) with password strength indicator (5-level) and redirect to login after success (manual login required)
-  - Profile page (`/profile`, formerly `/settings`) with account management options
-  - Change Password modal with current password verification, visual strength indicator, and activity logging
-  - Delete Account modal with password confirmation, consent checkbox (native HTML label wrapper), and Polish translations
-  - Improved `AuthErrorAlert` component using proper Alert/AlertDescription structure from shadcn/ui
-  - `AuthPageShell` component for consistent auth page layout
-  - `useAuthRedirect` hook for secure redirect parameter handling
-  - Custom `Checkbox` component with proper label interaction and accessibility
-  - Password strength calculation utilities (0-4 score with colors)
-  - Clickable app name in Header component linking to homepage
-  - Logout redirects to homepage instead of login page
-  - Global `ToastManager` component in Layout for centralized toast notifications
-  
-- **Authentication DTOs and Validators**
-  - `loginSchema`, `registerSchema`, `changePasswordSchema`, `deleteAccountSchema` (Zod)
-  - `changePasswordSchema` requires current password verification and prevents reusing old password
-  - `AuthActivityDTO`, `ChangePasswordRequestDTO`, `DeleteAccountRequestDTO` types
-  - Client-side form validation with field-level error messages
-  - Password requirements: minimum 8 characters, letter + number
+- **Events Filtering and Sorting**
+  - Filter by event category (8 options) and age category (7 options)
+  - 6 sort options: created_at, event_date, title (ascending/descending)
+  - URL synchronization with 300ms debounce for filter changes
+  - Active filters display with reset functionality
+  - Event counter with Polish pluralization (wydarzenie/wydarzenia/wydarzeń)
+
+- **Events List**
+  - Infinite scroll pagination with IntersectionObserver
+  - Fallback "Load more" button for manual loading
+  - Skeleton loading states (3 cards during initial load)
+  - Empty state variants: no events vs filtered results
+  - Error states with retry functionality (401/403 special handling)
+  - React Query integration with 5-minute cache and optimistic updates
+
+- **Event Card Components**
+  - EventCard with event metadata (title, date, city, categories)
+  - EventMeta displaying both event category and age category badges
+  - Expand/collapse for long descriptions (>300 characters)
+  - "Edytowany" badge when description was modified
+  - Character counter badge for description length
+  - Created date display in Polish locale format
+
+- **Event Actions**
+  - Copy button (ghost variant, icon-only) - copies description to clipboard
+  - Edit button with inline editing mode using InlineEditArea component
+  - Delete button with confirmation modal (Dialog component)
+  - All actions disabled during pending operations
+  - Consistent toast notifications matching generator style
+
+- **Inline Editing**
+  - InlineEditArea component styled like generator form
+  - Real-time character counter (max 500 characters)
+  - Visual feedback when approaching/exceeding limit (orange/red)
+  - Cancel and Save buttons with proper validation
+  - Disabled state during mutation with "Zapisywanie..." text
+
+- **Event Mutations**
+  - useEditEventMutation hook for editing event descriptions
+  - useDeleteEventMutation hook for soft delete (saved = false)
+  - Optimistic updates with automatic rollback on error
+  - React Query cache invalidation after successful mutations
+  - Comprehensive error handling (400, 401, 403, 404, 500)
+  - Success/error toasts with user-friendly Polish messages
+
+- **Data Fetching Hooks**
+  - useEventsFilters - filter state management with URL sync
+  - useCategoriesQuery - event and age categories with 1-hour cache
+  - useInfiniteEventsQuery - infinite scroll with ViewModel mapping
+  - Server-side initial data support for faster page load
+  - Automatic retry on 5xx errors, no retry on 4xx client errors
+
+- **Error Handling**
+  - ErrorBoundary component wrapping EventsPage
+  - Fallback UI with error details and refresh button
+  - Console logging for debugging (componentDidCatch)
+  - Graceful degradation for network/API failures
+
+- **Type Safety**
+  - SavedEventViewModel with computed charCount and labels
+  - EventsFiltersState for URL-synced filter state
+  - EventsSortOption (6 variants), EventsListStatus
+  - EditPayload, EventMutationState for mutations
+  - Full TypeScript coverage across all components
+
+- **Accessibility**
+  - ARIA labels for buttons and form controls
+  - Keyboard navigation support (focus states, tab order)
+  - Screen reader friendly with proper role attributes
+  - Error messages with role="alert" for announcements
+  - Semantic HTML (article, aside, main elements)
+
+- **Dark Mode Support**
+  - Global dark/light theme switching with system preference detection
+  - `useTheme` hook (`src/components/hooks/useTheme.ts`) with localStorage persistence for user preference
+  - `ThemeToggle` component with sun/moon icons positioned next to logo in header
+  - Outline button variant for better visibility with hover effects
+  - Icon size: 1.2rem for improved visual presence
+  - Inline script in Layout.astro to prevent FOUC (Flash Of Unstyled Content)
+  - CSS variables for both themes already defined in global.css with oklch color space
+  - Seamless theme switching without page reload via classList manipulation
+  - Accessible with ARIA labels, title tooltips, and keyboard navigation
+  - Theme preference synced across all pages via localStorage
+
+- **Global Header**
+  - Moved Header from GeneratorPage to global Layout.astro
+  - Now visible across all pages in the application (generator, profile, events list)
+  - `AppHeader` component (`src/components/generator/AppHeader.tsx`) for auth state management in Astro layout
+  - `Header` component as presentation layer with navigation and auth controls
+  - ThemeToggle positioned on left side next to clickable logo for better UX
+  - Logo is now a link to homepage (`/`) with hover opacity transition
+  - Responsive design with proper spacing (gap-3 for logo/toggle, gap-4 for nav items)
+  - Visual hierarchy: Logo + Theme Toggle (left) | Navigation + Auth (right)
+  - Background color adapts to theme via `bg-background` class
 
 - **Authentication Model**
   - Supabase Auth integration for client-side authentication
@@ -52,8 +117,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - JWT token verification in backend API routes
   - Session management handled by Supabase
   - No custom authentication endpoints required (handled client-side)
-  - Manual login required after registration (no auto-login for security)
-  - Account deletion preserves event data with ON DELETE SET NULL (anonimization)
 
 - **API Endpoint: POST /api/events** - Event creation with AI-generated descriptions
   - Supports both authenticated users and guest users
@@ -127,44 +190,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ai/openrouter.types.ts` - TypeScript types for OpenRouter API
   - Custom error classes: `EventServiceError`, `AIGenerationError`
 
-- **Frontend - Generator View** (Complete MVP implementation)
-  - Main page (`src/pages/index.astro`) - Event description generator interface
-  - React Query integration for API state management (1-hour cache for categories)
-  - Complete component hierarchy with separation of concerns
-  - **Components:**
-    - `GeneratorPage.tsx` - Main container with state orchestration and React Query provider
-    - `Header.tsx` - Navigation header with auth-aware controls (Moje wydarzenia, Profil, Wyloguj for authenticated; Zaloguj się, Zarejestruj się for guests)
-    - `EventForm.tsx` - Form with validation, character counters, and inline error messages
-    - `DescriptionPanel.tsx` - Container for generated description and actions
-    - `DescriptionPreview.tsx` - Display component for AI-generated descriptions
-    - `ActionButtons.tsx` - Generate and Save buttons with loading states
-    - `RatingButtons.tsx` - Thumbs up/down rating interface with tooltips
-    - `CharacterCounter.tsx` - Reusable character limit indicator with color coding
-    - `AuthPromptBanner.tsx` - Guest user prompt to log in for additional features
-    - `TimeoutNotice.tsx` - Alert for slow AI generation (>10s threshold)
-  - **Custom Hooks:**
-    - `useSupabaseSession.ts` - Auth state monitoring with session refresh
-    - `useEventForm.ts` - Form state with Zod validation and 300ms debouncing
-    - `useGeneratorFlow.ts` - Mutations for generate/save/rate/copy with timeout tracking and AbortController
-  - **Features:**
-    - Guest and authenticated user support with feature gating
-    - Real-time form validation with debounced error messages
-    - Character counters with color coding (>90% orange, >100% red)
-    - Skeleton loading states for better UX
-    - Toast notifications via Sonner
-    - Clipboard API integration for copying descriptions
-    - 10-second timeout notice for slow AI generation
-    - Tooltips on disabled buttons explaining auth requirements
-    - Responsive 2-column layout (mobile: stack, desktop: side-by-side)
-    - Accessibility: ARIA labels, live regions, keyboard navigation
-
-- **Global Application Features**
-  - Dark mode support with system preference detection and localStorage persistence
-  - Global header with theme toggle (sun/moon icon)
-  - Seamless theme switching without page reload
-  - FOUC prevention (Flash of Unstyled Content)
-  - Header moved to global layout (`src/layouts/Layout.astro`) for consistency across all pages
-
 - **Validation Layer**
   - `validators/events.ts` - Zod schema for CreateEventDTO
   - Polish error messages for better UX
@@ -187,7 +212,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Database types generated from Supabase schema
   - Environment variable types in `env.d.ts`
 
+- **UI Components**
+  - Generator view components (EventForm, DescriptionPanel, etc.)
+  - Shadcn/ui components with dark mode support
+  - Custom hooks: useEventForm, useGeneratorFlow, useSupabaseSession, useTheme
+  - React Query integration for data fetching and mutations
+  - Accessibility features (ARIA labels, keyboard navigation, screen reader support)
+
 ### Changed
+
+- **Layout Architecture**
+  - Header moved from page-level to global layout (Layout.astro)
+  - All pages now share the same header with authentication state
+  - Simplified GeneratorPage component (removed local Header management)
+  - Better separation of concerns: AppHeader (logic) vs Header (presentation)
 
 - Updated `.env.example` with `AI_MODEL_VERSION` variable
 - Updated `README.md` with project structure, API documentation, and development status
