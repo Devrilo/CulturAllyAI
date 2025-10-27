@@ -113,11 +113,19 @@ Then open your browser and navigate to `http://localhost:3000`.
 - **npm run lint:** Runs code linting via ESLint.
 - **npm run lint:fix:** Fixes linting issues.
 - **npm run format:** Formats code using Prettier.
-- **npm run test:** Runs unit and integration tests (`vitest`).
-- **npm run test:ui:** Opens Vitest UI for interactive testing.
-- **npm run test:coverage:** Generates code coverage report.
-- **npm run test:e2e:** Runs end-to-end tests (`playwright test`).
+
+### Testing Scripts
+
+- **npm test:** Runs unit and integration tests (`vitest run`).
+- **npm run test:watch:** Runs tests in watch mode with auto-rerun on changes.
+- **npm run test:ui:** Opens Vitest UI for interactive testing and debugging.
+- **npm run test:coverage:** Generates code coverage report (80% threshold for validators/services).
+- **npm run test:e2e:** Runs end-to-end tests with Playwright.
 - **npm run test:e2e:ui:** Opens Playwright UI mode for debugging E2E tests.
+- **npm run test:e2e:debug:** Runs Playwright tests in debug mode with step-through.
+- **npm run test:e2e:report:** Views the last Playwright test report.
+
+For detailed testing documentation, see [docs/testing-setup.md](./docs/testing-setup.md).
 
 ## 6. Project Structure
 

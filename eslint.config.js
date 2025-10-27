@@ -56,6 +56,15 @@ const reactConfig = tseslint.config({
   },
 });
 
+// Test-specific configuration
+const testConfig = tseslint.config({
+  files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "tests/**/*.ts", "src/__tests__/**/*.ts"],
+  rules: {
+    "react-hooks/rules-of-hooks": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
@@ -64,6 +73,7 @@ export default tseslint.config(
   baseConfig,
   jsxA11yConfig,
   reactConfig,
+  testConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );
