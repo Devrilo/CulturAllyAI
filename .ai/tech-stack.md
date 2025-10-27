@@ -6,6 +6,17 @@ Frontend - Astro z React dla komponentów interaktywnych:
 - Tailwind 4 pozwala na wygodne stylowanie aplikacji
 - Shadcn/ui zapewnia bibliotekę dostępnych komponentów React, na których oprzemy UI
 
+Testing - kompleksowe podejście do jakości kodu:
+
+- Vitest + @testing-library/react do testów jednostkowych i integracyjnych (szybkie, natywna integracja z Vite)
+- @vitest/coverage-v8 do raportowania pokrycia kodu (min. 80% dla walidatorów i serwisów)
+- Playwright do testów end-to-end (wieloprzeglądarkowe: Chrome, Firefox, Safari, Edge)
+- @axe-core/playwright do automatyzacji testów dostępności (WCAG 2.1 AA)
+- Nock do mockowania HTTP requests w testach Node.js/Astro backend
+- msw (Mock Service Worker) do mockowania API w testach komponentów React
+- k6 do testów wydajnościowych i load testingu API
+- testcontainers-node do izolowanych testów bazy danych PostgreSQL z RLS policies
+
 Backend - Supabase jako kompleksowe rozwiązanie backendowe:
 
 - Zapewnia bazę danych PostgreSQL
@@ -20,5 +31,6 @@ AI - Komunikacja z modelami przez usługę Openrouter.ai:
 
 CI/CD i Hosting:
 
-- Github Actions do tworzenia pipeline'ów CI/CD
+- Github Actions do tworzenia pipeline'ów CI/CD (lint → test → e2e → build → deploy)
 - DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
+- Supabase CLI do zarządzania migracjami bazy danych i lokalnym środowiskiem deweloperskim

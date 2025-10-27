@@ -26,6 +26,7 @@ CulturAllyAI is a simple web application designed to generate concise, engaging,
 - **Frontend:** Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui
 - **Backend:** Supabase (PostgreSQL, authentication, and backend services)
 - **AI Integration:** Openrouter.ai for connecting to various AI models
+- **Testing:** Vitest + @testing-library/react (unit/integration), Playwright (E2E), @axe-core/playwright (accessibility)
 - **CI/CD & Hosting:** GitHub Actions, DigitalOcean
 
 ## 4. Getting Started Locally
@@ -112,6 +113,11 @@ Then open your browser and navigate to `http://localhost:3000`.
 - **npm run lint:** Runs code linting via ESLint.
 - **npm run lint:fix:** Fixes linting issues.
 - **npm run format:** Formats code using Prettier.
+- **npm run test:** Runs unit and integration tests (`vitest`).
+- **npm run test:ui:** Opens Vitest UI for interactive testing.
+- **npm run test:coverage:** Generates code coverage report.
+- **npm run test:e2e:** Runs end-to-end tests (`playwright test`).
+- **npm run test:e2e:ui:** Opens Playwright UI mode for debugging E2E tests.
 
 ## 6. Project Structure
 
