@@ -22,12 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Created `GeneratorPageView` presentational component (88 LOC)
   - **Result:** Improved separation of concerns, better testability, increased reusability
 
-- **Code Refactoring - Authentication UI** (Phase 2.3)
+- **Code Refactoring - Authentication UI** (Phase 2.3 & 2.4)
   - Migrated `ChangePasswordModal` to React Hook Form (266 → 155 LOC, -42%)
   - Created reusable `PasswordStrengthIndicator` component (39 LOC, shared with RegisterForm)
   - Created `useChangePasswordForm` hook with RHF + zodResolver (106 LOC)
+  - Migrated `RegisterForm` to React Hook Form (213 → 107 LOC, -50%)
+  - Created `useRegisterForm` hook with RHF + zodResolver (102 LOC)
   - Installed `react-hook-form` and `@hookform/resolvers` dependencies
   - **Result:** Eliminated duplicate validation logic, simplified error handling, improved UX
+
+- **Code Refactoring - Form Components** (Phase 2.5)
+  - Created reusable `FormField` abstraction component (133 LOC)
+    - Handles Label + Input/Textarea/Select + CharacterCounter + error display
+    - Supports 4 field types: text, date, textarea, select
+    - Automatic error ID management and ARIA attributes
+  - Extracted date helpers to `src/lib/utils/date-helpers.ts` (31 LOC)
+    - `fromISODateTime()` - Converts ISO datetime to date-only format
+    - `toISODateTime()` - Converts date-only to ISO datetime
+    - `getTodayDateString()` - Returns today's date in YYYY-MM-DD format
+  - Refactored `EventForm` using FormField abstraction (223 → 113 LOC, -49%)
+  - **Result:** Eliminated ~35-40 LOC per field repetition, improved maintainability, better reusability
 
 ### Added
 

@@ -193,11 +193,14 @@ CulturAllyAI/
 │   │   │   ├── useEventRating.ts          # Rating mutation hook (50 LOC)
 │   │   │   ├── useClipboard.ts            # Clipboard operations (40 LOC)
 │   │   │   ├── useChangePasswordForm.ts   # RHF password form (106 LOC)
+│   │   │   ├── useRegisterForm.ts         # RHF registration form (102 LOC)
 │   │   │   └── useSupabaseSession.ts      # Auth state
 │   │   ├── settings/     # Account management components
 │   │   │   ├── ChangePasswordModal.tsx    # Password change (155 LOC, RHF)
 │   │   │   └── ...                        # Delete account, settings page
 │   │   └── ui/           # Shadcn/ui components
+│   │       ├── FormField.tsx              # Reusable form field (133 LOC)
+│   │       └── ...                        # Button, Input, Select, etc.
 │   ├── layouts/          # Astro layouts
 │   │   └── Layout.astro  # Global layout with AppHeader
 │   ├── pages/            # Astro pages and API routes
@@ -215,7 +218,9 @@ CulturAllyAI/
 │   │   ├── mappers/      # Data transformation layer
 │   │   │   └── event-mappers.ts  # DTO to ViewModel mapping (36 LOC)
 │   │   ├── query-client.ts       # React Query factory (17 LOC)
-│   │   └── validators/   # Zod validation schemas
+│   │   ├── validators/   # Zod validation schemas
+│   │   └── utils/        # Utility functions
+│   │       └── date-helpers.ts   # Date format conversions (31 LOC)
 │   ├── db/               # Supabase client and types
 │   ├── middleware/       # Astro middleware
 │   ├── styles/           # Global styles (with dark mode CSS vars)
@@ -692,7 +697,9 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - **Phase 1:** Split useGeneratorFlow into 4 specialized hooks (236 → 60 LOC, -74%)
   - **Phase 2.1:** Refactored GeneratorPage with Container/Presenter pattern (238 → 36 LOC, -85%)
   - **Phase 2.3:** Migrated ChangePasswordModal to React Hook Form (266 → 155 LOC, -42%)
-  - **Benefits:** Better separation of concerns, increased testability, improved reusability
+  - **Phase 2.4:** Migrated RegisterForm to React Hook Form (213 → 107 LOC, -50%)
+  - **Phase 2.5:** Created FormField abstraction and refactored EventForm (223 → 113 LOC, -49%)
+  - **Benefits:** Better separation of concerns, increased testability, improved reusability, ~58% average LOC reduction
   - **Dependencies:** Added react-hook-form and @hookform/resolvers
 - ✅ Testing Infrastructure (**MVP COMPLETE** - Production Ready)
   - **Unit Tests:** 241 tests with 100% pass rate
