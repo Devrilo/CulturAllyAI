@@ -147,13 +147,56 @@ export async function createEvent(supabase: SupabaseClient, command: CreateEvent
       edited_description: null,
     };
 
-    // Step 3: Insert event into database
-    const { data: event, error: insertError } = await supabase.from("events").insert(eventData).select().single();
+    // DEBUG: Log event data for RLS troubleshooting
+    // eslint-disable-next-line no-console
+    console.log("Attempting to insert event with data:", {
+      user_id: eventData.user_id,
+      created_by_authenticated_user: eventData.created_by_authenticated_user,
+      saved: eventData.saved,
+      feedback: eventData.feedback,
+      edited_description: eventData.edited_description,
+      isAuthenticated: command.isAuthenticated,
+    });
 
-    if (insertError) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to insert event:", insertError);
-      throw new EventServiceError("Nie udało się utworzyć wydarzenia", 500, "INSERT_FAILED");
+    // Step 3: Insert event into database
+    // For guests, we can't use .select() because RLS blocks SELECT for anon role
+    // So we insert without .select() and construct the response from input data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let event: any; // Using any here because guest events have temp UUID vs DB-generated id
+
+    if (command.isAuthenticated) {
+      // Authenticated users can use .select() to get the inserted row
+      const { data, error: insertError } = await supabase.from("events").insert(eventData).select().single();
+
+      if (insertError) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to insert event:", insertError);
+        throw new EventServiceError("Nie udało się utworzyć wydarzenia", 500, "INSERT_FAILED");
+      }
+
+      if (!data) {
+        throw new EventServiceError("Nie udało się pobrać utworzonego wydarzenia", 500, "EVENT_NOT_RETURNED");
+      }
+
+      event = data;
+    } else {
+      // Guests: INSERT without .select() to avoid RLS blocking SELECT
+      const { error: insertError } = await supabase.from("events").insert(eventData);
+
+      if (insertError) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to insert event:", insertError);
+        throw new EventServiceError("Nie udało się utworzyć wydarzenia", 500, "INSERT_FAILED");
+      }
+
+      // For guests, construct the response from input data + generated fields
+      // Note: We can't get the real DB-generated id, so we use a temp UUID
+      event = {
+        ...eventData,
+        id: crypto.randomUUID(), // Temporary ID for display (not the real DB id)
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
     }
 
     if (!event) {
@@ -161,18 +204,21 @@ export async function createEvent(supabase: SupabaseClient, command: CreateEvent
     }
 
     // Step 4: Log event creation in event_management_logs
-    const logData = {
-      action_type: "event_created" as const,
-      event_id: event.id,
-      user_id: command.userId,
-    };
+    // Skip logging for guest events since their temp UUID doesn't exist in DB
+    if (command.isAuthenticated) {
+      const logData = {
+        action_type: "event_created" as const,
+        event_id: event.id,
+        user_id: command.userId,
+      };
 
-    const { error: logError } = await supabase.from("event_management_logs").insert(logData);
+      const { error: logError } = await supabase.from("event_management_logs").insert(logData);
 
-    if (logError) {
-      // Log error but don't fail the operation
-      // eslint-disable-next-line no-console
-      console.error("Failed to log event creation:", logError);
+      if (logError) {
+        // Log error but don't fail the operation
+        // eslint-disable-next-line no-console
+        console.error("Failed to log event creation:", logError);
+      }
     }
 
     // Step 5: Return created event

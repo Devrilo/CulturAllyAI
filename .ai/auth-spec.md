@@ -5,6 +5,7 @@
 ## 1. Architektura interfejsu użytkownika
 
 ### 1.1 Layout i routing
+
 - `src/layouts/Layout.astro` pozostaje wspólną warstwą obejmującą `AppHeader` oraz globalne style; wszystkie nowe widoki auth korzystają z tego samego layoutu, aby zachować spójność i nie naruszyć istniejących przepływów generatora.
 - Widoki publiczne: `/` (Generator) pozostaje dostępny dla gości, natomiast toast i bannery (`AuthPromptBanner`) zachęcają do logowania, zgodnie z aktualnym planem UI.
 - Widoki chronione: `/events` i `/settings` (z UI planu) będą wymagały aktywnej sesji. `Astro` na poziomie strony zweryfikuje żądanie poprzez `context.locals.supabase.auth.getUser()`, a w przypadku braku użytkownika zwróci redirect 302 na `/login?redirect=/events`.
@@ -14,6 +15,7 @@
 - Zgodność z istniejącym linkiem „Profil" w `Header.tsx`: docelowo `/profile` stanie się aliasem dla `/settings` (prosty redirect server-side), aby nie zrywać założonej w nagłówku nawigacji. W specyfikacji UI planu widok ustawień opisany jest pod ścieżką `/settings` i tak pozostaje głównym miejscem zarządzania kontem (w tym zmiana hasła).
 
 ### 1.2 Widoki i komponenty
+
 - **Generator (`/`)**
   - Bez zmian względem bieżącej implementacji (`GeneratorPage.tsx`). Gating akcji „Zapisz" i oceny pozostaje oparte o `useSupabaseSession` (hook monitorujący `supabase.auth.onAuthStateChange`).
 - **Logowanie (`/login`)**
@@ -28,7 +30,7 @@
     - `supabase.auth.signUp({ email, password })` do utworzenia konta
     - Po sukcesie `supabase.auth.signInWithPassword()` w celu natychmiastowego zalogowania (Supabase nie loguje automatycznie po signUp w MVP bez potwierdzenia email)
 - **Moje wydarzenia (`/events`)**
-  - UI zgodnie z planem w `ui-plan.md`: React Query + infinite scroll. 
+  - UI zgodnie z planem w `ui-plan.md`: React Query + infinite scroll.
   - **Ochrona SSR przez Supabase**: Strona Astro weryfikuje sesję przed renderem używając `context.locals.supabase.auth.getUser()` (middleware automatycznie tworzy klienta z tokenem z cookies).
 - **Ustawienia konta (`/settings`)**
   - Layout z sekcjami `ChangePasswordModal`, `DeleteAccountModal` opisany w UI planie pozostaje aktualny.
@@ -36,6 +38,7 @@
   - **Supabase Admin API dla usuwania konta**: endpoint `POST /api/auth/delete-account` używa `supabaseAdmin.auth.admin.deleteUser()` po weryfikacji hasła przez `signInWithPassword`.
 
 ### 1.3 Komponenty i odpowiedzialności
+
 - **Astro strony** odpowiadają za SSR, ochronę tras (przez `context.locals.supabase.auth.getUser()`) oraz przekazanie danych początkowych. Żadna z **operacji auth nie jest wykonywana bezpośrednio w kodzie Astro** – wszystkie akcje delegowane są do:
   - **Komponentów React klienckich** używających Supabase JS SDK (`signUp`, `signInWithPassword`, `signOut`, `updateUser`)
   - **Endpointów backendowych** używających Supabase Admin API dla operacji wymagających podwyższonych uprawnień
@@ -52,6 +55,7 @@
   - Nowy hook `useAuthRedirect` - przechowuje `redirectTo` w `URLSearchParams` i obsługuje przekierowania po udanych akcjach Supabase Auth.
 
 ### 1.4 Walidacja i komunikaty błędów
+
 - **Walidacja client-side** (przed wysłaniem do Supabase): `zod` schematy w `src/lib/validators/auth.ts` (`loginSchema`, `registerSchema`, `changePasswordSchema`, `deleteAccountSchema`). Błędy wyświetlane inline pod polami.
 - **Walidacja Supabase Auth**: wszystkie formularze catch'ują `AuthError` z Supabase SDK i mapują kody błędów:
   - `Invalid login credentials` → "Nieprawidłowy email lub hasło"
@@ -65,6 +69,7 @@
   - Wszystkie błędy logowane z `error.code` i `error.message` (bez tokenów)
 
 ### 1.5 Kluczowe scenariusze
+
 1. **Logowanie gościa**: baner na generatorze → `/login?redirect=/` → udane logowanie → Supabase zwraca sesję → `AppHeader` aktualizuje stan, następuje redirect na stronę główną `/` (zgodnie z PRD US-002).
 2. **Rejestracja z generatora**: przycisk CTA → `/register?redirect=/` → sukces → automatyczne logowanie → powrót na `/` z toastem potwierdzającym, możliwość powtórzenia akcji „Zapisz" (zgodnie z PRD US-001).
 3. **Zmiana hasła**: z `/settings` użytkownik otwiera modal → wprowadza nowe hasło i potwierdzenie (bez wymagania obecnego hasła - weryfikacja przez aktywną sesję JWT) → `supabase.auth.updateUser({ password })` → sukces → automatyczne wylogowanie → redirect na `/login` z komunikatem o konieczności ponownego zalogowania.
@@ -76,6 +81,7 @@
 > **Kluczowa zasada:** Backend **NIE implementuje własnej logiki autentykacji**. Wykorzystuje Supabase Auth jako dostawcę tożsamości poprzez weryfikację JWT i Admin API.
 
 ### 2.1 Konfiguracja i zależności (Supabase-first)
+
 - **Istniejące middleware** (`src/middleware/index.ts`) zostaje rozszerzone:
   - Odczyt tokenów z cookies Supabase (`sb-access-token`, `sb-refresh-token`) ustawianych automatycznie przez Supabase JS SDK
   - Jeśli nagłówek `Authorization` nie jest dostępny (SSR), middleware pobiera token z ciasteczka i tworzy klienta Supabase z tym tokenem
@@ -88,6 +94,7 @@
 - **Zero własnej logiki auth** - wszystkie decyzje (czy token ważny, czy użytkownik istnieje, itp.) podejmuje Supabase.
 
 ### 2.2 Endpointy Astro (pomocnicze, nie zastępują Supabase Auth)
+
 - **❌ Brak endpointów do logowania/rejestracji** – zgodnie z aktualnym CHANGELOG wszystkie operacje auth idą **bezpośrednio do Supabase API** przez SDK po stronie klienta (`supabase.auth.signUp`, `signInWithPassword`, `signOut`, `updateUser`).
 - **✅ Nowe endpointy wspierające** (nie zastępują Supabase, tylko go uzupełniają):
   - `POST /api/auth/activity` – **audyt**: zapisuje zdarzenia w `user_activity_logs` po akcjach Supabase (`account_created`, `login`, `logout`, `password_changed`, `account_deleted`).
@@ -100,6 +107,7 @@
 - **Zasada**: endpointy są **cienką warstwą** nad Supabase, nie implementują własnej logiki auth.
 
 ### 2.3 Walidacja i DTO
+
 - Nowy plik `src/lib/validators/auth.ts` zawiera:
   - `emailSchema` – walidacja formatu email.
   - `passwordSchema` – min. 8 znaków, zawiera litery i cyfry.
@@ -111,6 +119,7 @@
 - Endpointy zwracają `MessageResponseDTO` lub `ErrorResponseDTO` (już zdefiniowane), aby zachować spójność.
 
 ### 2.4 Obsługa wyjątków (delegacja do Supabase)
+
 - **Serwerowa warstwa auth** (`src/lib/services/auth.service.ts`) jest **cienkim wrapperem** nad Supabase Admin API:
   - Wszystkie błędy autentykacji pochodzą od Supabase (`AuthApiError`, `AuthError`)
   - Backend NIE decyduje o ważności tokenów - przekazuje je do Supabase przez `auth.getUser()`
@@ -124,15 +133,21 @@
 - **Logika `try-catch`**: catch'uje `AuthApiError` z Supabase SDK, loguje (`console.error` + `AuthServiceError`), próbuje zapisać audit log.
 
 ### 2.5 Renderowanie server-side (weryfikacja przez Supabase)
+
 - **Astro SSR dla `/events` i `/settings`**:
+
   ```typescript
   // Weryfikacja sesji PRZEZ SUPABASE (nie własną logiką)
-  const { data: { user }, error } = await context.locals.supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error,
+  } = await context.locals.supabase.auth.getUser();
+
   if (!user || error) {
     return Astro.redirect(`/login?redirect=${Astro.url.pathname}`);
   }
   ```
+
 - **Hydratacja klienta**: przekazanie `initialSession` w props (Supabase automatycznie ustawi sesję w localStorage)
 - **AppHeader**: pozostaje komponentem klientowym używającym `useSupabaseSession` (hook oparty o `supabase.auth.onAuthStateChange`).
 
@@ -141,6 +156,7 @@
 > **Wszystkie operacje auth wykonywane są przez Supabase Auth SDK/API - zero własnej implementacji.**
 
 ### 3.1 Rejestracja (Supabase `signUp` + `signInWithPassword`)
+
 1. Formularz `RegisterForm` - walidacja lokalna (zod: email format, hasło min. 8 znaków, zgodność haseł)
 2. **Supabase Auth SDK**: `await supabase.auth.signUp({ email, password })`
    - Supabase tworzy użytkownika w tabeli `auth.users`
@@ -153,6 +169,7 @@
 5. Przekierowanie na stronę główną `/` (zgodnie z PRD US-001: "Po pomyślnej rejestracji użytkownik zostaje automatycznie zalogowany")
 
 ### 3.2 Logowanie (Supabase `signInWithPassword`)
+
 1. `LoginForm` - walidacja lokalna (zod: email format, hasło niepuste)
 2. **Supabase Auth SDK**: `await supabase.auth.signInWithPassword({ email, password })`
    - Supabase weryfikuje email i hasło (bcrypt hash comparison)
@@ -166,6 +183,7 @@
 5. Przekierowanie na stronę główną `/` (zgodnie z PRD US-002: "Po pomyślnym zalogowaniu użytkownik zostaje przekierowany na stronę główną") lub na `redirectTo` z URL params jeśli użytkownik próbował dostać się do chronionego zasobu
 
 ### 3.3 Wylogowanie (Supabase `signOut`)
+
 - Metoda `handleSignOut` w `AppHeader`:
   1. Audyt (opcjonalnie): `POST /api/auth/activity` z `logout` przed wylogowaniem
   2. **Supabase Auth SDK**: `await supabase.auth.signOut()`
@@ -176,6 +194,7 @@
   3. Redirect na `/login` (zgodnie z PRD US-010: "Przekierowanie na stronę logowania po wylogowaniu")
 
 ### 3.4 Zmiana hasła (Supabase `updateUser`)
+
 - Modal `ChangePasswordModal` w `/settings` - wymaga aktywnej sesji
 - Pola: nowe hasło, potwierdzenie nowego hasła (walidacja lokalna zod)
 - **NIE wymaga obecnego hasła** - Supabase weryfikuje tożsamość przez aktywną sesję JWT, co jest bezpieczniejsze (sesja może być odwołana)
@@ -193,15 +212,16 @@
   5. Redirect na `/login` z toastem: "Hasło zmienione. Zaloguj się ponownie."
 
 ### 3.5 Usuwanie konta (Supabase Admin API `deleteUser`)
+
 - Modal `DeleteAccountModal` w `/settings` - wymaga aktywnej sesji i potwierdzenia hasłem
 - **Przepływ przez backend endpoint** (jedyna operacja wymagająca backendu):
   1. Klient: `POST /api/auth/delete-account` z `{ password }`
-  2. **Backend weryfikuje hasło PRZEZ SUPABASE**: 
+  2. **Backend weryfikuje hasło PRZEZ SUPABASE**:
      ```typescript
      // Używamy Supabase do weryfikacji hasła (nie implementujemy własnej)
-     const { data, error } = await supabaseAdmin.auth.signInWithPassword({ 
-       email: user.email, 
-       password 
+     const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+       email: user.email,
+       password,
      });
      if (error) return 401; // Supabase odrzucił hasło
      ```
@@ -219,6 +239,7 @@
 - **Zgodność z PRD**: Użytkownik jest usunięty z `auth.users`, jego dane osobowe (email, hasło) są usunięte. Wydarzenia pozostają z `user_id=NULL` dla celów statystycznych (nie narusza RODO - dane anonimizowane).
 
 ### 3.6 Utrzymanie sesji i autoryzacja (w pełni przez Supabase)
+
 - **Single source of truth**: `supabase.auth.onAuthStateChange()` (Supabase SDK)
   - Automatyczna obsługa refresh tokenów przez Supabase SDK
   - Automatyczne zapisywanie/odczyt z localStorage przez Supabase SDK
@@ -230,13 +251,17 @@
 - **Autoryzacja w API endpointach**:
   ```typescript
   // Backend NIE weryfikuje JWT samodzielnie - deleguje do Supabase
-  const { data: { user }, error } = await context.locals.supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await context.locals.supabase.auth.getUser();
   // Supabase dekoduje JWT, weryfikuje sygnaturę, sprawdza expiry
   if (!user) return 401;
   ```
 - **Klient dołącza token**: interceptory w React Query dodają `Authorization: Bearer ${token}` - token pobierany z `supabase.auth.getSession()`
 
 ### 3.7 Bezpieczeństwo (delegowane do Supabase)
+
 - **Hashowanie haseł**: bcrypt przez Supabase (nie implementujemy własnego)
 - **Weryfikacja JWT**: Supabase weryfikuje sygnatury tokenów (klucz JWT w Supabase secrets)
 - **Row Level Security (RLS)**: polityki w `events` bazują na `auth.uid()` (funkcja Supabase zwracająca user_id z JWT)
@@ -254,10 +279,11 @@
   - JWT zawiera tylko `user_id`, `email`, `role` - bez wrażliwych danych
 
 ### 3.8 Zgodność z wymaganiami
+
 - **PRD historyjki w 100% przez Supabase Auth**:
   - US-001 (rejestracja) → `supabase.auth.signUp()` + automatyczne logowanie + redirect na `/`
   - US-002 (logowanie) → `supabase.auth.signInWithPassword()` + redirect na `/` lub `redirectTo`
-  - US-003 (zarządzanie kontem) → 
+  - US-003 (zarządzanie kontem) →
     - Zmiana hasła: `supabase.auth.updateUser({ password })` bez wymagania obecnego hasła (weryfikacja przez sesję JWT)
     - Usunięcie konta: `supabaseAdmin.auth.admin.deleteUser()` usuwa użytkownika z `auth.users`, anonimizuje wydarzenia (ON DELETE SET NULL)
   - US-010 (wylogowanie) → `supabase.auth.signOut()` + redirect na `/login`
@@ -266,10 +292,10 @@
   - ✅ Logi aktywności użytkownika są usuwane (kaskadowo)
   - ⚠️ Wydarzenia pozostają z `user_id=NULL` (anonimizacja zgodna z RODO)
   - **Uzasadnienie**: Zachowanie anonimizowanych wydarzeń umożliwia analizę statystyczną bez naruszania prywatności (wymóg KPI z sekcji 6 PRD)
-- **Poza zakresem MVP:** 
+- **Poza zakresem MVP:**
   - Reset hasła przez email (`supabase.auth.resetPasswordForEmail()` - dostępne w Supabase, ale nie używamy w MVP)
   - Email confirmation (`supabase.auth.verifyOtp()` - dostępne, ale nie wymagamy w MVP)
-- **Kluczowa decyzja architektoniczna**: 
+- **Kluczowa decyzja architektoniczna**:
   - ✅ **Używamy Supabase Auth jako single source of truth**
   - ❌ **Nie implementujemy własnej logiki autentykacji/autoryzacji**
   - ✅ **Backend jest cienką warstwą nad Supabase API**

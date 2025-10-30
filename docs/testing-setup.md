@@ -5,6 +5,7 @@ This document describes the testing infrastructure for CulturAllyAI.
 ## Overview
 
 The project uses a comprehensive testing approach:
+
 - **Vitest** for unit and integration tests
 - **Playwright** for end-to-end tests
 - **@testing-library/react** for component testing
@@ -78,7 +79,7 @@ npm run test:e2e:report
 
 - **Browser**: Chromium only (Desktop Chrome)
 - **Base URL**: http://localhost:4321
-- **Features**: 
+- **Features**:
   - Automatic dev server startup
   - Trace on first retry
   - Screenshots and videos on failure
@@ -133,6 +134,7 @@ export class LoginPage {
 ## Coverage Requirements
 
 According to project guidelines:
+
 - Minimum 80% coverage for validators and services
 - Focus on meaningful tests over arbitrary coverage percentages
 - Use coverage reports to identify untested critical paths
@@ -188,6 +190,7 @@ test("accessibility", async ({ page, makeAxeBuilder }) => {
 ## CI/CD Integration
 
 Tests are designed to run in CI environments:
+
 - Playwright retries failed tests 2x on CI
 - No parallel execution on CI for consistency
 - JSON reports for integration with CI tools
@@ -205,16 +208,19 @@ Tests are designed to run in CI environments:
 ## Troubleshooting
 
 ### Tests Running Slowly
+
 - Use `test.only()` to focus on specific tests
 - Check for unnecessary `await` statements
 - Ensure proper cleanup in afterEach hooks
 
 ### Flaky E2E Tests
+
 - Use `page.waitForSelector()` instead of arbitrary timeouts
 - Check for race conditions
 - Use `{ strict: true }` in locators for unique elements
 
 ### Coverage Not Meeting Threshold
+
 - Run `npm run test:coverage` to see detailed report
 - Focus on validators and services first
 - Consider if all code needs 80% coverage or just critical paths

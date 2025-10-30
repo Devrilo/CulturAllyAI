@@ -1,9 +1,11 @@
 # OpenRouter Service - Plan Implementacji
 
 ## Cel
+
 Zastąpienie mock implementacji w `generate-event-description.ts` prawdziwym wywołaniem OpenRouter API.
 
 **Wybrany model:** `openai/gpt-4o-mini`
+
 - Koszt: ~$0.15/1M input tokens, ~$0.60/1M output tokens
 - Bardzo dobra jakość w języku polskim
 - Świetny balans cena/jakość dla generowania krótkich opisów
@@ -16,8 +18,8 @@ Zastąpienie mock implementacji w `generate-event-description.ts` prawdziwym wyw
 export interface OpenRouterConfig {
   apiKey: string;
   model: string;
-  temperature?: number;    // default: 0.7
-  maxTokens?: number;      // default: 500
+  temperature?: number; // default: 0.7
+  maxTokens?: number; // default: 500
 }
 
 export interface Message {
@@ -48,6 +50,7 @@ export interface ResponseFormat {
 ## 2. Klasa OpenRouterService (`openrouter.service.ts`)
 
 ### Pola prywatne
+
 ```typescript
 private config: Required<OpenRouterConfig>;
 private readonly BASE_URL = "https://openrouter.ai/api/v1";
@@ -55,6 +58,7 @@ private readonly TIMEOUT = 30000;
 ```
 
 ### Konstruktor
+
 ```typescript
 constructor(config: OpenRouterConfig) {
   // 1. Waliduj apiKey (sprawdź czy zaczyna się od "sk-or-v1-")
@@ -63,16 +67,17 @@ constructor(config: OpenRouterConfig) {
 ```
 
 ### Główna metoda
+
 ```typescript
 async generateEventDescription(input: CreateEventDTO): Promise<GenerateDescriptionResult> {
   const messages = [
     { role: "system", content: this.buildSystemMessage() },
     { role: "user", content: this.buildUserMessage(input) }
   ];
-  
+
   const response = await this.sendChatCompletion(messages);
   const description = this.parseResponse(response);
-  
+
   return {
     description: this.trimTo500(description),
     modelVersion: response.model
@@ -85,6 +90,7 @@ async generateEventDescription(input: CreateEventDTO): Promise<GenerateDescripti
 ## 3. Metody Pomocnicze
 
 ### `buildSystemMessage(): string`
+
 ```
 Jesteś ekspertem od opisów wydarzeń kulturalnych w języku polskim.
 
@@ -97,6 +103,7 @@ Wymagania:
 ```
 
 ### `buildUserMessage(input: CreateEventDTO): string`
+
 ```
 Napisz opis wydarzenia:
 
@@ -109,6 +116,7 @@ Kluczowe informacje: {input.key_information}
 ```
 
 ### `buildResponseFormat(): ResponseFormat`
+
 ```typescript
 {
   type: "json_schema",
@@ -127,9 +135,10 @@ Kluczowe informacje: {input.key_information}
 ```
 
 ### `sendChatCompletion(messages: Message[]): Promise<ChatCompletionResponse>`
+
 ```typescript
 // POST https://openrouter.ai/api/v1/chat/completions
-// Headers: 
+// Headers:
 //   - Authorization: Bearer {apiKey}
 //   - Content-Type: application/json
 // Body:
@@ -140,6 +149,7 @@ Kluczowe informacje: {input.key_information}
 ```
 
 ### `parseResponse(response: ChatCompletionResponse): string`
+
 ```typescript
 // Sprawdź czy response.choices[0] istnieje
 // Sprawdź finish_reason === "stop"
@@ -154,7 +164,10 @@ Kluczowe informacje: {input.key_information}
 
 ```typescript
 export class AIGenerationError extends Error {
-  constructor(message: string, public readonly statusCode = 503) {
+  constructor(
+    message: string,
+    public readonly statusCode = 503
+  ) {
     super(message);
     this.name = "AIGenerationError";
   }
@@ -162,6 +175,7 @@ export class AIGenerationError extends Error {
 ```
 
 **Scenariusze:**
+
 - **401:** Brak/zły API key → waliduj w konstruktorze
 - **4xx:** Błędy klienta → rzuć błąd BEZ retry
 - **5xx/timeout:** Błędy serwera → retry 2x (backoff: 1s, 2s)
@@ -172,17 +186,20 @@ export class AIGenerationError extends Error {
 ## 5. Plan Wdrożenia
 
 ### Krok 1: Stwórz `openrouter.types.ts`
+
 Skopiuj interfejsy z sekcji 1.
 
 ### Krok 2: Stwórz `openrouter.service.ts`
+
 1. Import typów i `AIGenerationError`
 2. Zaimplementuj konstruktor z walidacją
-3. Zaimplementuj 3 metody build* (system message, user message, response format)
+3. Zaimplementuj 3 metody build\* (system message, user message, response format)
 4. Zaimplementuj `sendChatCompletion()` z fetch, timeout i retry
 5. Zaimplementuj `parseResponse()`
 6. Zaimplementuj główną metodę `generateEventDescription()`
 
 ### Krok 3: Zaktualizuj `generate-event-description.ts`
+
 ```typescript
 import { OpenRouterService } from "./openrouter.service";
 export { AIGenerationError } from "./openrouter.service";
@@ -193,7 +210,7 @@ function getService() {
   if (!service) {
     service = new OpenRouterService({
       apiKey: import.meta.env.OPENROUTER_API_KEY,
-      model: "openai/gpt-4o-mini"  // Tani (~$0.15/1M tokens), dobry w polszczyźnie
+      model: "openai/gpt-4o-mini", // Tani (~$0.15/1M tokens), dobry w polszczyźnie
     });
   }
   return service;
@@ -205,6 +222,7 @@ export async function generateEventDescription(input: CreateEventDTO) {
 ```
 
 ### Krok 4: Test
+
 Uruchom `npm run dev` i wywołaj POST `/api/events` z danymi testowymi.
 
 ---
@@ -253,17 +271,17 @@ private async sendChatCompletion(messages: Message[]): Promise<ChatCompletionRes
       if (error instanceof AIGenerationError && error.statusCode < 500) {
         throw error;
       }
-      
+
       // Retry z backoff
       if (attempt < 2) {
         await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
         continue;
       }
-      
+
       throw error;
     }
   }
-  
+
   throw new AIGenerationError("Max retries exceeded", 503);
 }
 ```

@@ -6,11 +6,19 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import node from "@astrojs/node";
 
+// Disable dev toolbar in test environment to prevent UI interference
+/* eslint-disable-next-line no-undef */
+const isTestEnv = process.env.ASTRO_ENV === "test";
+
 // https://astro.build/config
 export default defineConfig({
   output: "server",
   integrations: [react(), sitemap()],
   server: { port: 3000 },
+  // Disable dev toolbar in test environment to prevent UI interference
+  devToolbar: {
+    enabled: !isTestEnv,
+  },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -13,6 +13,7 @@ This directory contains all testing files for the CulturAllyAI application.
 ## Running Tests
 
 ### Unit Tests
+
 ```bash
 npm test                # Run all unit tests
 npm run test:watch      # Run tests in watch mode
@@ -21,6 +22,7 @@ npm run test:coverage   # Run tests with coverage report
 ```
 
 ### E2E Tests
+
 ```bash
 npm run test:e2e        # Run Playwright tests
 npm run test:e2e:ui     # Run Playwright tests with UI

@@ -76,17 +76,18 @@ export function RegisterForm() {
 
         // Registration successful - redirect to login
         if (signUpData.user) {
-          // Log activity (fire and forget)
+          // Show success message and redirect to login immediately
+          // Don't wait for activity log - it can fail since user session not yet established
+          window.location.href = "/login?message=registration_success";
+
+          // Log activity after redirect (fire and forget - will likely fail but that's ok)
           fetch("/api/auth/activity", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action_type: "account_created" }),
           }).catch(() => {
-            // Ignore audit log errors
+            // Ignore audit log errors - user not yet logged in
           });
-
-          // Show success message and redirect to login
-          window.location.href = "/login?message=registration_success";
         }
       } catch (err) {
         setAuthError(err as AuthError);

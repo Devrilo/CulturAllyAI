@@ -9,7 +9,7 @@ graph TB
             IndexPage["index.astro<br/>Generator View"]
             LayoutComp["Layout.astro<br/>Global Layout"]
         end
-        
+
         subgraph ReactComponents["React Components (Client-Side)"]
             subgraph FeatureComponents["Feature Components"]
                 GeneratorPage["GeneratorPage<br/>Main Container"]
@@ -21,14 +21,14 @@ graph TB
                 CharacterCounter["CharacterCounter<br/>Input Validation"]
                 TimeoutNotice["TimeoutNotice<br/>Error Display"]
             end
-            
+
             subgraph GlobalComponents["Global Components"]
                 AppHeader["AppHeader<br/>Auth + Navigation"]
                 Header["Header<br/>Branding"]
                 ThemeToggle["ThemeToggle<br/>Dark/Light Mode"]
                 AuthPromptBanner["AuthPromptBanner<br/>Guest CTA"]
             end
-            
+
             subgraph UIComponents["UI Primitives (Shadcn/ui)"]
                 Button["Button"]
                 Input["Input"]
@@ -39,7 +39,7 @@ graph TB
                 Skeleton["Skeleton"]
             end
         end
-        
+
         subgraph ReactHooks["React Hooks (State)"]
             useSupabaseSession["useSupabaseSession<br/>Auth State Monitor"]
             useGeneratorFlow["useGeneratorFlow<br/>API Mutations"]
@@ -47,90 +47,90 @@ graph TB
             useTheme["useTheme<br/>Theme State"]
         end
     end
-    
+
     subgraph ServerContext["Server Context"]
         Middleware["Middleware<br/>Token Extraction"]
-        
+
         subgraph APIEndpoints["API Endpoints"]
             EventsAPI["POST /api/events<br/>GET /api/events"]
             EventByIdAPI["PATCH /api/events/[id]<br/>DELETE /api/events/[id]"]
             CategoriesAPI["GET /api/categories/events<br/>GET /api/categories/age"]
         end
-        
+
         subgraph Services["Services"]
             EventsService["events.service.ts<br/>CRUD Logic"]
             CategoriesService["categories.service.ts<br/>Categories Logic"]
             AIService["openrouter.service.ts<br/>AI Generation"]
         end
     end
-    
+
     subgraph ExternalServices["External Services"]
         SupabaseAuth["Supabase Auth<br/>JWT Verification"]
         SupabaseDB["Supabase DB<br/>PostgreSQL"]
         OpenRouter["OpenRouter API<br/>LLM Provider"]
     end
-    
+
     %% Page to Component Relationships
     IndexPage --> |"renders"| LayoutComp
     LayoutComp --> |"includes"| AppHeader
     LayoutComp --> |"renders"| GeneratorPage
-    
+
     %% Component Hierarchy
     GeneratorPage --> |"contains"| EventForm
     GeneratorPage --> |"contains"| DescriptionPanel
     GeneratorPage --> |"contains"| AuthPromptBanner
-    
+
     EventForm --> |"contains"| Input
     EventForm --> |"contains"| Textarea
     EventForm --> |"contains"| Select
     EventForm --> |"contains"| CharacterCounter
     EventForm --> |"uses"| Button
-    
+
     DescriptionPanel --> |"contains"| DescriptionPreview
     DescriptionPanel --> |"contains"| ActionButtons
     DescriptionPanel --> |"contains"| RatingButtons
     DescriptionPanel --> |"contains"| TimeoutNotice
-    
+
     ActionButtons --> |"uses"| Button
     ActionButtons --> |"uses"| Tooltip
     RatingButtons --> |"uses"| Button
-    
+
     AppHeader --> |"includes"| Header
     AppHeader --> |"includes"| ThemeToggle
     AppHeader --> |"uses"| Button
-    
+
     AuthPromptBanner --> |"uses"| Alert
     TimeoutNotice --> |"uses"| Alert
     DescriptionPreview --> |"uses"| Skeleton
-    
+
     %% Hook Dependencies
     GeneratorPage -.-> |"uses"| useSupabaseSession
     GeneratorPage -.-> |"uses"| useGeneratorFlow
     GeneratorPage -.-> |"uses"| useEventForm
     AppHeader -.-> |"uses"| useSupabaseSession
     ThemeToggle -.-> |"uses"| useTheme
-    
+
     %% Hook to Service Connections
     useSupabaseSession -.-> |"monitors"| SupabaseAuth
     useGeneratorFlow -.-> |"calls"| EventsAPI
     useGeneratorFlow -.-> |"calls"| EventByIdAPI
     useEventForm -.-> |"calls"| CategoriesAPI
-    
+
     %% API to Service Relationships
     EventsAPI --> |"uses"| EventsService
     EventByIdAPI --> |"uses"| EventsService
     CategoriesAPI --> |"uses"| CategoriesService
-    
+
     EventsAPI --> |"passes through"| Middleware
     EventByIdAPI --> |"protected by"| Middleware
-    
+
     %% Service to External Relationships
     Middleware -.-> |"verifies token"| SupabaseAuth
     EventsService --> |"queries"| SupabaseDB
     EventsService --> |"generates via"| AIService
     CategoriesService --> |"queries"| SupabaseDB
     AIService --> |"requests"| OpenRouter
-    
+
     %% Styling
     classDef astroStyle fill:#ff5a1f,stroke:#333,stroke-width:2px,color:#fff
     classDef reactStyle fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
@@ -138,7 +138,7 @@ graph TB
     classDef serverStyle fill:#68a063,stroke:#333,stroke-width:2px,color:#fff
     classDef externalStyle fill:#f39c12,stroke:#333,stroke-width:2px,color:#fff
     classDef uiStyle fill:#9b59b6,stroke:#333,stroke-width:2px,color:#fff
-    
+
     class IndexPage,LayoutComp astroStyle
     class GeneratorPage,EventForm,DescriptionPanel,ActionButtons,RatingButtons,DescriptionPreview,CharacterCounter,TimeoutNotice,AppHeader,Header,ThemeToggle,AuthPromptBanner reactStyle
     class Button,Input,Textarea,Select,Alert,Tooltip,Skeleton uiStyle
@@ -150,6 +150,7 @@ graph TB
 ## Architecture Layers
 
 ### 1. Presentation Layer (Browser Context)
+
 - **Astro Pages**: SSR entry points (index.astro, Layout.astro)
 - **React Components**: Client-side interactive components
   - Feature Components: Generator-specific functionality
@@ -158,11 +159,13 @@ graph TB
 - **React Hooks**: State management and side effects
 
 ### 2. Server Layer (Server Context)
+
 - **Middleware**: Token extraction and Supabase client injection
 - **API Endpoints**: RESTful endpoints for events and categories
 - **Services**: Business logic layer (CRUD, AI generation)
 
 ### 3. External Services
+
 - **Supabase Auth**: JWT-based authentication
 - **Supabase DB**: PostgreSQL database
 - **OpenRouter API**: LLM provider for description generation
@@ -170,12 +173,14 @@ graph TB
 ## Authentication Boundaries
 
 ### Guest Features (Public)
+
 - EventForm: Input form for event details
 - GeneratorPage: Generate description (anonymous)
 - DescriptionPanel: View generated description
 - AuthPromptBanner: Prompt to login/register
 
 ### Authenticated Features (Protected)
+
 - ActionButtons: Save event (requires auth)
 - RatingButtons: Rate description (requires auth)
 - AppHeader: Shows user session + sign out
@@ -211,6 +216,7 @@ sequenceDiagram
 ## Component Relationships
 
 ### GeneratorPage Composition
+
 ```
 GeneratorPage
 ├── useSupabaseSession (auth state)
@@ -231,6 +237,7 @@ GeneratorPage
 ```
 
 ### AppHeader Composition
+
 ```
 AppHeader
 ├── useSupabaseSession (auth state)

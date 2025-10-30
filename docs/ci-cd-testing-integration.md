@@ -19,25 +19,25 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run linter
         run: npm run lint
-      
+
       - name: Run unit tests with coverage
         run: npm run test:coverage
-      
+
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
         with:
@@ -45,7 +45,7 @@ jobs:
           files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-      
+
       - name: Check coverage thresholds
         run: npm run test:coverage
         env:
@@ -54,27 +54,27 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
-      
+
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: true
-      
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,7 +82,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
-      
+
       - name: Upload screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -94,27 +94,27 @@ jobs:
   accessibility-tests:
     name: Accessibility Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
-      
+
       - name: Run accessibility tests
         run: npm run test:e2e -- --grep "accessibility"
         env:
           CI: true
-      
+
       - name: Upload accessibility report
         if: always()
         uses: actions/upload-artifact@v4
@@ -143,6 +143,7 @@ Add test status badges to your README.md:
 ## Additional Workflows
 
 ### Nightly Tests
+
 Create `.github/workflows/nightly.yml` for comprehensive testing:
 
 ```yaml
@@ -150,32 +151,32 @@ name: Nightly Tests
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Run at 2 AM UTC daily
-  workflow_dispatch:  # Allow manual trigger
+    - cron: "0 2 * * *" # Run at 2 AM UTC daily
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   full-test-suite:
     name: Full Test Suite
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run all tests
         run: |
           npm run lint
           npm run test:coverage
           npm run test:e2e
-      
+
       - name: Upload all reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -202,7 +203,7 @@ Configure coverage gates in your workflow:
     const threshold = 80;
     const { statements, branches, functions, lines } = coverage.total;
     const metrics = { statements, branches, functions, lines };
-    
+
     Object.entries(metrics).forEach(([key, value]) => {
       if (value.pct < threshold) {
         console.error(\`Coverage for \${key} (\${value.pct}%) is below threshold (\${threshold}%)\`);
@@ -236,7 +237,7 @@ Use GitHub Actions test reporting:
   if: always()
   with:
     name: Test Results
-    path: 'test-results/**/*.xml'
+    path: "test-results/**/*.xml"
     reporter: jest-junit
 ```
 
@@ -251,9 +252,9 @@ on:
   workflow_dispatch:
     inputs:
       test-type:
-        description: 'Type of tests to run'
+        description: "Type of tests to run"
         required: true
-        default: 'all'
+        default: "all"
         type: choice
         options:
           - all
@@ -265,19 +266,19 @@ jobs:
   run-tests:
     name: Run Selected Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: |
           case "${{ github.event.inputs.test-type }}" in
@@ -298,7 +299,7 @@ deploy:
   needs: [unit-tests, e2e-tests, accessibility-tests]
   runs-on: ubuntu-latest
   if: github.ref == 'refs/heads/main'
-  
+
   steps:
     - name: Deploy
       run: echo "Deploying to production..."

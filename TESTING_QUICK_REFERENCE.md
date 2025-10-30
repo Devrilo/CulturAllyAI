@@ -33,15 +33,16 @@ npm run test:e2e:report     # View last test report
 ## 💡 Common Patterns
 
 ### Unit Test Structure
+
 ```typescript
 describe("Feature", () => {
   it("should do something", () => {
     // Arrange
     const input = setupTestData();
-    
+
     // Act
     const result = functionUnderTest(input);
-    
+
     // Assert
     expect(result).toBe(expected);
   });
@@ -49,6 +50,7 @@ describe("Feature", () => {
 ```
 
 ### Component Test
+
 ```typescript
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
@@ -56,14 +58,15 @@ import { userEvent } from "@testing-library/user-event";
 it("handles user interaction", async () => {
   const user = userEvent.setup();
   render(<Component />);
-  
+
   await user.click(screen.getByRole("button"));
-  
+
   expect(screen.getByText("Result")).toBeInTheDocument();
 });
 ```
 
 ### E2E Test
+
 ```typescript
 import { test, expect } from "./fixtures";
 
@@ -75,6 +78,7 @@ test("user flow", async ({ page }) => {
 ```
 
 ### Mock API
+
 ```typescript
 import { http, HttpResponse } from "msw";
 import { server } from "./__tests__/mocks/handlers";
@@ -89,11 +93,13 @@ server.use(
 ## 🔍 Debugging
 
 ### Vitest
+
 - Use `it.only()` to run single test
 - Use `--no-coverage` for faster runs
 - Check browser console with `--browser`
 
 ### Playwright
+
 - Use `test.only()` for single test
 - Use `--debug` for step-through
 - Use `--headed` to see browser
@@ -101,13 +107,19 @@ server.use(
 ## ⚠️ Common Issues
 
 ### Test timeout
+
 ```typescript
-test("slow operation", async () => {
-  // Increase timeout for this test
-}, { timeout: 60000 });
+test(
+  "slow operation",
+  async () => {
+    // Increase timeout for this test
+  },
+  { timeout: 60000 }
+);
 ```
 
 ### Flaky selectors
+
 ```typescript
 // Bad
 await page.click("button");
@@ -117,6 +129,7 @@ await page.click('button[data-testid="submit"]');
 ```
 
 ### Missing cleanup
+
 ```typescript
 afterEach(() => {
   cleanup(); // React Testing Library

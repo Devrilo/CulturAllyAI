@@ -1,13 +1,21 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+
+// Load environment variables from .env.test for E2E tests
+dotenv.config({ path: ".env.test" });
 
 /**
  * Playwright E2E Testing Configuration
  * Uses Chromium browser only as specified in requirements
+ * Loads test environment from .env.test
  * See https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   // Test directory
   testDir: "./tests/e2e",
+
+  // Global teardown - clean up test data after all tests
+  globalTeardown: "./tests/e2e/global-teardown.ts",
 
   // Maximum time one test can run
   timeout: 30 * 1000,
@@ -29,11 +37,11 @@ export default defineConfig({
 
   // Shared settings for all projects
   use: {
-    // Base URL for page.goto() calls
-    baseURL: process.env.BASE_URL || "http://localhost:4321",
+    // Base URL for page.goto() calls - must be localhost:3000
+    baseURL: "http://localhost:3000",
 
-    // Collect trace when retrying the failed test
-    trace: "on-first-retry",
+    // Collect trace on failure for debugging with trace viewer
+    trace: "retain-on-failure",
 
     // Screenshot on failure
     screenshot: "only-on-failure",
@@ -53,9 +61,10 @@ export default defineConfig({
   ],
 
   // Run local dev server before starting tests
+  // Uses npm run dev:test which loads .env.test
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:4321",
+    command: "npm run dev:test",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

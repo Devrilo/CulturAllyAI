@@ -5,9 +5,11 @@ This directory contains all authentication-related UI components for CulturAllyA
 ## Components
 
 ### AuthPageShell
+
 Common wrapper for authentication pages (login, register).
 
 **Features:**
+
 - Centered layout with logo (Sparkles icon)
 - Title and optional subtitle
 - Consistent card design
@@ -15,22 +17,24 @@ Common wrapper for authentication pages (login, register).
 - Dark mode support
 
 **Usage:**
+
 ```tsx
-<AuthPageShell
-  title="Zaloguj się"
-  subtitle="Generuj opisy wydarzeń kulturalnych z pomocą AI"
->
+<AuthPageShell title="Zaloguj się" subtitle="Generuj opisy wydarzeń kulturalnych z pomocą AI">
   <LoginForm />
   <div slot="footerLinks">
-    <p>Nie masz konta? <a href="/register">Zarejestruj się</a></p>
+    <p>
+      Nie masz konta? <a href="/register">Zarejestruj się</a>
+    </p>
   </div>
 </AuthPageShell>
 ```
 
 ### AuthErrorAlert
+
 Maps Supabase Auth error codes to user-friendly Polish messages.
 
 **Supported Errors:**
+
 - `Invalid login credentials` → "Nieprawidłowy email lub hasło"
 - `Email not confirmed` → "Email nie został potwierdzony..."
 - `User already registered` → "Użytkownik z tym adresem email już istnieje"
@@ -38,16 +42,19 @@ Maps Supabase Auth error codes to user-friendly Polish messages.
 - HTTP 5xx → "Problem z serwerem..."
 
 **Usage:**
+
 ```tsx
 const [authError, setAuthError] = useState<AuthError | null>(null);
 
-<AuthErrorAlert error={authError} />
+<AuthErrorAlert error={authError} />;
 ```
 
 ### LoginForm
+
 Email/password login form with Supabase Auth integration.
 
 **Features:**
+
 - Email and password fields
 - Zod validation (`loginSchema`)
 - Loading state with Loader2 icon
@@ -56,6 +63,7 @@ Email/password login form with Supabase Auth integration.
 - Optional activity logging (fire-and-forget)
 
 **Flow:**
+
 1. User fills form
 2. Client-side validation (Zod)
 3. Call `supabaseClient.auth.signInWithPassword()`
@@ -63,9 +71,11 @@ Email/password login form with Supabase Auth integration.
 5. On error: display error message
 
 ### RegisterForm
+
 Registration form with password strength indicator.
 
 **Features:**
+
 - Email, password, confirm password fields
 - 5-level password strength indicator (visual bar + label)
 - Colors: red → orange → yellow → green → dark green
@@ -74,11 +84,13 @@ Registration form with password strength indicator.
 - Auto-login after registration (MVP without email confirmation)
 
 **Password Requirements:**
+
 - Minimum 8 characters
 - At least one letter
 - At least one number
 
 **Flow:**
+
 1. User fills form
 2. Client-side validation (Zod + password match)
 3. Call `supabaseClient.auth.signUp()`
@@ -88,9 +100,11 @@ Registration form with password strength indicator.
 ## Related Hooks
 
 ### useAuthRedirect
+
 Manages `redirect` parameter in auth flows.
 
 **API:**
+
 ```tsx
 const { redirectTo, navigateToRedirect, buildLoginUrl, buildRegisterUrl } = useAuthRedirect();
 
@@ -108,12 +122,14 @@ const loginUrl = buildLoginUrl(); // e.g., /login?redirect=/settings
 ### auth.ts (`src/lib/validators/auth.ts`)
 
 **Schemas:**
+
 - `loginSchema` - email + password (basic validation)
 - `registerSchema` - email + password + confirmPassword (with match check)
 - `changePasswordSchema` - newPassword + confirmPassword
 - `deleteAccountSchema` - password + confirmDeletion (boolean)
 
 **Utilities:**
+
 - `calculatePasswordStrength(password: string): number` - returns 0-4
 - `getPasswordStrengthLabel(score: number): string` - Polish labels
 - `getPasswordStrengthColor(score: number): string` - Tailwind classes
@@ -121,6 +137,7 @@ const loginUrl = buildLoginUrl(); // e.g., /login?redirect=/settings
 ## Accessibility
 
 All components follow ARIA best practices:
+
 - `aria-label` for forms and inputs
 - `aria-describedby` for error messages and hints
 - `aria-invalid` for validation states
@@ -131,6 +148,7 @@ All components follow ARIA best practices:
 ## Dark Mode
 
 All components support dark mode via Tailwind's `dark:` variant:
+
 - Colors adjust automatically (e.g., `bg-background`, `text-foreground`)
 - Focus rings and borders respect theme
 - Consistent with generator components
@@ -138,16 +156,19 @@ All components support dark mode via Tailwind's `dark:` variant:
 ## Error Handling
 
 ### Client-Side Validation
+
 - Zod schemas validate before API calls
 - Field-level error messages (inline)
 - Clear focus on first invalid field
 
 ### Supabase Auth Errors
+
 - Caught as `AuthError` type
 - Mapped to Polish messages in `AuthErrorAlert`
 - Non-blocking (user can retry)
 
 ### Network Errors
+
 - Generic error message
 - Logged to console with `error.code` and `error.message`
 - Never expose tokens or sensitive data
@@ -155,6 +176,7 @@ All components support dark mode via Tailwind's `dark:` variant:
 ## Testing
 
 See `docs/manual-tests/` for auth flow test plans:
+
 - Login flow (valid/invalid credentials)
 - Registration flow (with/without auto-login)
 - Password strength indicator validation
@@ -164,6 +186,7 @@ See `docs/manual-tests/` for auth flow test plans:
 ## Backend Integration (TODO)
 
 These components are ready for backend integration:
+
 - Middleware for SSR protection (redirect to `/login?redirect=...`)
 - API endpoint `POST /api/auth/activity` for audit logging
 - Supabase cookies reading in middleware

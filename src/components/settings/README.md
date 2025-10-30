@@ -5,9 +5,11 @@ This directory contains account management UI components for CulturAllyAI.
 ## Components
 
 ### SettingsPage
+
 Main settings page component with account management options.
 
 **Features:**
+
 - Account info section (user ID preview)
 - Security section with two options:
   - Change Password (KeyRound icon, outline button)
@@ -18,20 +20,24 @@ Main settings page component with account management options.
 - Dark mode support
 
 **Usage:**
+
 ```tsx
 // In settings.astro
 <SettingsPage client:load />
 ```
 
 **Layout:**
+
 - Centered container (max-w-2xl)
 - Card-based sections with icons
 - Consistent spacing with generator page
 
 ### ChangePasswordModal
+
 Modal for changing user password.
 
 **Features:**
+
 - **No current password required** - verified by active JWT session
 - New password + confirmation fields
 - 5-level password strength indicator (same as RegisterForm)
@@ -41,6 +47,7 @@ Modal for changing user password.
 - Escape to close (when not submitting)
 
 **Flow:**
+
 1. User opens modal from Settings page
 2. Enters new password + confirmation
 3. Client-side validation (Zod + match check)
@@ -49,11 +56,13 @@ Modal for changing user password.
 6. On error: display error via `AuthErrorAlert`
 
 **Security:**
+
 - Session-based verification (no need for old password)
 - JWT must be valid (Supabase verifies)
 - Forces logout to ensure new password is used everywhere
 
 **Props:**
+
 ```tsx
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -62,9 +71,11 @@ interface ChangePasswordModalProps {
 ```
 
 ### DeleteAccountModal
+
 Modal for permanently deleting user account.
 
 **Features:**
+
 - Red header with warning icon (AlertTriangle)
 - Warning message about irreversibility
 - Password confirmation field
@@ -74,6 +85,7 @@ Modal for permanently deleting user account.
 - Auto-logout after deletion
 
 **Flow:**
+
 1. User opens modal from Settings page
 2. Enters password for verification
 3. Checks consent checkbox
@@ -84,11 +96,13 @@ Modal for permanently deleting user account.
 8. On success: `signOut()` → redirect `/login?message=account_deleted`
 
 **Data Handling:**
+
 - User deleted from `auth.users` (Supabase)
 - Events set to `user_id = NULL` (ON DELETE SET NULL)
 - Preserves anonymized data for analytics (GDPR compliant)
 
 **Props:**
+
 ```tsx
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -97,6 +111,7 @@ interface DeleteAccountModalProps {
 ```
 
 **Backend Endpoint Required:**
+
 ```
 POST /api/auth/delete-account
 Authorization: Bearer <jwt_token>
@@ -111,9 +126,11 @@ Content-Type: application/json
 ## Shared UI Components
 
 ### Checkbox (`src/components/ui/checkbox.tsx`)
+
 Custom checkbox component matching shadcn/ui design.
 
 **Features:**
+
 - Native `<input type="checkbox">` with styled overlay
 - Props: `checked`, `onCheckedChange`, `disabled`
 - Focus ring, hover states
@@ -121,6 +138,7 @@ Custom checkbox component matching shadcn/ui design.
 - Check icon from lucide-react
 
 **Usage:**
+
 ```tsx
 <Checkbox
   checked={formData.confirmDeletion}
@@ -130,6 +148,7 @@ Custom checkbox component matching shadcn/ui design.
 ```
 
 **Note:** Simple implementation without Radix UI. If full Radix features needed:
+
 ```bash
 npm install @radix-ui/react-checkbox
 ```
@@ -137,6 +156,7 @@ npm install @radix-ui/react-checkbox
 ## Validators
 
 ### Password Change Validation
+
 ```tsx
 // changePasswordSchema
 {
@@ -146,6 +166,7 @@ npm install @radix-ui/react-checkbox
 ```
 
 ### Account Deletion Validation
+
 ```tsx
 // deleteAccountSchema
 {
@@ -157,6 +178,7 @@ npm install @radix-ui/react-checkbox
 ## Accessibility
 
 All components follow ARIA best practices:
+
 - `role="dialog"` and `aria-modal="true"` for modals
 - `aria-labelledby` for modal titles
 - `aria-label` for close buttons
@@ -167,6 +189,7 @@ All components follow ARIA best practices:
 ## Dark Mode
 
 All components support dark mode:
+
 - Modal backdrop: `bg-background/80 backdrop-blur-sm`
 - Cards: `bg-card border shadow-sm`
 - Colors adjust automatically
@@ -175,12 +198,14 @@ All components support dark mode:
 ## Error Handling
 
 ### Password Change Errors
+
 - Weak password → inline validation error
 - Password mismatch → "Hasła muszą być identyczne"
 - Session expired → 401 from Supabase → redirect to login
 - Network error → generic message + retry
 
 ### Account Deletion Errors
+
 - Wrong password → "Nieprawidłowy email lub hasło"
 - Backend error → error message from API response
 - Network error → generic message + retry
@@ -189,6 +214,7 @@ All components support dark mode:
 ## Security Considerations
 
 ### Change Password
+
 - **No current password required** is secure because:
   - JWT session proves identity
   - Session can be revoked if compromised
@@ -197,6 +223,7 @@ All components support dark mode:
 - Aligns with modern practices (GitHub, Google, etc.)
 
 ### Delete Account
+
 - **Requires password** for final confirmation
 - Two-step process (password + checkbox)
 - Backend verifies password via Supabase Auth
@@ -206,6 +233,7 @@ All components support dark mode:
 ## Testing
 
 See `docs/manual-tests/` for test plans:
+
 - Change password flow (success/error cases)
 - Delete account flow (success/error cases)
 - Password strength indicator validation
@@ -215,11 +243,13 @@ See `docs/manual-tests/` for test plans:
 ## Backend Integration (TODO)
 
 ### Required Middleware
+
 - SSR protection for `/settings` page
 - Redirect to `/login?redirect=/settings` if not authenticated
 - Pass `context.locals.supabase` to components
 
 ### Required Endpoint
+
 ```
 POST /api/auth/delete-account
 - Verify JWT from Authorization header
@@ -229,6 +259,7 @@ POST /api/auth/delete-account
 ```
 
 ### Required Database Changes
+
 - Ensure `ON DELETE SET NULL` for `events.user_id`
 - RLS policies for user data isolation
 - Audit logging in `user_activity_logs`
@@ -238,6 +269,7 @@ See `auth-spec.md` for complete specification.
 ## Future Enhancements
 
 ### Possible Additions (Post-MVP)
+
 - Email change with verification
 - Two-factor authentication setup
 - Active sessions management
@@ -245,6 +277,7 @@ See `auth-spec.md` for complete specification.
 - Account recovery options
 
 ### UI Improvements
+
 - Toast notifications for success states
 - Confirmation dialogs before opening modals
 - Password strength requirements checklist

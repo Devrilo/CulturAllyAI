@@ -9,7 +9,7 @@
 ```mermaid
 sequenceDiagram
     autonumber
-    
+
     participant Przeglądarka
     participant ReactForm as React Form<br/>(LoginForm)
     participant SupabaseSDK as Supabase SDK<br/>(Client)
@@ -17,9 +17,9 @@ sequenceDiagram
     participant AstroAPI as Astro API<br/>(Endpoints)
     participant SupabaseAuth as Supabase Auth<br/>(API)
     participant DB as PostgreSQL<br/>(auth.users)
-    
+
     Note over Przeglądarka,DB: PRZEPŁYW 1: LOGOWANIE
-    
+
     Przeglądarka->>ReactForm: Użytkownik wypełnia<br/>email i hasło
     activate ReactForm
     ReactForm->>ReactForm: Walidacja lokalna<br/>(Zod schema)
@@ -30,7 +30,7 @@ sequenceDiagram
     SupabaseAuth->>DB: SELECT * WHERE email
     DB-->>SupabaseAuth: user data + password_hash
     SupabaseAuth->>SupabaseAuth: Weryfikacja hasła<br/>(bcrypt compare)
-    
+
     alt Hasło prawidłowe
         SupabaseAuth->>SupabaseAuth: Generuj JWT tokens<br/>(access + refresh)
         SupabaseAuth->>DB: INSERT refresh_token
@@ -51,9 +51,9 @@ sequenceDiagram
         ReactForm->>Przeglądarka: Alert: Nieprawidłowy<br/>email lub hasło
         deactivate ReactForm
     end
-    
+
     Note over Przeglądarka,DB: PRZEPŁYW 2: DOSTĘP DO CHRONIONEGO ZASOBU
-    
+
     Przeglądarka->>Middleware: GET /api/events/123<br/>Header: Authorization Bearer token
     activate Middleware
     Middleware->>Middleware: Odczyt tokenu<br/>z Authorization header
@@ -67,7 +67,7 @@ sequenceDiagram
     SupabaseSDK->>SupabaseAuth: Weryfikuj JWT
     activate SupabaseAuth
     SupabaseAuth->>SupabaseAuth: Dekoduj token<br/>Sprawdź sygnaturę<br/>Sprawdź expiry
-    
+
     alt Token ważny
         SupabaseAuth->>DB: SELECT * WHERE id
         DB-->>SupabaseAuth: user data
@@ -89,9 +89,9 @@ sequenceDiagram
         Przeglądarka->>Przeglądarka: Toast: Sesja wygasła
         Przeglądarka->>Przeglądarka: Redirect /login
     end
-    
+
     Note over Przeglądarka,DB: PRZEPŁYW 3: AUTOMATYCZNE ODŚWIEŻANIE TOKENU
-    
+
     Przeglądarka->>SupabaseSDK: Akcja użytkownika<br/>(np. klik Zapisz)
     activate SupabaseSDK
     SupabaseSDK->>SupabaseSDK: Sprawdź expiry<br/>access_token
@@ -108,9 +108,9 @@ sequenceDiagram
     SupabaseSDK->>SupabaseSDK: onAuthStateChange<br/>(TOKEN_REFRESHED)
     SupabaseSDK-->>Przeglądarka: Kontynuuj akcję<br/>z nowym tokenem
     deactivate SupabaseSDK
-    
+
     Note over Przeglądarka,DB: PRZEPŁYW 4: WYLOGOWANIE
-    
+
     Przeglądarka->>SupabaseSDK: Klik Wyloguj
     activate SupabaseSDK
     SupabaseSDK->>AstroAPI: POST /api/auth/activity<br/>(logout audit)
@@ -124,9 +124,9 @@ sequenceDiagram
     SupabaseSDK-->>Przeglądarka: Wylogowano
     deactivate SupabaseSDK
     Przeglądarka->>Przeglądarka: Redirect /login<br/>Toast: Wylogowano pomyślnie
-    
+
     Note over Przeglądarka,DB: PRZEPŁYW 5: REJESTRACJA Z AUTO-LOGOWANIEM
-    
+
     Przeglądarka->>ReactForm: Wypełnia formularz<br/>rejestracji
     activate ReactForm
     ReactForm->>ReactForm: Walidacja Zod<br/>(email, hasło, zgodność)
@@ -139,9 +139,9 @@ sequenceDiagram
     DB-->>SupabaseAuth: user_id
     SupabaseAuth-->>SupabaseSDK: user created<br/>(bez session)
     deactivate SupabaseAuth
-    
+
     Note over ReactForm,SupabaseSDK: MVP bez email confirmation<br/>Auto-logowanie
-    
+
     ReactForm->>SupabaseSDK: signInWithPassword()<br/>(automatyczne)
     SupabaseSDK->>SupabaseAuth: POST /auth/v1/token
     activate SupabaseAuth
