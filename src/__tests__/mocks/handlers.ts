@@ -15,7 +15,7 @@ export const handlers = [
 
   // Mock POST /api/events
   http.post("/api/events", async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
       {
         id: "new-id",

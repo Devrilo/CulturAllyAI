@@ -68,7 +68,15 @@ export const test = base.extend<AuthFixtures>({
 
     // Wait for navigation to complete (may include query params)
     // Increase timeout for Supabase auth response
-    await page.waitForLoadState("networkidle", { timeout: 30000 });
+    await page.waitForLoadState("networkidle", { timeout: 45000 });
+
+    // Wait for URL to change away from login page with retry logic
+    await page
+      .waitForFunction(() => !window.location.pathname.includes("/login"), { timeout: 15000 })
+      .catch(() => {
+        // If still on login, it might be slow - give one more chance
+        return page.waitForTimeout(3000);
+      });
 
     // Additional wait to ensure navigation is complete
     await page.waitForTimeout(2000);
