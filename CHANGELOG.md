@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Code Refactoring - Generator Infrastructure** (Phase 1 & 2.1)
+  - Split `useGeneratorFlow` into 4 specialized hooks using Facade pattern (236 → 60 LOC, -74%)
+    - `useClipboard` (40 LOC) - Reusable clipboard operations with toast feedback
+    - `useEventGeneration` (110 LOC) - AI generation with 10s timeout notification
+    - `useEventSave` (50 LOC) - Event saving via PATCH API
+    - `useEventRating` (50 LOC) - Event rating with thumbs up/down feedback
+  - Refactored `GeneratorPage` using Container/Presenter pattern (238 → 36 LOC, -85%)
+    - Created `event-mappers.ts` for DTO-to-ViewModel mapping (36 LOC)
+    - Created `query-client.ts` factory for QueryClient configuration (17 LOC)
+    - Created `useGenerator` composite hook for business logic (160 LOC)
+    - Created `GeneratorPageView` presentational component (88 LOC)
+  - **Result:** Improved separation of concerns, better testability, increased reusability
+
+- **Code Refactoring - Authentication UI** (Phase 2.3)
+  - Migrated `ChangePasswordModal` to React Hook Form (266 → 155 LOC, -42%)
+  - Created reusable `PasswordStrengthIndicator` component (39 LOC, shared with RegisterForm)
+  - Created `useChangePasswordForm` hook with RHF + zodResolver (106 LOC)
+  - Installed `react-hook-form` and `@hookform/resolvers` dependencies
+  - **Result:** Eliminated duplicate validation logic, simplified error handling, improved UX
+
+### Added
+
 - **E2E Testing Infrastructure** ✅ **COMPLETE - MVP Ready**
   - Playwright 1.49.1 test framework for end-to-end testing
   - **44 comprehensive E2E tests with 100% pass rate** (4 non-critical skips planned for future features)
@@ -373,6 +395,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **E2E Test Stability Improvements**
+  - Fixed authentication timeout in E2E fixtures (increased from 30s to 45s)
+  - Added retry logic with `waitForFunction` for URL navigation check (15s timeout)
+  - Added fallback 3s timeout if initial navigation wait fails
+  - Added 2s hydration wait in ProfilePage for React Hook Form initialization
+  - **Result:** All E2E tests now passing consistently (10/10 generator, 7/7 account management)
+
+- **Code Quality Fixes**
+  - Fixed 134 CRLF line ending errors in `tests/e2e/global-teardown.ts`
+  - Fixed TypeScript error in `src/__tests__/mocks/handlers.ts` (added `Record<string, unknown>` type assertion)
+  - Fixed all line ending issues in newly created files via prettier
+  - **Result:** Clean linting, no TypeScript errors, consistent code formatting
+
 - **Registration Flow**
   - Fixed registration redirect issue where form would stay on `/register` page
   - Root cause: `fetch("/api/auth/activity")` call blocked `window.location.href` redirect
@@ -420,9 +455,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Framework:** Astro 5 with TypeScript 5
 - **Database:** Supabase (PostgreSQL)
-- **Validation:** Zod
+- **Validation:** Zod + React Hook Form (forms)
 - **AI Provider:** OpenRouter.ai with `openai/gpt-4o-mini` model
 - **Testing:** Vitest 4.0.4 with React Testing Library, jsdom environment, 241 unit tests
+- **Form Management:** React Hook Form 7.x with @hookform/resolvers for Zod integration
 
 ## [0.0.0] - 2025-10-17
 

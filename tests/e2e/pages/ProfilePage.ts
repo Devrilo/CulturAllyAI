@@ -52,6 +52,9 @@ export class ProfilePage extends BasePage {
 
   // Open modals
   async openChangePasswordModal(): Promise<void> {
+    // Wait for React hydration and button to be ready
+    await this.openChangePasswordButton.waitFor({ state: "visible", timeout: 10000 });
+    await this.page.waitForTimeout(2000); // Extra time for React Hook Form initialization
     await this.openChangePasswordButton.click();
     // Wait for modal to appear
     await this.page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });

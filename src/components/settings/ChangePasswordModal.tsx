@@ -1,18 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import {
-  changePasswordSchema,
-  type ChangePasswordFormData,
-  calculatePasswordStrength,
-  getPasswordStrengthLabel,
-  getPasswordStrengthColor,
-} from "../../lib/validators/auth";
-import { supabaseClient } from "../../db/supabase.client";
-import type { AuthError } from "@supabase/supabase-js";
 import { Loader2, X } from "lucide-react";
 import { AuthErrorAlert } from "../auth/AuthErrorAlert";
+import { PasswordStrengthIndicator } from "../auth/PasswordStrengthIndicator";
+import { useChangePasswordForm } from "../hooks/useChangePasswordForm";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -25,99 +18,17 @@ interface ChangePasswordModalProps {
  * Auto-logout after successful password change
  */
 export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
-  const [formData, setFormData] = useState<ChangePasswordFormData>({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [errors, setErrors] = useState<Partial<Record<keyof ChangePasswordFormData, string>>>({});
-  const [authError, setAuthError] = useState<AuthError | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register, handleSubmit, errors, watch, authError, isSubmitting, onSubmit, clearAuthError } =
+    useChangePasswordForm();
 
-  // Calculate password strength
-  const passwordStrength = useMemo(() => calculatePasswordStrength(formData.newPassword), [formData.newPassword]);
-
-  const handleInputChange = useCallback((field: keyof ChangePasswordFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
-    setAuthError(null);
-  }, []);
+  const newPassword = watch("newPassword");
 
   const handleClose = useCallback(() => {
     if (!isSubmitting) {
-      setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setErrors({});
-      setAuthError(null);
+      clearAuthError();
       onClose();
     }
-  }, [isSubmitting, onClose]);
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      // Clear previous errors
-      setErrors({});
-      setAuthError(null);
-
-      // Validate form
-      const validation = changePasswordSchema.safeParse(formData);
-      if (!validation.success) {
-        const fieldErrors: Partial<Record<keyof ChangePasswordFormData, string>> = {};
-        validation.error.errors.forEach((err) => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as keyof ChangePasswordFormData] = err.message;
-          }
-        });
-        setErrors(fieldErrors);
-        return;
-      }
-
-      setIsSubmitting(true);
-
-      try {
-        // First verify current password
-        const { error: verifyError } = await supabaseClient.auth.signInWithPassword({
-          email: (await supabaseClient.auth.getUser()).data.user?.email || "",
-          password: formData.currentPassword,
-        });
-
-        if (verifyError) {
-          setAuthError({ ...verifyError, message: "Nieprawidłowe aktualne hasło" } as AuthError);
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Update password via Supabase Auth
-        const { error } = await supabaseClient.auth.updateUser({
-          password: formData.newPassword,
-        });
-
-        if (error) {
-          setAuthError(error);
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Log activity
-        fetch("/api/auth/activity", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action_type: "password_changed" }),
-        }).catch(() => {
-          // Ignore audit log errors
-        });
-
-        // Sign out and redirect to login
-        await supabaseClient.auth.signOut();
-        window.location.href = "/login?message=password_changed";
-      } catch (err) {
-        setAuthError(err as AuthError);
-        setIsSubmitting(false);
-      }
-    },
-    [formData]
-  );
+  }, [isSubmitting, clearAuthError, onClose]);
 
   if (!isOpen) return null;
 
@@ -140,7 +51,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <AuthErrorAlert error={authError} />
 
           {/* Current Password */}
@@ -151,8 +62,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
             <Input
               id="currentPassword"
               type="password"
-              value={formData.currentPassword}
-              onChange={(e) => handleInputChange("currentPassword", e.target.value)}
+              {...register("currentPassword")}
               disabled={isSubmitting}
               placeholder="••••••••"
               aria-invalid={!!errors.currentPassword}
@@ -162,7 +72,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
             />
             {errors.currentPassword && (
               <p id="currentPassword-error" className="text-sm text-destructive" role="alert">
-                {errors.currentPassword}
+                {errors.currentPassword.message}
               </p>
             )}
           </div>
@@ -175,8 +85,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
             <Input
               id="newPassword"
               type="password"
-              value={formData.newPassword}
-              onChange={(e) => handleInputChange("newPassword", e.target.value)}
+              {...register("newPassword")}
               disabled={isSubmitting}
               placeholder="••••••••"
               aria-invalid={!!errors.newPassword}
@@ -185,29 +94,11 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
               autoComplete="new-password"
             />
 
-            {/* Password strength indicator */}
-            {formData.newPassword && (
-              <div id="password-strength" className="space-y-1" aria-live="polite">
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3, 4].map((level) => (
-                    <div
-                      key={level}
-                      className={`h-1 flex-1 rounded-full transition-colors ${
-                        level <= passwordStrength ? getPasswordStrengthColor(passwordStrength) : "bg-muted"
-                      }`}
-                      aria-hidden="true"
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Siła hasła: <span className="font-medium">{getPasswordStrengthLabel(passwordStrength)}</span>
-                </p>
-              </div>
-            )}
+            <PasswordStrengthIndicator password={newPassword} />
 
             {errors.newPassword && (
               <p id="newPassword-error" className="text-sm text-destructive" role="alert">
-                {errors.newPassword}
+                {errors.newPassword.message}
               </p>
             )}
           </div>
@@ -220,8 +111,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
             <Input
               id="confirmPassword"
               type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+              {...register("confirmPassword")}
               disabled={isSubmitting}
               placeholder="••••••••"
               aria-invalid={!!errors.confirmPassword}
@@ -231,7 +121,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
             />
             {errors.confirmPassword && (
               <p id="confirmPassword-error" className="text-sm text-destructive" role="alert">
-                {errors.confirmPassword}
+                {errors.confirmPassword.message}
               </p>
             )}
           </div>

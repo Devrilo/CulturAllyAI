@@ -26,6 +26,7 @@ CulturAllyAI is a simple web application designed to generate concise, engaging,
 - **Frontend:** Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui
 - **Backend:** Supabase (PostgreSQL, authentication, and backend services)
 - **AI Integration:** Openrouter.ai for connecting to various AI models
+- **Form Management:** React Hook Form 7.x with @hookform/resolvers for Zod validation
 - **Testing:** Vitest + @testing-library/react (unit/integration), Playwright (E2E), @axe-core/playwright (accessibility)
 - **CI/CD & Hosting:** GitHub Actions, DigitalOcean
 
@@ -171,18 +172,31 @@ For detailed testing documentation, see:
 CulturAllyAI/
 ├── src/
 │   ├── components/        # UI components (Astro & React)
+│   │   ├── auth/         # Authentication components
+│   │   │   ├── PasswordStrengthIndicator.tsx  # Reusable password strength UI
+│   │   │   └── ...                            # Login, Register forms
 │   │   ├── generator/    # Generator view components
-│   │   │   ├── AppHeader.tsx      # Global header with auth state
-│   │   │   ├── Header.tsx         # Header presentation component
-│   │   │   ├── ThemeToggle.tsx    # Dark/light mode toggle
-│   │   │   ├── GeneratorPage.tsx  # Main generator container
-│   │   │   ├── EventForm.tsx      # Event input form
-│   │   │   └── ...               # Other generator components
+│   │   │   ├── AppHeader.tsx           # Global header with auth state
+│   │   │   ├── Header.tsx              # Header presentation component
+│   │   │   ├── ThemeToggle.tsx         # Dark/light mode toggle
+│   │   │   ├── GeneratorPage.tsx       # Main container (36 LOC)
+│   │   │   ├── GeneratorPageView.tsx   # Presentational component (88 LOC)
+│   │   │   ├── EventForm.tsx           # Event input form
+│   │   │   └── ...                     # Other generator components
 │   │   ├── hooks/        # Custom React hooks
-│   │   │   ├── useTheme.ts           # Dark mode management
-│   │   │   ├── useEventForm.ts       # Form state & validation
-│   │   │   ├── useGeneratorFlow.ts   # Generator mutations
-│   │   │   └── useSupabaseSession.ts # Auth state
+│   │   │   ├── useTheme.ts                # Dark mode management
+│   │   │   ├── useEventForm.ts            # Form state & validation
+│   │   │   ├── useGeneratorFlow.ts        # Generator facade (60 LOC)
+│   │   │   ├── useGenerator.ts            # Composite business logic (160 LOC)
+│   │   │   ├── useEventGeneration.ts      # AI generation hook (110 LOC)
+│   │   │   ├── useEventSave.ts            # Save mutation hook (50 LOC)
+│   │   │   ├── useEventRating.ts          # Rating mutation hook (50 LOC)
+│   │   │   ├── useClipboard.ts            # Clipboard operations (40 LOC)
+│   │   │   ├── useChangePasswordForm.ts   # RHF password form (106 LOC)
+│   │   │   └── useSupabaseSession.ts      # Auth state
+│   │   ├── settings/     # Account management components
+│   │   │   ├── ChangePasswordModal.tsx    # Password change (155 LOC, RHF)
+│   │   │   └── ...                        # Delete account, settings page
 │   │   └── ui/           # Shadcn/ui components
 │   ├── layouts/          # Astro layouts
 │   │   └── Layout.astro  # Global layout with AppHeader
@@ -198,6 +212,9 @@ CulturAllyAI/
 │   │   │   │   └── openrouter.types.ts            # Type definitions
 │   │   │   ├── categories.service.ts
 │   │   │   └── events.service.ts
+│   │   ├── mappers/      # Data transformation layer
+│   │   │   └── event-mappers.ts  # DTO to ViewModel mapping (36 LOC)
+│   │   ├── query-client.ts       # React Query factory (17 LOC)
 │   │   └── validators/   # Zod validation schemas
 │   ├── db/               # Supabase client and types
 │   ├── middleware/       # Astro middleware
@@ -671,6 +688,12 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ API endpoint for event categories (GET /api/categories/events)
 - ✅ OpenRouter AI integration for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
+- ✅ Code Refactoring (Production Quality)
+  - **Phase 1:** Split useGeneratorFlow into 4 specialized hooks (236 → 60 LOC, -74%)
+  - **Phase 2.1:** Refactored GeneratorPage with Container/Presenter pattern (238 → 36 LOC, -85%)
+  - **Phase 2.3:** Migrated ChangePasswordModal to React Hook Form (266 → 155 LOC, -42%)
+  - **Benefits:** Better separation of concerns, increased testability, improved reusability
+  - **Dependencies:** Added react-hook-form and @hookform/resolvers
 - ✅ Testing Infrastructure (**MVP COMPLETE** - Production Ready)
   - **Unit Tests:** 241 tests with 100% pass rate
     - Comprehensive coverage: validators (100%), utilities (100%), hooks (97%+), services (54-100%)
