@@ -96,7 +96,17 @@ supabase start
 supabase db reset
 ```
 
-**Note:** The latest migration (`20251019120000_add_event_rated_action_type.sql`) adds the `event_rated` action type to enable separate tracking of user rating actions in analytics.
+**Database Migrations:**
+
+- `20251017120000_initial_schema.sql` - Initial database schema with tables for events, users, and audit logs
+- `20251017130000_add_guest_users_support.sql` - Support for guest users (unauthenticated event creation)
+- `20251019120000_add_event_rated_action_type.sql` - Adds `event_rated` action type for separate tracking of user rating actions
+- `20251030120000_add_rls_to_logs_tables.sql` - **Row Level Security (RLS) for audit logs**
+  - Enables RLS on `user_activity_logs` and `event_management_logs` tables
+  - Ensures users can only access their own audit logs
+  - Blocks anonymous users from accessing audit logs
+  - Enforces immutable audit trail (no updates or deletes allowed)
+  - Service role key bypasses RLS for admin operations and test cleanup
 
 ### Running the Project
 
@@ -693,6 +703,12 @@ This project is currently in the MVP stage, focused on delivering a robust found
 - ✅ API endpoint for event categories (GET /api/categories/events)
 - ✅ OpenRouter AI integration for event description generation
 - ✅ Supabase Auth integration (client-side authentication)
+- ✅ Database Security (Row Level Security)
+  - RLS enabled on `events` table with user-scoped access policies
+  - RLS enabled on `user_activity_logs` table with immutable audit trail
+  - RLS enabled on `event_management_logs` table with immutable audit trail
+  - Anonymous users blocked from accessing audit logs
+  - Service role key bypasses RLS for admin operations and test cleanup
 - ✅ Code Refactoring (Production Quality)
   - **Phase 1:** Split useGeneratorFlow into 4 specialized hooks (236 → 60 LOC, -74%)
   - **Phase 2.1:** Refactored GeneratorPage with Container/Presenter pattern (238 → 36 LOC, -85%)

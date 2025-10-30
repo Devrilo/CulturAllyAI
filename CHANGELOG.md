@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Security Enhancement - Row Level Security for Audit Logs**
+  - Added RLS policies to `user_activity_logs` table
+    - Authenticated users can only insert and view their own activity logs
+    - Anonymous users are blocked from all operations
+    - Logs are immutable (no UPDATE or DELETE allowed)
+  - Added RLS policies to `event_management_logs` table
+    - Authenticated users can only insert and view their own event management logs
+    - Anonymous users are blocked from all operations
+    - Logs are immutable (no UPDATE or DELETE allowed)
+  - Migration: `20251030120000_add_rls_to_logs_tables.sql`
+  - **Result:** Enhanced data isolation, prevented unauthorized access to audit trails, maintained audit log integrity
+
+### Added
+
 - **Code Refactoring - Generator Infrastructure** (Phase 1 & 2.1)
   - Split `useGeneratorFlow` into 4 specialized hooks using Facade pattern (236 → 60 LOC, -74%)
     - `useClipboard` (40 LOC) - Reusable clipboard operations with toast feedback
