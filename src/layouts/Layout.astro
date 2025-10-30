@@ -19,12 +19,13 @@ const { title = "10x Astro Starter" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <script is:inline>
-      // Initialize theme before page load to prevent flash
+      /* eslint-disable */
       (function () {
         const stored = localStorage.getItem("theme");
         const theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         document.documentElement.classList.add(theme);
       })();
+      /* eslint-enable */
     </script>
   </head>
   <body>

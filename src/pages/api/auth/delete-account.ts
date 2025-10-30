@@ -83,8 +83,20 @@ export const POST: APIRoute = async ({ locals, request }) => {
     }
 
     // Verify password by attempting to sign in
+    const userEmail = user.email;
+    if (!userEmail) {
+      const errorResponse: ErrorResponseDTO = {
+        error: "Invalid user data",
+        message: "User email not found",
+      };
+      return new Response(JSON.stringify(errorResponse), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const { error: passwordError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
+      email: userEmail,
       password,
     });
 
@@ -103,6 +115,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
 
     if (deleteError) {
+      // eslint-disable-next-line no-console
       console.error("Failed to delete user:", deleteError);
       const errorResponse: ErrorResponseDTO = {
         error: "Failed to delete account",
@@ -135,6 +148,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("Unexpected error in POST /api/auth/delete-account:", err);
     const errorResponse: ErrorResponseDTO = {
       error: "Internal server error",

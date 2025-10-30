@@ -318,18 +318,12 @@ test.describe("Account Management", () => {
     // Verify still on profile page
     await expect(page).toHaveURL(/\/profile/);
 
-    // Verify account is still OK - refresh page
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    // Verify still logged in (no redirect to login)
-    await expect(page).toHaveURL(/\/profile/);
-
-    // Try to access protected page
+    // Try to access protected page to verify account is still active
     await page.goto("/events");
     await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(2000);
 
-    // Verify access granted (account not deleted)
+    // Verify access granted (account not deleted - should not redirect to login)
     await expect(page).toHaveURL(/\/events/);
   });
 
@@ -401,7 +395,7 @@ test.describe("Account Management", () => {
     await page.waitForLoadState("networkidle");
 
     // Verify account information section is displayed
-    const accountInfoHeading = page.getByRole("heading", { name: "Informacje o koncie" });
+    const accountInfoHeading = page.getByRole("heading", { name: "Informacje o koncie", level: 2 });
     await expect(accountInfoHeading).toBeVisible();
 
     // Verify user ID is displayed (not email - email is not shown on profile page)

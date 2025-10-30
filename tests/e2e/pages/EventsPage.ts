@@ -34,7 +34,18 @@ export class EventsPage extends BasePage {
   }
 
   async getEventCardByTitle(title: string): Promise<Locator | null> {
+    // Wait for articles to be visible first
+    await this.page.waitForTimeout(1000);
+
     const card = this.page.locator("article").filter({ hasText: title });
+
+    // Try to wait for the card to appear (with timeout)
+    try {
+      await card.first().waitFor({ state: "visible", timeout: 5000 });
+    } catch {
+      // Card not found within timeout
+    }
+
     const count = await card.count();
     return count > 0 ? card.first() : null;
   }

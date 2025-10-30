@@ -85,9 +85,13 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
         // Ignore audit log errors
       });
 
-      // Sign out and redirect to login
+      // Sign out and redirect to login immediately
       await supabaseClient.auth.signOut();
-      window.location.href = "/login?message=password_changed";
+
+      // Use direct redirect instead of state-based redirect for reliability
+      if (typeof window !== "undefined") {
+        window.location.href = "/login?message=password_changed";
+      }
     } catch (err) {
       setAuthError(err as AuthError);
       setIsSubmitting(false);

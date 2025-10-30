@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CI/CD Pipeline with GitHub Actions**
+  - Minimal CI/CD setup with 5 jobs: lint → test & e2e (parallel) → build → status
+  - Triggers: automatic on push to master, manual via workflow_dispatch
+  - Job 1: ESLint + TypeScript type checking (~1-2 min)
+  - Job 2: Vitest unit/integration tests with coverage report (~2-3 min)
+  - Job 3: Playwright E2E tests with artifact upload (~3-5 min)
+  - Job 4: Production build validation (~2-3 min)
+  - Job 5: Aggregate status reporting for all jobs
+  - Node.js version from `.nvmrc` (22.14.0)
+  - npm cache for faster dependency installation
+  - Concurrency control to cancel outdated runs
+  - Playwright browser caching (Chromium only)
+  - Artifacts with 7-day retention: playwright-report, e2e-results, dist
+  - Optional Codecov integration for coverage reporting
+  - Total pipeline time: ~8-13 minutes
+  - Configuration file: `.github/workflows/test-and-build.yml`
+  - Documentation: `docs/ci-cd-setup.md`
+  - **Security:** All secrets encrypted by GitHub, never exposed in logs or code
+  - **Simplified:** Removed SERVICE_ROLE_KEY requirement (not needed for basic E2E tests)
+
 - **Security Enhancement - Row Level Security for Audit Logs**
   - Added RLS policies to `user_activity_logs` table
     - Authenticated users can only insert and view their own activity logs

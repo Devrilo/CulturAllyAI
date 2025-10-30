@@ -69,6 +69,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
 
     if (insertError) {
+      // eslint-disable-next-line no-console
       console.error("Failed to insert activity log:", insertError);
       const errorResponse: ErrorResponseDTO = {
         error: "Failed to log activity",
@@ -90,6 +91,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("Unexpected error in POST /api/auth/activity:", err);
     const errorResponse: ErrorResponseDTO = {
       error: "Internal server error",

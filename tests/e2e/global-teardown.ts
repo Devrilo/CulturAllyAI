@@ -31,14 +31,18 @@ async function globalTeardown() {
   }
 
   // Create Supabase client for cleanup
-  // Use service role key if available for full access (bypasses RLS)
+  // SERVICE_ROLE_KEY is OPTIONAL - only needed for deleting temporary test users
+  // Anon key is sufficient for cleaning events and logs (RLS allows deletion by owner)
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const cleanupKey = serviceRoleKey || supabaseKey;
   const supabase = createClient(supabaseUrl, cleanupKey);
 
   if (serviceRoleKey) {
     // eslint-disable-next-line no-console
-    console.log("🔑 Using service role key for full database access");
+    console.log("🔑 Using service role key for full database access (including auth.users)");
+  } else {
+    // eslint-disable-next-line no-console
+    console.log("🔑 Using anon key - will skip temporary user cleanup");
   }
 
   try {

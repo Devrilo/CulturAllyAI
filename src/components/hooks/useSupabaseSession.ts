@@ -23,6 +23,7 @@ export function useSupabaseSession(supabase: SupabaseClient): AuthState {
       .getSession()
       .then(({ data: { session }, error }) => {
         if (error) {
+          // eslint-disable-next-line no-console
           console.error("Error fetching session:", error);
           setAuthState({
             isAuthenticated: false,
@@ -39,6 +40,7 @@ export function useSupabaseSession(supabase: SupabaseClient): AuthState {
         });
       })
       .catch((err) => {
+        // eslint-disable-next-line no-console
         console.error("Unexpected error fetching session:", err);
         setAuthState({
           isAuthenticated: false,

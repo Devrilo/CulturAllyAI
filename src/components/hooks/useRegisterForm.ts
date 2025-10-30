@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabaseClient } from "../../db/supabase.client";
 import { registerSchema, type RegisterFormData } from "../../lib/validators/auth";
 import type { AuthError } from "@supabase/supabase-js";
@@ -28,6 +28,7 @@ export interface UseRegisterFormReturn {
 export function useRegisterForm(): UseRegisterFormReturn {
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const {
     register,
@@ -43,6 +44,13 @@ export function useRegisterForm(): UseRegisterFormReturn {
       confirmPassword: "",
     },
   });
+
+  // Effect to handle redirect after registration
+  useEffect(() => {
+    if (shouldRedirect && typeof window !== "undefined") {
+      window.location.href = "/login?message=registration_success";
+    }
+  }, [shouldRedirect]);
 
   const clearAuthError = useCallback(() => {
     setAuthError(null);
@@ -67,11 +75,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
 
       // Registration successful - redirect to login
       if (signUpData.user) {
-        // Show success message and redirect to login immediately
-        // Don't wait for activity log - it can fail since user session not yet established
-        window.location.href = "/login?message=registration_success";
-
-        // Log activity after redirect (fire and forget - will likely fail but that's ok)
+        // Log activity (fire and forget - will likely fail but that's ok)
         fetch("/api/auth/activity", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -79,6 +83,9 @@ export function useRegisterForm(): UseRegisterFormReturn {
         }).catch(() => {
           // Ignore audit log errors - user not yet logged in
         });
+
+        // Show success message and redirect to login
+        setShouldRedirect(true);
       }
     } catch (err) {
       setAuthError(err as AuthError);

@@ -1,10 +1,12 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect, useState } from "react";
 
 /**
  * Hook to manage redirectTo parameter in auth flows
  * Extracts redirect URL from query params and provides navigation utilities
  */
 export function useAuthRedirect() {
+  const [shouldNavigate, setShouldNavigate] = useState<string | null>(null);
+
   // Extract redirect parameter from URL
   const redirectTo = useMemo(() => {
     if (typeof window === "undefined") return "/";
@@ -21,12 +23,19 @@ export function useAuthRedirect() {
     return "/";
   }, []);
 
+  // Effect to handle navigation
+  useEffect(() => {
+    if (shouldNavigate && typeof window !== "undefined") {
+      window.location.href = shouldNavigate;
+    }
+  }, [shouldNavigate]);
+
   /**
    * Navigate to the redirect URL or fallback
    */
   const navigateToRedirect = useCallback(
     (fallback = "/") => {
-      window.location.href = redirectTo || fallback;
+      setShouldNavigate(redirectTo || fallback);
     },
     [redirectTo]
   );

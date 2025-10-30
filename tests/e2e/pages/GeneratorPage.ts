@@ -76,15 +76,44 @@ export class GeneratorPage extends BasePage {
   }
 
   async rateDescription(rating: "positive" | "negative"): Promise<void> {
-    if (rating === "positive") {
-      await this.thumbsUpButton.click();
-    } else {
-      await this.thumbsDownButton.click();
+    const button = rating === "positive" ? this.thumbsUpButton : this.thumbsDownButton;
+
+    // Wait for button to be visible
+    await button.waitFor({ state: "visible", timeout: 5000 });
+    await this.page.waitForTimeout(1000); // Additional wait for React state update
+
+    // Wait for button to be enabled (retry up to 10 times with 1 second delay)
+    let attempts = 0;
+    while (attempts < 10) {
+      const isDisabled = await button.isDisabled();
+      if (!isDisabled) {
+        break;
+      }
+      await this.page.waitForTimeout(1000);
+      attempts++;
     }
+
+    await button.click();
   }
 
   async clickSave(): Promise<void> {
+    // Wait for save API response
+    const responsePromise = this.page.waitForResponse(
+      (response) => response.url().includes("/api/events") && response.request().method() === "POST",
+      { timeout: 10000 }
+    );
+
     await this.saveButton.click();
+
+    // Wait for response to complete
+    try {
+      await responsePromise;
+      // Additional wait for UI to update
+      await this.page.waitForTimeout(1000);
+    } catch {
+      // If no API call detected, still wait a bit
+      await this.page.waitForTimeout(2000);
+    }
   }
 
   async clickCopy(): Promise<void> {
