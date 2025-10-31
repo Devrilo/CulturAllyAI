@@ -7,7 +7,13 @@ import { AxeBuilder as AxeBuilderImpl } from "@axe-core/playwright";
  * Extends base test with accessibility testing utilities
  * and authenticated page fixture
  *
- * Environment variables are loaded by dotenv-cli in package.json test:e2e script
+import { test as base } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { config as dotenvConfig } from "dotenv";
+
+// Load environment variables from .env.test for local development
+// In CI, variables are provided directly by GitHub Actions via env block
+dotenvConfig({ path: ".env.test" });
  */
 
 /**
