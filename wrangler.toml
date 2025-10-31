@@ -5,12 +5,3 @@ compatibility_flags = ["nodejs_compat"]
 
 [observability]
 enabled = true
-
-# Environment variables
-# Add your Supabase URL and anon key here (public values, not secrets)
-# These PUBLIC_ prefixed vars are exposed to the client-side code
-[vars]
-SUPABASE_URL = "https://buqdkyvrnwwotbaxseze.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1cWRreXZybnd3b3RiYXhzZXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5Mzc1ODUsImV4cCI6MjA3NzUxMzU4NX0.TLrp73QJeousCqhDuB0wLZ8fUVuLcejxfjhN_6ghkO4"
-PUBLIC_SUPABASE_URL = "https://buqdkyvrnwwotbaxseze.supabase.co"
-PUBLIC_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1cWRreXZybnd3b3RiYXhzZXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5Mzc1ODUsImV4cCI6MjA3NzUxMzU4NX0.TLrp73QJeousCqhDuB0wLZ8fUVuLcejxfjhN_6ghkO4"
