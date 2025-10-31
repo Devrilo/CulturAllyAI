@@ -32,5 +32,11 @@ AI - Komunikacja z modelami przez usługę Openrouter.ai:
 CI/CD i Hosting:
 
 - Github Actions do tworzenia pipeline'ów CI/CD (lint → test → e2e → build → deploy)
-- DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
+- Cloudflare Pages (plan Hobby) do hostowania aplikacji z natywnym wsparciem dla Astro SSR
+  - Workers Runtime dla API routes i middleware
+  - Globalny CDN z zero cold starts
+  - Unlimited requests i 100k requests/day dla Workers (plan Free)
+  - Automatyczne preview deployments dla każdego pull requesta
+  - Brak per-seat pricing - idealne dla rozwijającego się zespołu
+  - Integracja z GitHub dla automatic deployments
 - Supabase CLI do zarządzania migracjami bazy danych i lokalnym środowiskiem deweloperskim

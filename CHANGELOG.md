@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **CI/CD Pipeline with GitHub Actions**
+  - **Pull Request Workflow** (`pull-request.yml`)
+    - Triggers: automatic on pull requests to master branch
+    - Job 1: Lint Code - ESLint validation (~1-2 min)
+    - Job 2 & 3 (parallel): Unit Tests with coverage + E2E Tests (~8-10 min combined)
+    - Job 4: PR Status Comment - aggregates results and posts to PR with coverage metrics
+    - Node.js version from `.nvmrc` (22.14.0)
+    - npm cache for faster dependency installation
+    - Playwright browser caching (Chromium only)
+    - Artifacts with 7-day retention: unit-coverage, e2e-test-results, playwright-report
+    - E2E tests use environment "TEST" with secrets (SUPABASE_*, OPENROUTER_API_KEY, E2E_*)
+    - Coverage parsing for unit tests and E2E test results
+    - Automated PR comments with CI status, job results, and test metrics
+    - Total pipeline time: ~10-15 minutes
+    - Configuration file: `.github/workflows/pull-request.yml`
+    - **Security:** All secrets encrypted by GitHub via environment variables
+    - **Actions versions:** checkout@v5, setup-node@v6, upload-artifact@v5, download-artifact@v6, github-script@v8
+
+- **CI/CD Pipeline with GitHub Actions** (Previous implementation)
   - Minimal CI/CD setup with 5 jobs: lint → test & e2e (parallel) → build → status
   - Triggers: automatic on push to master, manual via workflow_dispatch
   - Job 1: ESLint + TypeScript type checking (~1-2 min)
@@ -449,6 +467,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added fallback 3s timeout if initial navigation wait fails
   - Added 2s hydration wait in ProfilePage for React Hook Form initialization
   - **Result:** All E2E tests now passing consistently (10/10 generator, 7/7 account management)
+
+- **Password Change Race Condition Fix**
+  - Fixed intermittent test failures in `04-account-management.spec.ts` (password change tests)
+  - Root cause: Race condition in `useChangePasswordForm` between `signOut()` and state-based redirect
+  - Solution: Removed `useEffect` + `shouldRedirect` state, now redirects immediately after `signOut()`
+  - Changed from async state update to synchronous `window.location.href` assignment
+  - Impact: 100% reliable auto-logout and redirect after password change (was ~70-80% reliable)
+  - Files modified: `src/components/hooks/useChangePasswordForm.ts`
+  - **Result:** Tests pass consistently on both local and CI environments
 
 - **Code Quality Fixes**
   - Fixed 134 CRLF line ending errors in `tests/e2e/global-teardown.ts`

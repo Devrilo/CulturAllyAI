@@ -28,7 +28,7 @@ CulturAllyAI is a simple web application designed to generate concise, engaging,
 - **AI Integration:** Openrouter.ai for connecting to various AI models
 - **Form Management:** React Hook Form 7.x with @hookform/resolvers for Zod validation
 - **Testing:** Vitest + @testing-library/react (unit/integration), Playwright (E2E), @axe-core/playwright (accessibility)
-- **CI/CD & Hosting:** GitHub Actions, DigitalOcean
+- **CI/CD & Hosting:** GitHub Actions (pull-request workflow with automated PR comments), Cloudflare Pages (Hobby plan)
 
 ## 4. Getting Started Locally
 
@@ -149,6 +149,7 @@ Then open your browser and navigate to `http://localhost:3000`.
   - Services: 27 tests (categories, events) - 54-100% coverage
 
 - **E2E Tests:** ✅ **44 passing, 4 skipped (100% pass rate excluding planned skips)** - MVP Complete!
+  - **Stability:** Race condition in password change flow fixed - 100% reliable on CI
   - Execution time: ~8.8 minutes with `--workers=1` (sequential for AI stability)
   - Authentication Flow: 9/9 passing - registration, login, logout, validation, password strength (01-auth.spec.ts)
   - Event Generator: 10/10 passing - validation, AI generation, ratings, saving (02-generator.spec.ts)
@@ -691,6 +692,45 @@ Future enhancements may include additional mobile support, advanced social featu
 
 This project is currently in the MVP stage, focused on delivering a robust foundation for cultural event description generation.
 
+**CI/CD Pipeline & Hosting:**
+
+- ✅ **Pull Request Workflow** (`.github/workflows/pull-request.yml`)
+  - Automated testing on every PR to master branch
+  - Sequential execution: Lint → Unit Tests & E2E Tests (parallel) → PR Status Comment
+  - E2E tests use dedicated TEST environment with encrypted secrets
+  - Automated PR comments with CI status, coverage metrics, and test results
+  - Artifacts: unit-coverage, e2e-test-results, playwright-report (7-day retention)
+  - Latest action versions: checkout@v5, setup-node@v6, upload-artifact@v5, github-script@v8
+
+- ✅ **Hosting Platform: Cloudflare Pages (Hobby Plan)**
+  - **Wybór platformy:** Cloudflare Pages z Workers dla Astro SSR
+  - **Model operacyjny:** 
+    - Astro adapter `@astrojs/cloudflare` dla Workers Runtime
+    - API routes (`/api/*`) działają jako Cloudflare Workers
+    - Static assets serwowane przez globalny CDN (200+ lokalizacji)
+    - Zero cold starts dzięki V8 isolates architecture
+  - **Zalety dla projektu:**
+    - ✅ Hojny free tier (unlimited requests, 100k Workers requests/day)
+    - ✅ Brak per-seat pricing - koszt nie rośnie z wielkością zespołu
+    - ✅ Automatyczne preview deployments dla każdego PR
+    - ✅ Git-based deployment workflow z GitHub integration
+    - ✅ Doskonała performance - edge computing w 200+ lokalizacjach
+    - ✅ Built-in DDoS protection i web application firewall
+    - ✅ Brak ograniczeń dla komercyjnego wykorzystania na darmowym planie
+  - **Ograniczenia:**
+    - ⚠️ Workers Runtime nie wspiera pełnego Node.js API (brak `fs`, ograniczone `node:*` moduły)
+    - ⚠️ CPU time limit: 10ms na request (free), 30ms (paid) - wymaga optymalizacji dla długich operacji
+    - ⚠️ Lock-in do Cloudflare ekosystemu - kod wymaga adaptacji przy migracji
+  - **Plan migracji (jeśli potrzebny w przyszłości):**
+    - Konteneryzacja (Docker) dla pełnej przenośności
+    - Alternatywy: Railway, DigitalOcean App Platform, Fly.io
+  - **Uzasadnienie wyboru:**
+    - Projekt w fazie MVP - free tier wystarczający na start
+    - Brak kosztów operacyjnych pozwala na eksperymentowanie
+    - Łatwa migracja z Supabase na managed PostgreSQL w przyszłości
+    - Doskonały DX - zero konfiguracji dla Astro
+    - Przewidywalne koszty przy skalowaniu (brak per-seat model)
+
 **Current Development Status:**
 
 - ✅ Database schema and migrations
@@ -782,6 +822,12 @@ This project is currently in the MVP stage, focused on delivering a robust found
     - 4 non-critical skips: 2 future features (category filter, inline edit UI), 2 admin-only operations
     - All critical user flows validated end-to-end with Page Object Model
     - Execution time: ~8.8 minutes with sequential execution for AI test stability
+    - **Race condition fixed:** Password change tests now 100% reliable (was intermittent)
+- ✅ CI/CD Pipeline (GitHub Actions)
+  - Pull request workflow with automated testing and status reporting
+  - Lint → Unit Tests & E2E Tests (parallel) → PR comments with metrics
+  - Environment-based secrets management for E2E tests
+  - Artifact collection: coverage reports, test results, Playwright traces
 - 📋 Future enhancements: category filtering, inline edit UI, advanced profile features
 
 ## 10. License
