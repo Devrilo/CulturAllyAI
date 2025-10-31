@@ -94,6 +94,9 @@ jobs:
       - name: Build application
         run: npm run build
       
+      - name: Copy wrangler config to dist
+        run: cp wrangler.toml dist/wrangler.toml
+      
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5
         with:
@@ -128,4 +131,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=culturallyai --compatibility-flags=nodejs_compat --compatibility-date=2024-09-25
+          workingDirectory: dist
+          command: pages deploy . --project-name=culturallyai
