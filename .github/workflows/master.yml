@@ -94,21 +94,17 @@ jobs:
       - name: Build application
         run: npm run build
       
-      - name: Add MessageChannel polyfill to worker
+      - name: Write Pages Functions metadata
         run: |
-          WORKER_FILE="dist/_worker.js/index.js"
-          POLYFILL="// MessageChannel polyfill for React 19 SSR
-          if (typeof MessageChannel === 'undefined') {
-            globalThis.MessageChannel = class MessageChannel {
-              constructor() {
-                this.port1 = { postMessage: () => {}, onmessage: null };
-                this.port2 = { postMessage: () => {}, onmessage: null };
-              }
-            };
-          }"
-          
-          # Prepend polyfill to worker file
-          echo "$POLYFILL" | cat - "$WORKER_FILE" > temp && mv temp "$WORKER_FILE"
+          cat <<'EOF' > dist/_worker.js/metadata.json
+          {
+            "main_module": "index.js",
+            "compatibility_date": "2024-09-25",
+            "compatibility_flags": ["nodejs_compat"],
+            "bindings": [],
+            "logpush": false
+          }
+          EOF
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5

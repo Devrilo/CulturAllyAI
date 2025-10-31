@@ -21,10 +21,14 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    ssr: {
+      external: ["node:buffer"],
+    },
   },
   adapter: cloudflare({
     platformProxy: {
       enabled: true,
+      configPath: "wrangler.toml",
     },
   }),
 });
