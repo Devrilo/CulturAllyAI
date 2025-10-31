@@ -94,6 +94,11 @@ jobs:
       - name: Build application
         run: npm run build
       
+      - name: Add wrangler config to worker
+        run: |
+          echo 'compatibility_flags = ["nodejs_compat"]' > dist/_worker.js/wrangler.toml
+          echo 'compatibility_date = "2024-09-25"' >> dist/_worker.js/wrangler.toml
+      
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5
         with:
