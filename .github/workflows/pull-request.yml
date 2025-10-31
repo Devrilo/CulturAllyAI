@@ -1,0 +1,208 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+      
+      - name: Upload coverage to artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: unit-coverage
+          path: coverage/
+          retention-days: 7
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    environment: TEST
+    
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+      
+      - name: Run E2E tests
+        run: npm run test:e2e
+      
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
+      
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  status-comment:
+    name: PR Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, unit-test, e2e-test]
+    if: always()
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: Check job statuses
+        id: check
+        run: |
+          echo "lint=${{ needs.lint.result }}" >> $GITHUB_OUTPUT
+          echo "unit=${{ needs.unit-test.result }}" >> $GITHUB_OUTPUT
+          echo "e2e=${{ needs.e2e-test.result }}" >> $GITHUB_OUTPUT
+          
+          if [[ "${{ needs.lint.result }}" == "success" && "${{ needs.unit-test.result }}" == "success" && "${{ needs.e2e-test.result }}" == "success" ]]; then
+            echo "overall=✅ All checks passed!" >> $GITHUB_OUTPUT
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "overall=❌ Some checks failed" >> $GITHUB_OUTPUT
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Download unit test coverage
+        if: needs.unit-test.result == 'success'
+        uses: actions/download-artifact@v6
+        with:
+          name: unit-coverage
+          path: coverage/
+      
+      - name: Download E2E test results
+        if: needs.e2e-test.result != 'skipped'
+        uses: actions/download-artifact@v6
+        with:
+          name: e2e-test-results
+          path: test-results/
+        continue-on-error: true
+      
+      - name: Parse coverage data
+        if: needs.unit-test.result == 'success'
+        id: coverage
+        run: |
+          if [ -f "coverage/coverage-summary.json" ]; then
+            COVERAGE=$(cat coverage/coverage-summary.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*' | grep -o '[0-9]*' | awk 'NR==1{total=$1} NR==2{covered=$1} END{printf "%.2f", (covered/total)*100}')
+            echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          else
+            echo "percentage=N/A" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Parse E2E results
+        if: needs.e2e-test.result != 'skipped'
+        id: e2e
+        run: |
+          if [ -f "test-results/e2e-results.json" ]; then
+            PASSED=$(cat test-results/e2e-results.json | grep -o '"expected"' | wc -l)
+            FAILED=$(cat test-results/e2e-results.json | grep -o '"unexpected"' | wc -l)
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          else
+            echo "passed=N/A" >> $GITHUB_OUTPUT
+            echo "failed=N/A" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Comment on PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const lintStatus = '${{ needs.lint.result }}' === 'success' ? '✅' : '❌';
+            const unitStatus = '${{ needs.unit-test.result }}' === 'success' ? '✅' : '❌';
+            const e2eStatus = '${{ needs.e2e-test.result }}' === 'success' ? '✅' : '❌';
+            
+            const coverage = '${{ steps.coverage.outputs.percentage }}';
+            const e2ePassed = '${{ steps.e2e.outputs.passed }}';
+            const e2eFailed = '${{ steps.e2e.outputs.failed }}';
+            
+            const comment = `## 🤖 CI Status Report
+            
+            ${{ steps.check.outputs.overall }}
+            
+            ### 📊 Job Results
+            
+            | Job | Status |
+            |-----|--------|
+            | Lint | ${lintStatus} ${{ needs.lint.result }} |
+            | Unit Tests | ${unitStatus} ${{ needs.unit-test.result }} |
+            | E2E Tests | ${e2eStatus} ${{ needs.e2e-test.result }} |
+            
+            ### 📈 Test Coverage
+            
+            **Unit Tests Coverage:** ${coverage !== 'N/A' ? coverage + '%' : 'N/A'}
+            
+            **E2E Tests:** ${e2ePassed !== 'N/A' ? `${e2ePassed} passed${e2eFailed !== '0' ? ', ' + e2eFailed + ' failed' : ''}` : 'N/A'}
+            
+            ---
+            *Commit: ${{ github.event.pull_request.head.sha }}*
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
