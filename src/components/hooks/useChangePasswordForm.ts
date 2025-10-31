@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { supabaseClient } from "../../db/supabase.client";
 import { changePasswordSchema, type ChangePasswordFormData } from "../../lib/validators/auth";
 import type { AuthError } from "@supabase/supabase-js";
@@ -28,7 +28,6 @@ export interface UseChangePasswordFormReturn {
 export function useChangePasswordForm(): UseChangePasswordFormReturn {
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const {
     register,
@@ -44,13 +43,6 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
       confirmPassword: "",
     },
   });
-
-  // Effect to handle redirect after password change
-  useEffect(() => {
-    if (shouldRedirect && typeof window !== "undefined") {
-      window.location.href = "/login?message=password_changed";
-    }
-  }, [shouldRedirect]);
 
   const clearAuthError = useCallback(() => {
     setAuthError(null);
@@ -84,7 +76,7 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
         return;
       }
 
-      // Log activity
+      // Log activity (fire and forget - don't wait for response)
       fetch("/api/auth/activity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,9 +85,15 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
         // Ignore audit log errors
       });
 
-      // Sign out and redirect to login
+      // Sign out and redirect to login immediately
+      // Do this synchronously to avoid race conditions with React state updates
       await supabaseClient.auth.signOut();
-      setShouldRedirect(true);
+      
+      // Redirect immediately after signOut completes
+      // Using window.location.href ensures immediate redirect without React state dependency
+      if (typeof window !== "undefined") {
+        window.location.href = "/login?message=password_changed";
+      }
     } catch (err) {
       setAuthError(err as AuthError);
       setIsSubmitting(false);
