@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabaseClient } from "../../db/supabase.client";
 import { changePasswordSchema, type ChangePasswordFormData } from "../../lib/validators/auth";
 import type { AuthError } from "@supabase/supabase-js";
@@ -28,6 +28,7 @@ export interface UseChangePasswordFormReturn {
 export function useChangePasswordForm(): UseChangePasswordFormReturn {
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const {
     register,
@@ -43,6 +44,13 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
       confirmPassword: "",
     },
   });
+
+  // Effect to handle redirect after password change
+  useEffect(() => {
+    if (shouldRedirect && typeof window !== "undefined") {
+      window.location.href = "/login?message=password_changed";
+    }
+  }, [shouldRedirect]);
 
   const clearAuthError = useCallback(() => {
     setAuthError(null);
@@ -85,13 +93,9 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
         // Ignore audit log errors
       });
 
-      // Sign out and redirect to login immediately
+      // Sign out and redirect to login
       await supabaseClient.auth.signOut();
-
-      // Use direct redirect instead of state-based redirect for reliability
-      if (typeof window !== "undefined") {
-        window.location.href = "/login?message=password_changed";
-      }
+      setShouldRedirect(true);
     } catch (err) {
       setAuthError(err as AuthError);
       setIsSubmitting(false);
