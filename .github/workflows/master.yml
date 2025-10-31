@@ -94,8 +94,21 @@ jobs:
       - name: Build application
         run: npm run build
       
-      - name: Copy wrangler config to dist
-        run: cp wrangler.toml dist/wrangler.toml
+      - name: Add MessageChannel polyfill to worker
+        run: |
+          WORKER_FILE="dist/_worker.js/index.js"
+          POLYFILL="// MessageChannel polyfill for React 19 SSR
+          if (typeof MessageChannel === 'undefined') {
+            globalThis.MessageChannel = class MessageChannel {
+              constructor() {
+                this.port1 = { postMessage: () => {}, onmessage: null };
+                this.port2 = { postMessage: () => {}, onmessage: null };
+              }
+            };
+          }"
+          
+          # Prepend polyfill to worker file
+          echo "$POLYFILL" | cat - "$WORKER_FILE" > temp && mv temp "$WORKER_FILE"
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5
@@ -131,5 +144,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: dist
-          command: pages deploy . --project-name=culturallyai
+          command: pages deploy dist --project-name=culturallyai
