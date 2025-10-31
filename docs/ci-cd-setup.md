@@ -62,17 +62,17 @@ Zobacz też: [GitHub Docs - Encrypted secrets](https://docs.github.com/en/action
 
 ### Dla testów (E2E):
 ```
-TEST_SUPABASE_URL              - URL instancji Supabase dla testów
-TEST_SUPABASE_ANON_KEY        - Anon key Supabase dla testów (bezpieczny klucz publiczny)
-TEST_OPENROUTER_API_KEY       - API key OpenRouter dla testów AI
+TEST_SUPABASE_URL              - URL instancji Supabase dla testów → mapowany na PUBLIC_SUPABASE_URL
+TEST_SUPABASE_ANON_KEY        - Anon key Supabase dla testów → mapowany na PUBLIC_SUPABASE_KEY
+TEST_OPENROUTER_API_KEY       - API key OpenRouter dla testów AI → mapowany na OPENROUTER_API_KEY
 ```
 
 **Uwaga:** `SUPABASE_SERVICE_ROLE_KEY` został **usunięty** z wymagań. Pipeline działa bez niego!
 
 ### Dla builda produkcyjnego:
 ```
-PROD_SUPABASE_URL             - URL instancji Supabase produkcyjnej
-PROD_SUPABASE_ANON_KEY       - Anon key Supabase produkcyjnej
+PROD_SUPABASE_URL             - URL instancji Supabase produkcyjnej → mapowany na PUBLIC_SUPABASE_URL
+PROD_SUPABASE_ANON_KEY       - Anon key Supabase produkcyjnej → mapowany na PUBLIC_SUPABASE_KEY
 ```
 
 **Uwaga:** Anon key to **publiczny klucz** - jest bezpieczny do użycia w aplikacjach frontend. RLS (Row Level Security) w bazie danych chroni dane.
