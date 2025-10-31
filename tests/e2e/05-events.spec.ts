@@ -90,8 +90,6 @@ test.describe("Events List Management", () => {
    * Verifies basic event list display functionality
    */
   test("should display user events list", async ({ authenticatedPage: page }) => {
-    test.setTimeout(30000);
-
     const eventsPage = new EventsPage(page);
 
     // Navigate to events page

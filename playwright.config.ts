@@ -17,11 +17,13 @@ export default defineConfig({
   // Global teardown - clean up test data after all tests
   globalTeardown: "./tests/e2e/global-teardown.ts",
 
-  // Maximum time one test can run
-  timeout: 30 * 1000,
+  // Maximum time one test can run (including fixture setup time)
+  // Increased to 90s to account for authenticatedPage fixture which takes ~60-70s
+  timeout: 90 * 1000,
 
-  // Run tests in parallel
-  fullyParallel: true,
+  // Run tests sequentially (1 worker) to avoid JWT token expiry issues and API rate limits
+  // Tests with AI generation are slow and can cause session/token conflicts when run in parallel
+  fullyParallel: false,
 
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
@@ -29,8 +31,8 @@ export default defineConfig({
   // Retry on CI only
   retries: process.env.CI ? 2 : 0,
 
-  // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
+  // Use 1 worker to run tests sequentially and prevent session conflicts
+  workers: 1,
 
   // Reporter to use
   reporter: [["html"], ["list"], ["json", { outputFile: "test-results/e2e-results.json" }]],
