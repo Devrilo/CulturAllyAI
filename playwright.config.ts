@@ -70,5 +70,11 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    // Pass environment variables to the dev server process
+    // Filter out undefined values to satisfy TypeScript
+    env: Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<
+      string,
+      string
+    >,
   },
 });
