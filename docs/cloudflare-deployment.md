@@ -168,6 +168,7 @@ Główne zmiany wprowadzone podczas migracji:
 3. **Sesje**: W pamięci → Cloudflare KV Storage
 4. **Platform Proxy**: Włączone dla lokalnego developmentu
 5. **Build Output**: Standalone server → Workers script + Pages assets
+6. **Compatibility Flags**: `nodejs_compat` dla React 19 (MessageChannel, Buffer, etc.)
 
 ## Kolejne Kroki
 

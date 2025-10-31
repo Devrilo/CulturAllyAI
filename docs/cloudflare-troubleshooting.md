@@ -1,5 +1,24 @@
 # Cloudflare Deployment - Quick Fix Guide
 
+## Problem: MessageChannel is not defined ⚠️ NAJCZĘSTSZY
+
+### Objaw
+```
+Uncaught ReferenceError: MessageChannel is not defined
+  at chunks/_@astro-renderers_Dp0Ds7l6.mjs
+```
+
+### Rozwiązanie ✅
+React 19 wymaga Node.js polyfills w Cloudflare Workers. Już naprawione w `wrangler.toml`:
+
+```toml
+compatibility_flags = ["nodejs_compat"]
+```
+
+Jeśli problem nadal występuje, sprawdź czy masz najnowszą wersję pliku.
+
+---
+
 ## Problem: Invalid KV namespace ID (placeholder_id)
 
 ### Objaw
