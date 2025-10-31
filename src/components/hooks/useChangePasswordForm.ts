@@ -88,10 +88,11 @@ export function useChangePasswordForm(): UseChangePasswordFormReturn {
       // Sign out and redirect to login immediately
       // Do this synchronously to avoid race conditions with React state updates
       await supabaseClient.auth.signOut();
-      
+
       // Redirect immediately after signOut completes
       // Using window.location.href ensures immediate redirect without React state dependency
       if (typeof window !== "undefined") {
+        // eslint-disable-next-line react-compiler/react-compiler -- window.location is browser API, not React state
         window.location.href = "/login?message=password_changed";
       }
     } catch (err) {
