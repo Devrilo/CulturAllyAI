@@ -48,17 +48,6 @@ test.describe("Authentication Flow", () => {
     // Wait for navigation to complete (increased timeout for Supabase)
     await page.waitForLoadState("networkidle", { timeout: 20000 });
 
-    // DEBUG: Check for error messages if still on login page
-    const currentUrl = page.url();
-    if (currentUrl.includes("/login")) {
-      const alerts = await page.getByRole("alert").count();
-      if (alerts > 0) {
-        const errorText = await page.getByRole("alert").first().textContent();
-        throw new Error(`Login failed with error: ${errorText}`);
-      }
-      throw new Error(`Still on login page but no error shown. URL: ${currentUrl}`);
-    }
-
     // Verify redirect to homepage (wait for navigation)
     await expect(page).toHaveURL("/");
   });
