@@ -1,0 +1,10 @@
+name = "culturallyai"
+compatibility_date = "2024-09-25"
+pages_build_output_dir = "./dist"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "placeholder_id"
+
+[observability]
+enabled = true
