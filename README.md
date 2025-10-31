@@ -702,6 +702,15 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - Artifacts: unit-coverage, e2e-test-results, playwright-report (7-day retention)
   - Latest action versions: checkout@v5, setup-node@v6, upload-artifact@v5, github-script@v8
 
+- ✅ **Production Deployment Workflow** (`.github/workflows/master.yml`)
+  - Automated deployment to Cloudflare Pages on push to master branch
+  - Sequential execution: Lint → Unit Tests → Build → Deploy
+  - No E2E tests in production workflow (run on PR only)
+  - Environment: production with deployment URL tracking
+  - Latest action versions: wrangler-action@v3
+  - See [docs/cloudflare-deployment.md](./docs/cloudflare-deployment.md) for setup guide
+  - See [docs/cloudflare-troubleshooting.md](./docs/cloudflare-troubleshooting.md) for common issues
+
 - ✅ **Hosting Platform: Cloudflare Pages (Hobby Plan)**
   - **Wybór platformy:** Cloudflare Pages z Workers dla Astro SSR
   - **Model operacyjny:** 

@@ -46,25 +46,39 @@ Pozostałe sekrety wymagane przez aplikację:
 
 ## Konfiguracja KV Namespace dla Sesji
 
-Po pierwszym deploymencie należy zaktualizować binding SESSION:
+⚠️ **WAŻNE**: Konfiguracja KV namespace jest opcjonalna i powinna być wykonana **PO** pierwszym deploymencie, jeśli sesje są wymagane.
 
-1. W Cloudflare Dashboard przejdź do "Workers & Pages"
-2. Wybierz projekt "culturallyai"
-3. Przejdź do zakładki "Settings" → "Functions"
-4. W sekcji "KV namespace bindings" kliknij "Add binding"
-5. Ustaw:
+### Krok po kroku:
+
+1. Wykonaj pierwszy deployment (bez KV namespace)
+2. W Cloudflare Dashboard przejdź do "Workers & Pages"
+3. Wybierz projekt "culturallyai"
+4. Przejdź do zakładki "Settings" → "Functions"
+5. W sekcji "KV namespace bindings" kliknij "Add binding"
+6. Ustaw:
    - Variable name: `SESSION`
    - KV namespace: Utwórz nowy namespace o nazwie "culturallyai-sessions"
-6. Zapisz zmiany
+7. Zapisz zmiany
 
-Alternatywnie, możesz utworzyć namespace przez Wrangler CLI i zaktualizować `wrangler.toml`:
+### Alternatywnie przez Wrangler CLI:
 
 ```bash
-# Utwórz KV namespace
-npx wrangler kv:namespace create "SESSION"
+# Zaloguj się do Cloudflare
+npx wrangler login
 
-# Skopiuj ID z outputu i zaktualizuj wrangler.toml
-# Zastąp "placeholder_id" prawdziwym ID
+# Utwórz KV namespace
+npx wrangler kv:namespace create "SESSION" --preview=false
+
+# Output będzie zawierał ID namespace, np:
+# { binding = "SESSION", id = "abc123..." }
+```
+
+Jeśli chcesz użyć `wrangler.toml`, dodaj do pliku:
+
+```toml
+[[kv_namespaces]]
+binding = "SESSION"
+id = "TUTAJ_WSTAW_PRAWDZIWE_ID"
 ```
 
 ## Zmienne Środowiskowe w Cloudflare Pages
