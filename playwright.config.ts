@@ -1,8 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
-import dotenv from "dotenv";
 
-// Load environment variables from .env.test for E2E tests
-dotenv.config({ path: ".env.test" });
+// Note: .env.test is loaded in fixtures.ts (runs in each worker process)
+// and by webServer command via dotenv-cli (npm run dev:test)
 
 /**
  * Playwright E2E Testing Configuration
@@ -63,18 +62,12 @@ export default defineConfig({
   ],
 
   // Run local dev server before starting tests
-  // Uses npm run dev:test which loads .env.test
+  // Uses npm run dev:test which loads .env.test via dotenv-cli
   // In CI, .env.test is created dynamically from GitHub Secrets
   webServer: {
     command: "npm run dev:test",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    // Pass environment variables to the dev server process
-    // Filter out undefined values to satisfy TypeScript
-    env: Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<
-      string,
-      string
-    >,
   },
 });

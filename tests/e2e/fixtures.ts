@@ -1,6 +1,11 @@
 import { test as base, type Page } from "@playwright/test";
 import type AxeBuilder from "@axe-core/playwright";
 import { AxeBuilder as AxeBuilderImpl } from "@axe-core/playwright";
+import { config as dotenvConfig } from "dotenv";
+
+// Load .env.test in each test worker process
+// This ensures E2E_USERNAME, E2E_PASSWORD, etc. are available in fixtures
+dotenvConfig({ path: ".env.test" });
 
 /**
  * Playwright Global Setup and Fixtures
