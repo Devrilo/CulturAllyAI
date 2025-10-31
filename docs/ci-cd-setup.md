@@ -65,6 +65,9 @@ Zobacz też: [GitHub Docs - Encrypted secrets](https://docs.github.com/en/action
 TEST_SUPABASE_URL              - URL instancji Supabase dla testów → mapowany na PUBLIC_SUPABASE_URL
 TEST_SUPABASE_ANON_KEY        - Anon key Supabase dla testów → mapowany na PUBLIC_SUPABASE_KEY
 TEST_OPENROUTER_API_KEY       - API key OpenRouter dla testów AI → mapowany na OPENROUTER_API_KEY
+E2E_USERNAME                  - Email użytkownika testowego dla fixture authenticatedPage
+E2E_PASSWORD                  - Hasło użytkownika testowego
+E2E_USERNAME_ID               - UUID użytkownika testowego (opcjonalne, dla cleanup)
 ```
 
 **Uwaga:** `SUPABASE_SERVICE_ROLE_KEY` został **usunięty** z wymagań. Pipeline działa bez niego!

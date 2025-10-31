@@ -64,6 +64,7 @@ export default defineConfig({
 
   // Run local dev server before starting tests
   // Uses npm run dev:test which loads .env.test
+  // In CI, .env.test is created dynamically from GitHub Secrets
   webServer: {
     command: "npm run dev:test",
     url: "http://localhost:3000",
