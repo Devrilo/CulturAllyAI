@@ -461,6 +461,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Cloudflare Pages Environment Variables Configuration**
+  - Fixed runtime error: "Missing Supabase environment variables: PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_KEY are required"
+  - Root cause: When `wrangler.toml` contains a `[vars]` section, Cloudflare Pages ignores Dashboard variables
+  - Solution: Removed `[vars]` section from `wrangler.toml` to allow Dashboard variables to be used
+  - Environment variables now managed exclusively through Cloudflare Pages Dashboard UI
+  - Configuration: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_KEY`, `SUPABASE_URL`, `SUPABASE_KEY` (Plaintext variables)
+  - Secrets remain in Dashboard: `OPENROUTER_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (Encrypted)
+  - **Result:** Application now runs successfully on Cloudflare Pages without 500 errors
+
+- Cloudflare Pages deployment with React 19: aliased
+  `react-dom/server` → `react-dom/server.edge` in `astro.config.mjs` to ensure
+  the runtime provides MessageChannel for SSR. This resolves the "MessageChannel
+  is not defined" failure during `wrangler pages deploy`.
+
 - **E2E Test Stability Improvements**
   - Fixed authentication timeout in E2E fixtures (increased from 30s to 45s)
   - Added retry logic with `waitForFunction` for URL navigation check (15s timeout)
