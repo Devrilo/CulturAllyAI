@@ -17,6 +17,7 @@ pnpm-debug.log*
 .env
 .env.production
 .env.test
+.env.prod
 
 # macOS-specific files
 .DS_Store
@@ -35,3 +36,4 @@ playwright-report/
 # vitest
 .vitest/
 .env.test
+.env.prod
