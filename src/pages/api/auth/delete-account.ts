@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
-import { supabaseAdmin } from "../../../db/supabase.admin";
+import { createClient } from "@supabase/supabase-js";
 import { deleteAccountSchema } from "../../../lib/validators/auth";
 import type { ErrorResponseDTO, MessageResponseDTO } from "../../../types";
+import type { Database } from "../../../db/database.types";
 
 export const prerender = false;
 
@@ -112,6 +113,31 @@ export const POST: APIRoute = async ({ locals, request }) => {
     }
 
     // Delete user using Admin API
+    // Get runtime environment variables for Cloudflare Pages
+    // @ts-expect-error - runtime.env is available in Cloudflare Pages adapter
+    const runtime = locals.runtime;
+    const supabaseUrl = runtime?.env?.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+    const supabaseServiceRoleKey = runtime?.env?.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      const errorResponse: ErrorResponseDTO = {
+        error: "Configuration error",
+        message: "Server configuration is missing required credentials",
+      };
+      return new Response(JSON.stringify(errorResponse), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Create admin client with runtime environment variables
+    const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
 
     if (deleteError) {

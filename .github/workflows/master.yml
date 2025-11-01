@@ -70,6 +70,7 @@ jobs:
     name: Build Application
     runs-on: ubuntu-latest
     needs: [lint, unit-test]
+    environment: PRODUCTION
     
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -93,6 +94,18 @@ jobs:
       
       - name: Build application
         run: npm run build
+      
+      - name: Write Pages Functions metadata
+        run: |
+          cat <<'EOF' > dist/_worker.js/metadata.json
+          {
+            "main_module": "index.js",
+            "compatibility_date": "2024-09-25",
+            "compatibility_flags": ["nodejs_compat"],
+            "bindings": [],
+            "logpush": false
+          }
+          EOF
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5

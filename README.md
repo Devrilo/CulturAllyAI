@@ -30,6 +30,12 @@ CulturAllyAI is a simple web application designed to generate concise, engaging,
 - **Testing:** Vitest + @testing-library/react (unit/integration), Playwright (E2E), @axe-core/playwright (accessibility)
 - **CI/CD & Hosting:** GitHub Actions (pull-request workflow with automated PR comments), Cloudflare Pages (Hobby plan)
 
+> **Cloudflare Pages compatibility note**: React 19 SSR on Cloudflare Workers requires the
+> `react-dom/server.edge` build. The project configures this automatically in
+> `astro.config.mjs` by aliasing `react-dom/server` to `react-dom/server.edge`
+> during production builds. Without this mapping Cloudflare would throw
+> `MessageChannel is not defined` at deploy time.
+
 ## 4. Getting Started Locally
 
 ### Prerequisites
@@ -701,6 +707,22 @@ This project is currently in the MVP stage, focused on delivering a robust found
   - Automated PR comments with CI status, coverage metrics, and test results
   - Artifacts: unit-coverage, e2e-test-results, playwright-report (7-day retention)
   - Latest action versions: checkout@v5, setup-node@v6, upload-artifact@v5, github-script@v8
+
+- ✅ **Production Deployment Workflow** (`.github/workflows/master.yml`)
+  - Automated deployment to Cloudflare Pages on push to master branch
+  - Sequential execution: Lint → Unit Tests → Build → Deploy
+  - No E2E tests in production workflow (run on PR only)
+  - Environment: production with deployment URL tracking
+  - Latest action versions: wrangler-action@v3
+  - See [docs/cloudflare-deployment.md](./docs/cloudflare-deployment.md) for setup guide
+  - See [docs/cloudflare-troubleshooting.md](./docs/cloudflare-troubleshooting.md) for common issues
+
+- ✅ **Environment Variables Configuration**
+  - **Local Development:** Use `.env` file (see "Environment Configuration" section above)
+  - **Cloudflare Pages:** Manage variables through Dashboard UI (Settings → Environment variables)
+  - **Important:** Do NOT use `[vars]` section in `wrangler.toml` - it overrides Dashboard variables
+  - Required variables: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_KEY`, `SUPABASE_URL`, `SUPABASE_KEY` (Plaintext)
+  - Secrets: `OPENROUTER_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (Encrypted in Dashboard)
 
 - ✅ **Hosting Platform: Cloudflare Pages (Hobby Plan)**
   - **Wybór platformy:** Cloudflare Pages z Workers dla Astro SSR
