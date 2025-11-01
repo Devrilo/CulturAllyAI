@@ -5,11 +5,12 @@ import type { Database } from "../db/database.types";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   // Get environment variables from Cloudflare Pages runtime or local .env
+  // Priority: 1) Cloudflare runtime, 2) process.env (CI/tests/dev), 3) import.meta.env
   // @ts-expect-error - runtime.env is available in Cloudflare Pages adapter
   const runtime = context.locals.runtime;
-  const supabaseUrl = runtime?.env?.SUPABASE_URL || import.meta.env.SUPABASE_URL;
-  const supabaseAnonKey = runtime?.env?.SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
-  const openRouterApiKey = runtime?.env?.OPENROUTER_API_KEY || import.meta.env.OPENROUTER_API_KEY;
+  const supabaseUrl = runtime?.env?.SUPABASE_URL || process.env.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const supabaseAnonKey = runtime?.env?.SUPABASE_KEY || process.env.SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
+  const openRouterApiKey = runtime?.env?.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || import.meta.env.OPENROUTER_API_KEY;
 
   // Create Supabase server client with cookie handling
   // This automatically reads tokens from Supabase cookies (sb-access-token, sb-refresh-token)
