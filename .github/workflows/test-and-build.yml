@@ -73,14 +73,7 @@ jobs:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
     needs: lint
-    env:
-      # Supabase connection for tests (anon key is safe for public use)
-      PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-      # OpenRouter API key for AI generation tests
-      OPENROUTER_API_KEY: ${{ secrets.TEST_OPENROUTER_API_KEY }}
-      # Note: SUPABASE_SERVICE_ROLE_KEY removed - not needed for basic E2E tests
-      # Database cleanup after tests will use anon key with limited permissions
+    # Environment variables are created in .env.test file from secrets
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -96,6 +89,17 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
+
+      - name: Create .env.test from secrets
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}" >> .env.test
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.TEST_SUPABASE_ANON_KEY }}" >> .env.test
+          echo "SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}" >> .env.test
+          echo "SUPABASE_KEY=${{ secrets.TEST_SUPABASE_ANON_KEY }}" >> .env.test
+          echo "OPENROUTER_API_KEY=${{ secrets.TEST_OPENROUTER_API_KEY }}" >> .env.test
+          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
+          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
+          echo "E2E_USERNAME_ID=${{ secrets.E2E_USERNAME_ID }}" >> .env.test
 
       - name: Run E2E tests
         run: npm run test:e2e
@@ -122,9 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, e2e]
     env:
-      # Required for build process
+      # Required for build process (using PUBLIC_SUPABASE_KEY as expected by code)
       PUBLIC_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
-      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

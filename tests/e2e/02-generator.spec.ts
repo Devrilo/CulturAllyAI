@@ -459,7 +459,7 @@ test.describe("Event Description Generator", () => {
     // Check if save button is enabled (session still valid)
     const saveButton = page.getByRole("button", { name: "Zapisz" });
     const isSaveDisabled = await saveButton.isDisabled();
-    
+
     if (isSaveDisabled) {
       // Session expired - cannot save, skip test
       return;
@@ -491,7 +491,7 @@ test.describe("Event Description Generator", () => {
 
     // Check if save button is enabled (session still valid)
     const isSaveDisabled2 = await saveButton.isDisabled();
-    
+
     let event2Saved = false;
     if (!isSaveDisabled2) {
       // Save second event
@@ -499,7 +499,7 @@ test.describe("Event Description Generator", () => {
       await page.waitForTimeout(3000);
       event2Saved = true;
     }
-    
+
     // If neither event was saved, skip verification
     if (!event1Saved && !event2Saved) {
       return;

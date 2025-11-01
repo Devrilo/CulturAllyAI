@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
-import dotenv from "dotenv";
+import { config as dotenvConfig } from "dotenv";
 
-// Load environment variables from .env.test for E2E tests
-dotenv.config({ path: ".env.test" });
+// Load .env.test for Playwright workers - makes env vars available in test code
+dotenvConfig({ path: ".env.test" });
 
 /**
  * Playwright E2E Testing Configuration
@@ -63,7 +63,9 @@ export default defineConfig({
   ],
 
   // Run local dev server before starting tests
-  // Uses npm run dev:test which loads .env.test
+  // Uses npm run dev:test which loads .env.test via dotenv-cli for the Astro server
+  // .env.test is also loaded above for Playwright test workers (fixtures, tests)
+  // In CI, .env.test is created dynamically from GitHub Secrets before running tests
   webServer: {
     command: "npm run dev:test",
     url: "http://localhost:3000",

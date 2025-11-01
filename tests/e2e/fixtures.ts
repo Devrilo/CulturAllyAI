@@ -6,6 +6,10 @@ import { AxeBuilder as AxeBuilderImpl } from "@axe-core/playwright";
  * Playwright Global Setup and Fixtures
  * Extends base test with accessibility testing utilities
  * and authenticated page fixture
+ *
+ * Note: Environment variables are loaded from .env.test by the dev:test command
+ * via dotenv-cli. This ensures both the Astro dev server and test workers
+ * have access to the same environment configuration.
  */
 
 /**
