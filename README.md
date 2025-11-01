@@ -2,7 +2,7 @@
 
 ## 1. Project Name
 
-CulturAllyAI
+CulturAllyAI 
 
 ## 2. Project Description
 
