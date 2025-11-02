@@ -6,7 +6,7 @@ CulturAllyAI
 
 ## 2. Project Description
 
-CulturAllyAI is a simple web application designed to generate concise, engaging, and factual descriptions of cultural events using LLMs based solely on user-provided input. It enables organizers, cultural institutions, and volunteers to quickly obtain well-structured event descriptions without the need for extensive manual editing.
+CulturAllyAI is a simple web application designed to generate concise, engaging, and factual descriptions of cultural events using LLMs based solely on user-provided input. It enables organizers, cultural institutions and volunteers to quickly obtain well-structured event descriptions without the need for extensive manual editing.
 
 ## Table of Contents
 
