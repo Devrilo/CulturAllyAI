@@ -1,3 +1,34 @@
+/**
+ * @fileoverview Events Service Module
+ * 
+ * This module provides comprehensive business logic for managing cultural events in the CulturAllyAI application.
+ * It implements a Command-Result pattern for all event operations, ensuring type safety and clear interfaces.
+ * 
+ * @module services/events
+ * 
+ * Key Features:
+ * - Event creation with AI-generated descriptions
+ * - Event updates with audit logging
+ * - Paginated event retrieval with filtering and sorting
+ * - Soft delete functionality
+ * - Support for both authenticated users and guest users
+ * - Row-Level Security (RLS) integration with Supabase
+ * - Comprehensive error handling with custom error types
+ * 
+ * Dependencies:
+ * - Supabase: Database client for data persistence and RLS
+ * - AI Service: Generates event descriptions using OpenRouter API
+ * - Database Types: Auto-generated types from Supabase schema
+ * 
+ * Security Considerations:
+ * - All operations validate user ownership through RLS and explicit filters
+ * - Guest users have limited capabilities (cannot update or delete)
+ * - All mutations are logged in event_management_logs for audit trail
+ * 
+ * @author CulturAllyAI Team
+ * @since 1.0.0
+ */
+
 import type { TablesInsert, TablesUpdate } from "../../db/database.types";
 import type { SupabaseClient } from "../../db/supabase.client";
 import type {
@@ -11,7 +42,32 @@ import type {
 import { generateEventDescription } from "./ai/generate-event-description";
 
 /**
- * Command for creating a new event
+ * Command interface for creating a new event.
+ * 
+ * Extends CreateEventDTO with additional context about the user and authentication state.
+ * This command is processed by the createEvent function to generate and persist a new event.
+ * 
+ * @interface CreateEventCommand
+ * @extends {CreateEventDTO}
+ * 
+ * @property {string | null} userId - User ID if authenticated, null for guest users
+ * @property {boolean} isAuthenticated - Whether the user is authenticated (affects RLS behavior)
+ * @property {string} openRouterApiKey - API key for OpenRouter AI service (required for description generation)
+ * 
+ * @example
+ * ```typescript
+ * const command: CreateEventCommand = {
+ *   title: "Koncert jazzowy",
+ *   city: "Warszawa",
+ *   event_date: "2025-12-01",
+ *   category: "muzyka",
+ *   age_category: "dorośli",
+ *   key_information: "Występ znanego zespołu",
+ *   userId: "123e4567-e89b-12d3-a456-426614174000",
+ *   isAuthenticated: true,
+ *   openRouterApiKey: "sk-or-..."
+ * };
+ * ```
  */
 export interface CreateEventCommand extends CreateEventDTO {
   userId: string | null;
@@ -20,14 +76,41 @@ export interface CreateEventCommand extends CreateEventDTO {
 }
 
 /**
- * Result of event creation
+ * Result interface for event creation operations.
+ * 
+ * Contains the newly created event with all generated fields populated.
+ * 
+ * @interface CreateEventResult
+ * 
+ * @property {EventResponseDTO} event - The created event object with AI-generated description
  */
 export interface CreateEventResult {
   event: EventResponseDTO;
 }
 
 /**
- * Command for updating an existing event
+ * Command interface for updating an existing event.
+ * 
+ * Allows partial updates to event fields (saved, feedback, edited_description).
+ * Only the event owner can perform updates, enforced by RLS and explicit validation.
+ * 
+ * @interface UpdateEventCommand
+ * 
+ * @property {string} eventId - UUID of the event to update
+ * @property {string} userId - UUID of the user performing the update (must match event owner)
+ * @property {UpdateEventDTO} payload - Partial update payload with fields to modify
+ * 
+ * @example
+ * ```typescript
+ * const command: UpdateEventCommand = {
+ *   eventId: "event-uuid",
+ *   userId: "user-uuid",
+ *   payload: {
+ *     saved: true,
+ *     feedback: "positive"
+ *   }
+ * };
+ * ```
  */
 export interface UpdateEventCommand {
   eventId: string;
@@ -36,21 +119,61 @@ export interface UpdateEventCommand {
 }
 
 /**
- * Result of event update
+ * Result interface for event update operations.
+ * 
+ * @interface UpdateEventResult
+ * 
+ * @property {EventResponseDTO} event - The updated event object with modified fields
  */
 export interface UpdateEventResult {
   event: EventResponseDTO;
 }
 
 /**
- * Command for getting user events with filtering, sorting, and pagination
+ * Command interface for retrieving user events with advanced filtering and pagination.
+ * 
+ * Extends EventsQueryDTO with userId for security context.
+ * Supports filtering by category, age category, and saved status.
+ * Supports sorting by created_at, event_date, or title.
+ * 
+ * @interface GetUserEventsCommand
+ * @extends {EventsQueryDTO}
+ * 
+ * @property {string} userId - UUID of the user whose events to retrieve
+ * @property {boolean} [saved] - Optional filter for saved status
+ * @property {string} [category] - Optional filter for event category
+ * @property {string} [age_category] - Optional filter for age category
+ * @property {number} [page=1] - Page number for pagination (1-indexed)
+ * @property {number} [limit=20] - Number of items per page
+ * @property {"created_at" | "event_date" | "title"} [sort="created_at"] - Field to sort by
+ * @property {"asc" | "desc"} [order="desc"] - Sort order
+ * 
+ * @example
+ * ```typescript
+ * const command: GetUserEventsCommand = {
+ *   userId: "user-uuid",
+ *   saved: true,
+ *   category: "muzyka",
+ *   page: 1,
+ *   limit: 10,
+ *   sort: "event_date",
+ *   order: "asc"
+ * };
+ * ```
  */
 export interface GetUserEventsCommand extends EventsQueryDTO {
   userId: string;
 }
 
 /**
- * Result of getting user events
+ * Result interface for paginated user events retrieval.
+ * 
+ * Contains both the event data and pagination metadata for client-side rendering.
+ * 
+ * @interface GetUserEventsResult
+ * 
+ * @property {EventListItemDTO[]} data - Array of events for the current page (excludes model_version)
+ * @property {PaginationDTO} pagination - Pagination metadata including total count and navigation info
  */
 export interface GetUserEventsResult {
   data: EventListItemDTO[];
@@ -58,7 +181,22 @@ export interface GetUserEventsResult {
 }
 
 /**
- * Command for getting a single event by ID
+ * Command interface for retrieving a single event by ID.
+ * 
+ * Validates that the user owns the event before returning it.
+ * 
+ * @interface GetEventByIdCommand
+ * 
+ * @property {string} eventId - UUID of the event to retrieve
+ * @property {string} userId - UUID of the user requesting the event (must match owner)
+ * 
+ * @example
+ * ```typescript
+ * const command: GetEventByIdCommand = {
+ *   eventId: "event-uuid",
+ *   userId: "user-uuid"
+ * };
+ * ```
  */
 export interface GetEventByIdCommand {
   eventId: string;
@@ -66,14 +204,35 @@ export interface GetEventByIdCommand {
 }
 
 /**
- * Result of getting event by ID
+ * Result interface for single event retrieval.
+ * 
+ * @interface GetEventByIdResult
+ * 
+ * @property {EventResponseDTO} event - The requested event object with all fields
  */
 export interface GetEventByIdResult {
   event: EventResponseDTO;
 }
 
 /**
- * Command for soft deleting an event (sets saved = false)
+ * Command interface for soft deleting an event.
+ * 
+ * Soft delete sets the 'saved' flag to false rather than removing the record.
+ * Only events created by authenticated users can be soft deleted.
+ * Guest-created events cannot be modified.
+ * 
+ * @interface SoftDeleteEventCommand
+ * 
+ * @property {string} eventId - UUID of the event to soft delete
+ * @property {string} userId - UUID of the user performing the deletion (must match owner)
+ * 
+ * @example
+ * ```typescript
+ * const command: SoftDeleteEventCommand = {
+ *   eventId: "event-uuid",
+ *   userId: "user-uuid"
+ * };
+ * ```
  */
 export interface SoftDeleteEventCommand {
   eventId: string;
@@ -81,7 +240,12 @@ export interface SoftDeleteEventCommand {
 }
 
 /**
- * Result of soft delete operation
+ * Result interface for soft delete operations.
+ * 
+ * @interface SoftDeleteEventResult
+ * 
+ * @property {string} eventId - UUID of the soft deleted event
+ * @property {string} message - Confirmation message describing the action taken
  */
 export interface SoftDeleteEventResult {
   eventId: string;
@@ -89,9 +253,48 @@ export interface SoftDeleteEventResult {
 }
 
 /**
- * Service error thrown when event operations fail
+ * Custom error class for event service operations.
+ * 
+ * Extends the standard Error class with additional context useful for API responses:
+ * - HTTP status code for proper REST API error handling
+ * - Error code for client-side error categorization and i18n
+ * 
+ * Common error codes:
+ * - EMPTY_DESCRIPTION: AI generated empty description
+ * - INSERT_FAILED: Database insertion failed
+ * - EVENT_NOT_FOUND: Event doesn't exist or user doesn't have access
+ * - GUEST_EVENT_UPDATE_FORBIDDEN: Attempt to modify guest-created event
+ * - NO_FIELDS_TO_UPDATE: Update payload is empty or unchanged
+ * - UPDATE_FAILED: Database update failed
+ * - COUNT_FAILED: Failed to count events
+ * - QUERY_FAILED: Failed to query events
+ * - EVENT_FETCH_FAILED: Failed to fetch single event
+ * - UNEXPECTED_ERROR: Unhandled error occurred
+ * 
+ * @class EventServiceError
+ * @extends {Error}
+ * 
+ * @property {string} name - Always "EventServiceError"
+ * @property {number} statusCode - HTTP status code (400, 403, 404, 500, etc.)
+ * @property {string} [code] - Optional machine-readable error code
+ * 
+ * @example
+ * ```typescript
+ * throw new EventServiceError(
+ *   "Wydarzenie nie zostało znalezione",
+ *   404,
+ *   "EVENT_NOT_FOUND"
+ * );
+ * ```
  */
 export class EventServiceError extends Error {
+  /**
+   * Creates a new EventServiceError.
+   * 
+   * @param {string} message - Human-readable error message (typically in Polish for end users)
+   * @param {number} statusCode - HTTP status code appropriate for the error type
+   * @param {string} [code] - Optional machine-readable error code for client-side handling
+   */
   constructor(
     message: string,
     public readonly statusCode: number,
@@ -103,12 +306,84 @@ export class EventServiceError extends Error {
 }
 
 /**
- * Creates a new event with AI-generated description
- *
- * @param supabase - Supabase client instance
- * @param command - Event creation command with user context
- * @returns Created event object
- * @throws EventServiceError if creation fails
+ * Creates a new event with AI-generated description.
+ * 
+ * This function orchestrates the complete event creation workflow:
+ * 1. Generates an AI description using OpenRouter API
+ * 2. Validates the generated description is not empty
+ * 3. Inserts the event into the database with appropriate RLS handling
+ * 4. Logs the creation action for authenticated users
+ * 5. Returns the created event object
+ * 
+ * Special Handling for Guest Users:
+ * - Guest users can create events but cannot retrieve them later (RLS blocks SELECT)
+ * - For guests, a temporary UUID is generated for the response (not the real DB ID)
+ * - Guest events are not logged in event_management_logs
+ * 
+ * Business Rules:
+ * - All events are initially created with saved=false
+ * - AI-generated description must not be empty after trimming
+ * - Guest events have created_by_authenticated_user=false
+ * 
+ * @async
+ * @function createEvent
+ * 
+ * @param {SupabaseClient} supabase - Supabase client instance with appropriate user context (auth or anon)
+ * @param {CreateEventCommand} command - Event creation command containing:
+ *   - title: Event title
+ *   - city: Event location
+ *   - event_date: Event date in ISO format
+ *   - category: Event category (e.g., "muzyka", "teatr")
+ *   - age_category: Target age group (e.g., "dzieci", "dorośli")
+ *   - key_information: Additional event details for AI context
+ *   - userId: User ID (null for guests)
+ *   - isAuthenticated: Authentication status
+ *   - openRouterApiKey: API key for AI generation
+ * 
+ * @returns {Promise<CreateEventResult>} Promise resolving to an object containing the created event
+ * 
+ * @throws {EventServiceError} With statusCode 400 and code "EMPTY_DESCRIPTION" if AI generates empty description
+ * @throws {EventServiceError} With statusCode 500 and code "INSERT_FAILED" if database insertion fails
+ * @throws {EventServiceError} With statusCode 500 and code "EVENT_NOT_RETURNED" if event retrieval fails (authenticated users)
+ * @throws {EventServiceError} With statusCode 500 and code "UNEXPECTED_ERROR" for unhandled errors
+ * 
+ * @example
+ * ```typescript
+ * // Authenticated user creating an event
+ * const result = await createEvent(supabase, {
+ *   title: "Festiwal Jazzowy",
+ *   city: "Kraków",
+ *   event_date: "2025-08-15",
+ *   category: "muzyka",
+ *   age_category: "wszyscy",
+ *   key_information: "Trzydniowy festiwal z międzynarodowymi artystami",
+ *   userId: "user-uuid",
+ *   isAuthenticated: true,
+ *   openRouterApiKey: "sk-or-..."
+ * });
+ * console.log(result.event.generated_description);
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Guest user creating an event
+ * const result = await createEvent(supabaseAnon, {
+ *   title: "Warsztaty plastyczne",
+ *   city: "Warszawa",
+ *   event_date: "2025-09-10",
+ *   category: "warsztat",
+ *   age_category: "dzieci",
+ *   key_information: "Dla dzieci w wieku 6-12 lat",
+ *   userId: null,
+ *   isAuthenticated: false,
+ *   openRouterApiKey: "sk-or-..."
+ * });
+ * // Note: result.event.id is a temporary UUID, not the real DB ID
+ * ```
+ * 
+ * @see {@link generateEventDescription} for AI description generation
+ * @see {@link CreateEventCommand} for command interface details
+ * @see {@link CreateEventResult} for result interface details
  */
 export async function createEvent(supabase: SupabaseClient, command: CreateEventCommand): Promise<CreateEventResult> {
   try {
@@ -239,8 +514,76 @@ export async function createEvent(supabase: SupabaseClient, command: CreateEvent
 }
 
 /**
- * Updates selected fields of an event owned by the authenticated user
- * Applies business rules and logs audit events
+ * Updates selected fields of an existing event.
+ * 
+ * This function implements partial update functionality with the following workflow:
+ * 1. Fetches the existing event and validates ownership
+ * 2. Validates that the event was created by an authenticated user
+ * 3. Builds an update payload with only changed fields
+ * 4. Applies the updates to the database
+ * 5. Logs appropriate actions in event_management_logs
+ * 
+ * Business Rules:
+ * - Only events created by authenticated users can be updated
+ * - Guest-created events cannot be modified (403 error)
+ * - Only the event owner can perform updates (validated via RLS + explicit user_id check)
+ * - At least one field must be changed (400 error if no changes)
+ * - Each field update generates a corresponding audit log entry
+ * 
+ * Supported Update Fields:
+ * - saved: Boolean flag indicating if event is saved to user's collection
+ * - feedback: User feedback ("positive", "negative", or null)
+ * - edited_description: User-edited version of the generated description
+ * 
+ * Audit Logging:
+ * - saved=true → "event_saved" log entry
+ * - feedback changed → "event_rated" log entry
+ * - edited_description changed → "event_edited" log entry
+ * 
+ * @async
+ * @function updateEvent
+ * 
+ * @param {SupabaseClient} supabase - Supabase client instance with authenticated user context
+ * @param {UpdateEventCommand} command - Update command containing:
+ *   - eventId: UUID of the event to update
+ *   - userId: UUID of the user performing the update
+ *   - payload: Object with fields to update (saved, feedback, edited_description)
+ * 
+ * @returns {Promise<UpdateEventResult>} Promise resolving to an object containing the updated event
+ * 
+ * @throws {EventServiceError} With statusCode 404 and code "EVENT_NOT_FOUND" if event doesn't exist or user lacks access
+ * @throws {EventServiceError} With statusCode 403 and code "GUEST_EVENT_UPDATE_FORBIDDEN" if attempting to update guest-created event
+ * @throws {EventServiceError} With statusCode 400 and code "NO_FIELDS_TO_UPDATE" if no fields are changed
+ * @throws {EventServiceError} With statusCode 500 and code "EVENT_FETCH_FAILED" if initial event fetch fails
+ * @throws {EventServiceError} With statusCode 500 and code "UPDATE_FAILED" if database update fails
+ * @throws {EventServiceError} With statusCode 500 and code "UNEXPECTED_ERROR" for unhandled errors
+ * 
+ * @example
+ * ```typescript
+ * // Save an event to user's collection
+ * const result = await updateEvent(supabase, {
+ *   eventId: "event-uuid",
+ *   userId: "user-uuid",
+ *   payload: { saved: true }
+ * });
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Update feedback and edited description
+ * const result = await updateEvent(supabase, {
+ *   eventId: "event-uuid",
+ *   userId: "user-uuid",
+ *   payload: {
+ *     feedback: "positive",
+ *     edited_description: "Zaktualizowany opis wydarzenia"
+ *   }
+ * });
+ * // Generates two audit log entries: "event_rated" and "event_edited"
+ * ```
+ * 
+ * @see {@link UpdateEventCommand} for command interface details
+ * @see {@link UpdateEventResult} for result interface details
  */
 export async function updateEvent(supabase: SupabaseClient, command: UpdateEventCommand): Promise<UpdateEventResult> {
   try {
@@ -356,14 +699,101 @@ export async function updateEvent(supabase: SupabaseClient, command: UpdateEvent
 }
 
 /**
- * Retrieves a paginated list of events for the authenticated user
- * Supports filtering by saved status, category, and age_category
- * Supports sorting by created_at, event_date, or title
- *
- * @param supabase - Supabase client instance
- * @param command - Query command with filters, pagination, and sorting
- * @returns Paginated list of events with metadata
- * @throws EventServiceError if query fails
+ * Retrieves a paginated list of events for the authenticated user.
+ * 
+ * This function provides advanced event querying capabilities with:
+ * - Flexible filtering by multiple criteria
+ * - Customizable sorting
+ * - Efficient pagination
+ * - Complete pagination metadata for UI rendering
+ * 
+ * The function executes count and data queries in parallel for optimal performance.
+ * All queries are protected by Row-Level Security (RLS) and explicit user_id filtering.
+ * 
+ * Filtering Options:
+ * - saved: Filter by saved status (true/false)
+ * - category: Filter by event category (e.g., "muzyka", "teatr", "film")
+ * - age_category: Filter by age category (e.g., "dzieci", "młodzież", "dorośli")
+ * 
+ * Sorting Options:
+ * - sort: Field to sort by ("created_at", "event_date", "title")
+ * - order: Sort direction ("asc" or "desc")
+ * 
+ * Pagination:
+ * - page: Current page number (1-indexed)
+ * - limit: Number of items per page
+ * - Returns total count, total pages, and navigation flags
+ * 
+ * Security:
+ * - Double security: RLS policies + explicit user_id filter
+ * - Users can only access their own events
+ * 
+ * @async
+ * @function getUserEvents
+ * 
+ * @param {SupabaseClient} supabase - Supabase client instance with authenticated user context
+ * @param {GetUserEventsCommand} command - Query command containing:
+ *   - userId: UUID of the user whose events to retrieve
+ *   - saved: Optional boolean filter for saved status
+ *   - category: Optional string filter for event category
+ *   - age_category: Optional string filter for age category
+ *   - page: Page number (default: 1)
+ *   - limit: Items per page (default: 20)
+ *   - sort: Sort field (default: "created_at")
+ *   - order: Sort direction (default: "desc")
+ * 
+ * @returns {Promise<GetUserEventsResult>} Promise resolving to an object containing:
+ *   - data: Array of EventListItemDTO (excludes model_version field)
+ *   - pagination: PaginationDTO with metadata (page, limit, total, total_pages, has_next, has_prev)
+ * 
+ * @throws {EventServiceError} With statusCode 500 and code "COUNT_FAILED" if counting events fails
+ * @throws {EventServiceError} With statusCode 500 and code "QUERY_FAILED" if fetching events fails
+ * @throws {EventServiceError} With statusCode 500 and code "UNEXPECTED_ERROR" for unhandled errors
+ * 
+ * @example
+ * ```typescript
+ * // Get first page of all saved events
+ * const result = await getUserEvents(supabase, {
+ *   userId: "user-uuid",
+ *   saved: true,
+ *   page: 1,
+ *   limit: 10
+ * });
+ * console.log(`Found ${result.pagination.total} saved events`);
+ * console.log(`Page ${result.pagination.page} of ${result.pagination.total_pages}`);
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Get music events sorted by date
+ * const result = await getUserEvents(supabase, {
+ *   userId: "user-uuid",
+ *   category: "muzyka",
+ *   sort: "event_date",
+ *   order: "asc",
+ *   page: 1,
+ *   limit: 20
+ * });
+ * result.data.forEach(event => {
+ *   console.log(`${event.title} on ${event.event_date}`);
+ * });
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Get events for children, newest first
+ * const result = await getUserEvents(supabase, {
+ *   userId: "user-uuid",
+ *   age_category: "dzieci",
+ *   sort: "created_at",
+ *   order: "desc"
+ * });
+ * // Default pagination: page=1, limit=20
+ * ```
+ * 
+ * @see {@link GetUserEventsCommand} for command interface details
+ * @see {@link GetUserEventsResult} for result interface details
+ * @see {@link PaginationDTO} for pagination metadata structure
  */
 export async function getUserEvents(
   supabase: SupabaseClient,
@@ -468,13 +898,72 @@ export async function getUserEvents(
 }
 
 /**
- * Retrieves a single event by ID for the authenticated user
- * Uses RLS and explicit user_id filter for security
- *
- * @param supabase - Supabase client instance
- * @param command - Command with event ID and user ID
- * @returns Event object
- * @throws EventServiceError if event not found or fetch fails
+ * Retrieves a single event by its unique identifier.
+ * 
+ * This function fetches a specific event for the authenticated user with:
+ * - Strict ownership validation (user must own the event)
+ * - Double security layer (RLS + explicit user_id filter)
+ * - Complete event data including all fields
+ * 
+ * The function is typically used for:
+ * - Displaying event details
+ * - Pre-populating edit forms
+ * - Verifying event ownership before operations
+ * 
+ * Security:
+ * - RLS policies enforce user_id matching
+ * - Explicit .eq("user_id", userId) provides additional safety
+ * - Returns 404 if event doesn't exist OR user doesn't have access
+ * 
+ * @async
+ * @function getEventById
+ * 
+ * @param {SupabaseClient} supabase - Supabase client instance with authenticated user context
+ * @param {GetEventByIdCommand} command - Retrieval command containing:
+ *   - eventId: UUID of the event to retrieve
+ *   - userId: UUID of the user requesting the event
+ * 
+ * @returns {Promise<GetEventByIdResult>} Promise resolving to an object containing the full event object
+ * 
+ * @throws {EventServiceError} With statusCode 404 and code "EVENT_NOT_FOUND" if:
+ *   - Event doesn't exist
+ *   - Event exists but belongs to a different user
+ *   - Database returns PGRST116 (no rows)
+ * @throws {EventServiceError} With statusCode 500 and code "EVENT_FETCH_FAILED" if database query fails
+ * @throws {EventServiceError} With statusCode 500 and code "UNEXPECTED_ERROR" for unhandled errors
+ * 
+ * @example
+ * ```typescript
+ * // Retrieve an event for display
+ * try {
+ *   const result = await getEventById(supabase, {
+ *     eventId: "event-uuid",
+ *     userId: "user-uuid"
+ *   });
+ *   console.log(result.event.title);
+ *   console.log(result.event.generated_description);
+ * } catch (error) {
+ *   if (error instanceof EventServiceError && error.code === "EVENT_NOT_FOUND") {
+ *     console.log("Event not found or access denied");
+ *   }
+ * }
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Use in an API endpoint
+ * const { eventId } = params;
+ * const { userId } = session;
+ * 
+ * const result = await getEventById(supabase, { eventId, userId });
+ * return new Response(JSON.stringify(result.event), {
+ *   status: 200,
+ *   headers: { "Content-Type": "application/json" }
+ * });
+ * ```
+ * 
+ * @see {@link GetEventByIdCommand} for command interface details
+ * @see {@link GetEventByIdResult} for result interface details
  */
 export async function getEventById(
   supabase: SupabaseClient,
@@ -524,14 +1013,88 @@ export async function getEventById(
 }
 
 /**
- * Performs soft delete on an event by setting saved = false
- * Only allows soft deletion of events owned by authenticated users
- * Logs the action in event_management_logs
- *
- * @param supabase - Supabase client instance
- * @param command - Command with event ID and user ID
- * @returns Result with event ID and confirmation message
- * @throws EventServiceError if soft delete fails or event doesn't exist
+ * Performs soft delete on an event by setting the saved flag to false.
+ * 
+ * This function implements non-destructive deletion with the following workflow:
+ * 1. Updates the event's saved field to false
+ * 2. Validates event ownership and authentication status
+ * 3. Logs the deletion action for audit purposes
+ * 4. Returns confirmation of successful deletion
+ * 
+ * Soft Delete Behavior:
+ * - Event record remains in database (not physically deleted)
+ * - saved=false flags the event as "removed from saved list"
+ * - Event can potentially be restored by setting saved=true
+ * - Maintains data integrity and audit trail
+ * 
+ * Business Rules:
+ * - Only events created by authenticated users can be soft deleted
+ * - Guest-created events cannot be modified (403 error)
+ * - Only the event owner can perform deletion (validated via RLS + explicit user_id check)
+ * - Deletion action is logged in event_management_logs as "event_deleted"
+ * 
+ * Security:
+ * - Double security: RLS policies + explicit user_id filter
+ * - Additional validation of created_by_authenticated_user flag
+ * - Prevents unauthorized access or modification
+ * 
+ * @async
+ * @function softDeleteEvent
+ * 
+ * @param {SupabaseClient} supabase - Supabase client instance with authenticated user context
+ * @param {SoftDeleteEventCommand} command - Deletion command containing:
+ *   - eventId: UUID of the event to soft delete
+ *   - userId: UUID of the user performing the deletion
+ * 
+ * @returns {Promise<SoftDeleteEventResult>} Promise resolving to an object containing:
+ *   - eventId: UUID of the deleted event
+ *   - message: Confirmation message ("Event removed from saved list")
+ * 
+ * @throws {EventServiceError} With statusCode 404 and code "EVENT_NOT_FOUND" if:
+ *   - Event doesn't exist
+ *   - Event exists but belongs to a different user
+ *   - Database returns PGRST116 (no rows)
+ * @throws {EventServiceError} With statusCode 403 and code "GUEST_EVENT_MODIFICATION" if:
+ *   - Attempting to delete an event created by a guest user
+ *   - Event has created_by_authenticated_user=false
+ * @throws {EventServiceError} With statusCode 500 and code "EVENT_SOFT_DELETE_FAILED" if database update fails
+ * @throws {EventServiceError} With statusCode 500 and code "UNEXPECTED_ERROR" for unhandled errors
+ * 
+ * @example
+ * ```typescript
+ * // Remove an event from user's saved list
+ * try {
+ *   const result = await softDeleteEvent(supabase, {
+ *     eventId: "event-uuid",
+ *     userId: "user-uuid"
+ *   });
+ *   console.log(result.message); // "Event removed from saved list"
+ * } catch (error) {
+ *   if (error instanceof EventServiceError) {
+ *     if (error.code === "GUEST_EVENT_MODIFICATION") {
+ *       console.log("Cannot delete guest-created events");
+ *     } else if (error.code === "EVENT_NOT_FOUND") {
+ *       console.log("Event not found or access denied");
+ *     }
+ *   }
+ * }
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Use in a DELETE API endpoint
+ * const { eventId } = params;
+ * const { userId } = session;
+ * 
+ * const result = await softDeleteEvent(supabase, { eventId, userId });
+ * return new Response(JSON.stringify(result), {
+ *   status: 200,
+ *   headers: { "Content-Type": "application/json" }
+ * });
+ * ```
+ * 
+ * @see {@link SoftDeleteEventCommand} for command interface details
+ * @see {@link SoftDeleteEventResult} for result interface details
  */
 export async function softDeleteEvent(
   supabase: SupabaseClient,
