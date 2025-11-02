@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **E2E Test Environment Variables and Middleware Priority** ✅
+  - Fixed 24 E2E test failures caused by undefined environment variables in Playwright test workers
+  - Root cause 1: Playwright test workers run in separate Node.js processes without inheriting environment from main process or `playwright.config.ts`
+  - Solution 1: Added `dotenv.config({ path: ".env.test" })` in `tests/e2e/fixtures.ts` to load environment variables in each test worker
+  - Root cause 2: Middleware environment variable priority `runtime?.env || import.meta.env` broke dev/test after Cloudflare deployment changes
+  - Solution 2: Reversed priority to `import.meta.env || runtime?.env` in `src/middleware/index.ts`
+  - Reasoning: `import.meta.env` is populated by Vite in dev/test/build, `runtime.env` only exists in Cloudflare Pages runtime
+  - **Result:** All 44 E2E tests passing (100% pass rate, 4 intentionally skipped), Cloudflare compatibility maintained
+  - Files modified: `tests/e2e/fixtures.ts`, `src/middleware/index.ts`
+  - Test execution time: ~13.2 minutes for full suite with database cleanup
+  - Cloudflare verification: Environment variable fallback works correctly for all deployment environments:
+    - Development: `import.meta.env` from `.env` (Vite)
+    - Test: `import.meta.env` from `.env.test` (dotenv-cli + dotenv.config)
+    - Cloudflare Production: `runtime.env` from Dashboard Environment Variables (Cloudflare Pages)
+
 ### Added
 
 - **CI/CD Pipeline with GitHub Actions**

@@ -1,16 +1,19 @@
 import { test as base, type Page } from "@playwright/test";
 import type AxeBuilder from "@axe-core/playwright";
 import { AxeBuilder as AxeBuilderImpl } from "@axe-core/playwright";
+import dotenv from "dotenv";
+import path from "path";
 
 /**
  * Playwright Global Setup and Fixtures
  * Extends base test with accessibility testing utilities
  * and authenticated page fixture
  *
- * Note: Environment variables are loaded from .env.test by the dev:test command
- * via dotenv-cli. This ensures both the Astro dev server and test workers
- * have access to the same environment configuration.
+ * IMPORTANT: Load .env.test in each test worker process
+ * Playwright test workers are separate Node.js processes and don't inherit
+ * environment variables from playwright.config.ts
  */
+dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 
 /**
  * Auth fixtures interface
@@ -67,8 +70,12 @@ export const test = base.extend<AuthFixtures>({
     // Extra wait before clicking to ensure form is ready
     await page.waitForTimeout(1000);
 
-    // Click login button
+    // Click login button and wait for authentication to complete
     await loginButton.click();
+
+    // Wait for authentication API call to complete
+    // This ensures Supabase session is established before continuing
+    await page.waitForResponse((response) => response.url().includes("auth/v1/token"), { timeout: 20000 });
 
     // Wait for navigation to complete (may include query params)
     // Increase timeout for Supabase auth response
@@ -82,8 +89,8 @@ export const test = base.extend<AuthFixtures>({
         return page.waitForTimeout(3000);
       });
 
-    // Additional wait to ensure navigation is complete
-    await page.waitForTimeout(2000);
+    // Additional wait to ensure navigation and session storage are complete
+    await page.waitForTimeout(3000);
 
     // Verify we're on homepage (not login page)
     const currentUrl = page.url();

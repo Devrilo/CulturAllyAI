@@ -156,6 +156,7 @@ Then open your browser and navigate to `http://localhost:3000`.
 
 - **E2E Tests:** ✅ **44 passing, 4 skipped (100% pass rate excluding planned skips)** - MVP Complete!
   - **Stability:** Race condition in password change flow fixed - 100% reliable on CI
+  - **Environment:** Fixed environment variable loading in test workers + middleware priority for Cloudflare compatibility
   - Execution time: ~8.8 minutes with `--workers=1` (sequential for AI stability)
   - Authentication Flow: 9/9 passing - registration, login, logout, validation, password strength (01-auth.spec.ts)
   - Event Generator: 10/10 passing - validation, AI generation, ratings, saving (02-generator.spec.ts)
@@ -844,7 +845,7 @@ This project is currently in the MVP stage, focused on delivering a robust found
     - 4 non-critical skips: 2 future features (category filter, inline edit UI), 2 admin-only operations
     - All critical user flows validated end-to-end with Page Object Model
     - Execution time: ~8.8 minutes with sequential execution for AI test stability
-    - **Race condition fixed:** Password change tests now 100% reliable (was intermittent)
+    - **Fixes:** Race condition in password change (100% reliable), environment variables in test workers, middleware priority for Cloudflare
 - ✅ CI/CD Pipeline (GitHub Actions)
   - Pull request workflow with automated testing and status reporting
   - Lint → Unit Tests & E2E Tests (parallel) → PR comments with metrics
