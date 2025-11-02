@@ -9,7 +9,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // 2. import.meta.env (Vite/Astro - works in dev & test with dotenv)
   // @ts-expect-error - runtime.env is available in Cloudflare Pages adapter
   const runtime = context.locals.runtime;
-  
+
   // Use import.meta.env as primary source (works everywhere)
   // Only fall back to runtime in actual Cloudflare environment
   const supabaseUrl = import.meta.env.SUPABASE_URL || runtime?.env?.SUPABASE_URL;
