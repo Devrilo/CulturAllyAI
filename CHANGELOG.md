@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.11.2025 - 9.11.2025
+
+- Wdrożono i udoskonalono mechanizm automatycznego generowania wpisów CHANGELOG z użyciem AI (Gemini Flash).
+- Rozpoczęto prace planistyczne nad implementacją kluczowego modułu (MCP).
+- Opracowano koncepcję zarządzania procesami biznesowymi wydarzeń (event-storming).
+- Przygotowano plan naprawczy dla błędu synchronizacji stanu komponentu karty wydarzenia.
+- Rozbudowano wewnętrzną dokumentację kodu dla serwisu wydarzeń (JSDoc).
+- Przygotowano dokumentację wdrożeniową (onboarding).
+- Wykonano drobne poprawki techniczne (np. formatowanie kodu, aktualizacja .gitignore).
+
 ## [Unreleased]
 
 ### Fixed
