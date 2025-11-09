@@ -33,7 +33,8 @@ function getLastCommits(count = 10) {
  * @returns {Promise<string>}
  */
 async function generateChangelogEntry(commits, apiKey) {
-  const ai = new GoogleGenerativeAI({ apiKey });
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const commitsText = commits
     .map(
@@ -64,12 +65,11 @@ Maksymalnie 10-15 linii. Bądź zwięzły i konkretny.
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
-      contents: prompt,
-    });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    return response.text.trim();
+    return text.trim();
   } catch (error) {
     console.error("Error generating changelog with AI:", error);
     throw error;
