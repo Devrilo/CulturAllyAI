@@ -37,3 +37,6 @@ playwright-report/
 .vitest/
 .env.test
 .env.prod
+
+# VS Code MCP configuration
+.vscode/mcp.json
