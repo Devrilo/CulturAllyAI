@@ -1,0 +1,34 @@
+# Test znajomości React 19 - hook use() do unwrappowania Promise
+# React 19 wprowadził hook use() który pozwala na unwrapowanie Promise bezpośrednio w komponencie
+# Starsze modele (z wiedzą sprzed 2024) nie znają tego API
+
+- description: "React 19 - Generate component using use() hook for Promise unwrapping"
+  vars:
+    requirements: |
+      Create a React component that fetches user data from an API.
+      Use the new React 19 'use()' hook to unwrap the Promise directly in the component.
+      The component should:
+      - Accept a Promise<User> as a prop
+      - Use the use() hook to unwrap the promise
+      - Display user name and email
+      - Use proper TypeScript types
+      
+      Example structure:
+      - Import use from 'react'
+      - Define User type with name and email
+      - Component receives userPromise prop
+      - Call use(userPromise) to get user data
+  
+  assert:
+    - type: javascript
+      value: file://assertions/react-19-use-hook.js
+    
+    - type: contains
+      value: "import { use }"
+      
+    - type: contains  
+      value: "use(userPromise)"
+      
+    - type: not-contains
+      value: "useEffect"
+      # Starsze podejście używałoby useEffect do fetchowania

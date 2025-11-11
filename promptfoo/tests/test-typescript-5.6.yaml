@@ -1,0 +1,40 @@
+# Test znajomości TypeScript 5.6 - Iterator Helpers
+# TypeScript 5.6 dodał wsparcie dla Iterator Helpers (.map(), .filter(), .take() na iteratorach)
+# Starsze modele (z wiedzą sprzed września 2024) nie znają tego API
+
+- description: "TypeScript 5.6 - Generate function using Iterator Helpers"
+  vars:
+    requirements: |
+      Create a TypeScript function that processes a large dataset efficiently using Iterator Helpers.
+      Use the new TypeScript 5.6 Iterator Helpers API.
+      The function should:
+      - Accept an iterator or generator as input
+      - Use .map() method directly on the iterator (not Array.from())
+      - Use .filter() method directly on the iterator
+      - Use .take() method to limit results
+      - Return an iterator, not an array
+      - Include proper TypeScript types
+      
+      Example:
+      Function that takes numbers iterator, filters even numbers, multiplies by 2, and takes first 10.
+      Must use: iterator.filter().map().take() - NOT converting to array first.
+      
+      IMPORTANT: Use Iterator Helpers directly on iterators, not array methods.
+  
+  assert:
+    - type: javascript
+      value: file://assertions/typescript-5.6-iterator-helpers.js
+    
+    - type: contains-any
+      value:
+        - ".map("
+        - ".filter("
+        - ".take("
+      
+    - type: not-contains
+      value: "Array.from"
+      # Starsze podejście konwertowałoby iterator do array
+      
+    - type: not-contains
+      value: "[...iterator]"
+      # Spread operator też konwertuje do array

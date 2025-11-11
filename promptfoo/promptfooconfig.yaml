@@ -1,0 +1,41 @@
+# Konfiguracja promptfoo do porównania modeli AI
+# Test znajomości najnowszych technologii (React 19, Astro 5, TypeScript 5.6)
+
+description: 'Comparison of AI models on latest tech knowledge (React 19, Astro 5, TypeScript 5.6)'
+
+# Modele do porównania (via OpenRouter)
+# Używamy aktualnie dostępnych modeli w OpenRouter
+providers:
+  - id: openrouter:anthropic/claude-sonnet-4
+    label: Claude Sonnet 4 (Latest - Nov 2025)
+    config:
+      temperature: 0.1
+      max_tokens: 2000
+  
+  - id: openrouter:anthropic/claude-3.5-sonnet
+    label: Claude Sonnet 3.5 (Mid 2024)
+    config:
+      temperature: 0.1
+      max_tokens: 2000
+  
+  - id: openrouter:openai/gpt-4
+    label: GPT-4 (Older knowledge)
+    config:
+      temperature: 0.1
+      max_tokens: 2000
+
+# Prompt template
+prompts:
+  - file://prompts/typescript-function.txt
+
+# Testy z zewnętrznych plików
+tests:
+  - file://tests/test-react-19.yaml
+  - file://tests/test-astro-5.yaml
+  - file://tests/test-typescript-5.6.yaml
+
+# Domyślna konfiguracja
+defaultTest:
+  options:
+    provider: 
+      temperature: 0.1

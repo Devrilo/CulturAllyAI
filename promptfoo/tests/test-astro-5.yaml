@@ -1,0 +1,34 @@
+# Test znajomości Astro 5 - View Transitions API z ClientRouter
+# Astro 5 wprowadził nowy sposób obsługi View Transitions przez komponent ClientRouter
+# Starsze modele (z wiedzą sprzed połowy 2024) nie znają Astro 5
+
+- description: "Astro 5 - Generate layout with View Transitions using ClientRouter"
+  vars:
+    requirements: |
+      Create an Astro layout component that uses View Transitions API.
+      Use the new Astro 5 approach with the ClientRouter component.
+      The layout should:
+      - Import ClientRouter from 'astro:transitions'
+      - Use <ClientRouter /> component for SPA-like navigation
+      - Include a navigation menu with links
+      - Apply transition:animate directive to elements
+      - Use proper TypeScript types for Astro components
+      
+      Key requirements:
+      - Must use <ClientRouter /> from astro:transitions
+      - Must NOT use the old <ViewTransitions /> approach
+      - Include transition:animate on animated elements
+  
+  assert:
+    - type: javascript
+      value: file://assertions/astro-5-client-router.js
+    
+    - type: contains
+      value: "ClientRouter"
+      
+    - type: contains
+      value: "astro:transitions"
+      
+    - type: not-contains
+      value: "<ViewTransitions"
+      # Stare API używało <ViewTransitions />
