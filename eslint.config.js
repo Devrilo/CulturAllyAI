@@ -65,6 +65,27 @@ const testConfig = tseslint.config({
   },
 });
 
+// Node.js scripts configuration
+const nodeScriptsConfig = tseslint.config({
+  files: [".github/scripts/**/*.js", "promptfoo/**/*.js"],
+  languageOptions: {
+    globals: {
+      console: "readonly",
+      process: "readonly",
+      fetch: "readonly",
+    },
+  },
+  rules: {
+    "no-console": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+      },
+    ],
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
@@ -74,6 +95,7 @@ export default tseslint.config(
   jsxA11yConfig,
   reactConfig,
   testConfig,
+  nodeScriptsConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );
