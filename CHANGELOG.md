@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.11.2025 - 11.11.2025
+
+- Wdrożono i udoskonalono automatyczne generowanie wpisów do CHANGELOG-a z wykorzystaniem AI.
+- Dodano narzędzie do porównywania i oceny modeli AI pod kątem ich aktualnej wiedzy technicznej.
+- Zaktualizowano konfigurację środowisk deweloperskich oraz zarządzanie plikami repozytorium (.env, .gitignore).
+- Przygotowano plany wdrożenia nowej funkcjonalności (MCP) oraz opracowania procesu zarządzania wydarzeniami.
+- Opracowano plan działania w celu rozwiązania problemu synchronizacji stanu kart wydarzeń.
+- Rozszerzono dokumentację techniczną dla kluczowych serwisów związanych z wydarzeniami.
+
 ## [Unreleased]
 
 ### Fixed
